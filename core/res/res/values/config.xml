@@ -2499,6 +2499,7 @@
          is non-interactive. -->
     <bool name="config_cameraDoubleTapPowerGestureEnabled">true</bool>
 
+
     <!-- Support in Surfaceflinger for blur layers.
          NOTE: This requires additional hardware-specific code. -->
     <bool name="config_ui_blur_enabled">false</bool>
@@ -2513,7 +2514,12 @@
         <item>-44</item>
     </integer-array>
 
+
     <!-- The BT name of the keyboard packaged with the device. If this is defined, SystemUI will
          automatically try to pair with it when the device exits tablet mode. -->
     <string translatable="false" name="config_packagedKeyboardName"></string>
+
+    <!-- Sets whether IME switcher on statusbar should be shown or not. -->
+	<bool name="config_show_IMESwitcher">true</bool>
+
 </resources>
