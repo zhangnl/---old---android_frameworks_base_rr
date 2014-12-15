@@ -373,7 +373,6 @@ public class AudioService extends IAudioService.Stub {
     };
 
     private final boolean mUseFixedVolume;
-    private boolean mLinkNotificationWithVolume;
 
     private final AudioSystem.ErrorCallback mAudioSystemCallback = new AudioSystem.ErrorCallback() {
         public void onError(int error) {
