@@ -3610,7 +3610,12 @@ public final class Settings {
         public static final String ANIMATION_CONTROLS_DURATION = "animation_controls_duration";
 
         /**
-         * Whether to dismiss all recents tasks
+  	* volume answer.
+         * @hide
+        */
+        public static final String ANSWER_VOLUME_BUTTON_BEHAVIOR_ANSWER = "call_volume_answer";
+
+        /**
          * @hide
          */
         public static final String RECENTS_CLEAR_ALL_DISMISS_ALL = "recents_clear_all_dismiss_all";
@@ -9920,3 +9925,4 @@ public final class Settings {
         return packages[0];
     }
 }
+
