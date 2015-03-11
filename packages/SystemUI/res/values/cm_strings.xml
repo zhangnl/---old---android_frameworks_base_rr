@@ -90,8 +90,10 @@
     <string name="led_notification_title">Light settings</string>
     <string name="led_notification_text">LED light enabled by settings</string>
 
+
     <string name="qs_tile_edit_header_instruction">Press and hold tiles to rearrange</string>
     <string name="quick_settings_edit_label">Edit tiles</string>
+
     <string name="quick_settings_cannot_delete_edit_tile">Cannot delete the Edit tile</string>
     <string name="qs_tiles_reset_confirmation">Reset quick settings tiles to default configuration?</string>
     <string name="quick_settings_tile_reset_to_default">Reset to default layout</string>
@@ -175,4 +177,12 @@
     <string name="dynamic_qs_tile_ime_selector_label">IME selector</string>
     <string name="dynamic_qs_tile_su_label">Root</string>
     <string name="dynamic_qs_tile_adb_label" translatable="false">ADB</string>
+
+    <!-- The text for the button in the notification window-shade that clears
+         all of the currently visible notifications. [CHAR LIMIT=10]-->
+    <string name="clear_recents">Close all recent</string>
+     
+    <!-- Weather string format in expanded statusbar header -->
+    <string name="weather_info_not_available">No Connection</string>
+
 </resources>
