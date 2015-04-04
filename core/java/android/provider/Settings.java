@@ -3496,6 +3496,12 @@ public final class Settings {
          */
         public static final String RECENTS_CLEAR_ALL_LOCATION = "recents_clear_all_location";
 
+	/**
+         * show the membar in recents
+         *  @hide
+         */
+        public static final String SYSTEMUI_RECENTS_MEM_DISPLAY = "systemui_recents_mem_display";
+
         /**
          * Whether to dismiss all recents tasks
          * @hide
