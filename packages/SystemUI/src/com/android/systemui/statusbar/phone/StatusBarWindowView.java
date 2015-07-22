@@ -258,6 +258,20 @@ public class StatusBarWindowView extends FrameLayout {
         if (mDoubleTapToSleepEnabled
                 && ev.getY() < mStatusBarHeaderHeight) {
             if (DEBUG) Log.w(TAG, "logging double tap gesture");
+		}
+        final int h = getMeasuredHeight();
+        if (mDoubleTapToSleepEnabled) {
+            if (mService.getBarState() == StatusBarState.SHADE
+                    && ev.getY() < mStatusBarHeaderHeight) {
+                if (DEBUG) Log.w(TAG, "logging double tap gesture");
+                mDoubleTapGesture.onTouchEvent(ev);
+            } else if (mService.getBarState() == StatusBarState.KEYGUARD
+                    && (ev.getY() < (h / 3) ||
+                    ev.getY() > (h - mStatusBarHeaderHeight))) {
+                if (DEBUG) Log.w(TAG, "logging lock screen double tap gesture");
+                mDoubleTapGesture.onTouchEvent(ev);
+           		 }
+        	}
             mDoubleTapGesture.onTouchEvent(ev);
         }
         if (mNotificationPanel.isFullyExpanded()
