@@ -160,14 +160,9 @@ import com.android.systemui.cm.UserContentObserver;
 import com.android.systemui.doze.DozeHost;
 import com.android.systemui.doze.DozeLog;
 import com.android.systemui.keyguard.KeyguardViewMediator;
-<<<<<<< HEAD
 import com.android.systemui.navigation.NavigationController;
 import com.android.systemui.navigation.Navigator;
 import com.android.systemui.omni.StatusBarHeaderMachine;
-import com.android.systemui.qs.QSDragPanel;
-import com.android.systemui.qs.QSDetailItems;
-=======
->>>>>>> parent of 8b59e88... WIP: draggable quick settings tiles
 import com.android.systemui.qs.QSPanel;
 import com.android.systemui.qs.QSTile;
 import com.android.systemui.qs.QSTileView;
@@ -420,10 +415,8 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     View mExpandedContents;
     TextView mNotificationPanelDebugText;
 
-    // settings
-<<<<<<< HEAD
-    private QSDragPanel mQSPanel;
-    private QSPanel mQsPanel;
+
+    private QSPanel mQSPanel;
 
     private QSTileHost mQSTileHost;
 
@@ -439,10 +432,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 
     private boolean mShow4G;
     private boolean mShow3G;	
-=======
-    private QSPanel mQSPanel;
-    private DevForceNavbarObserver mDevForceNavbarObserver;
->>>>>>> parent of 8b59e88... WIP: draggable quick settings tiles
 
     // top bar
     StatusBarHeaderView mHeader;
@@ -628,6 +617,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             super(handler);
         }
 
+
         @Override
         protected void observe() {
             super.observe();
@@ -757,6 +747,9 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 	resolver.registerContentObserver(Settings.System.getUriFor(
 			Settings.System.CLEAR_RECENTS_STYLE_ENABLE),
 			false, this, UserHandle.USER_ALL);
+	resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.QS_NUM_TILE_COLUMNS), false, this,
+                    UserHandle.USER_ALL);
 		    update();
         }
 
@@ -1200,6 +1193,10 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             }
             if (mIconPolicy != null) {
                 mIconPolicy.setCurrentUserSetup(mUserSetup);
+            }
+
+            if (mQSPanel != null) {
+                mQSPanel.updateNumColumns();
             }
         }
     };
@@ -1961,31 +1958,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             mQSTileHost.setCallback(new QSTileHost.Callback() {
                 @Override
                 public void onTilesChanged() {
-<<<<<<< HEAD
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            mQSPanel.setTiles(mQSTileHost.getTiles());
-                        }
-                    });
-                }
-
-                @Override
-                public void setEditing(final boolean editing) {
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            mQSPanel.setEditing(editing);
-                        }
-                    });
-                }
-
-                @Override
-                public boolean isEditing() {
-                    return mQSPanel.isEditing();
-=======
                     mQSPanel.setTiles(qsh.getTiles());
->>>>>>> parent of 8b59e88... WIP: draggable quick settings tiles
                 }
             });
         }

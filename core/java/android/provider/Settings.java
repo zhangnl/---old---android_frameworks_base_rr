@@ -4718,6 +4718,7 @@ public final class Settings {
         public static final String FINGERPRINT_SUCCESS_VIB = "fingerprint_success_vib";
 
         /**
+<<<<<<< HEAD
          * Change the color of the lockscreen indication text
          * @hide
          */
@@ -4725,6 +4726,16 @@ public final class Settings {
 
         /**
          * Change the color of the lockscreen clock
+=======
+         * Number of columns to display on the quick settings panel
+         * Default is 3
+         * @hide
+         */
+        public static final String QS_NUM_TILE_COLUMNS = "sysui_qs_num_tile_columns";
+
+        /**
+         * Whether to display set of animations when prompting the power menu
+>>>>>>> e09e172... Set number of tile columns [1/2]
          *
          * @hide
          */
