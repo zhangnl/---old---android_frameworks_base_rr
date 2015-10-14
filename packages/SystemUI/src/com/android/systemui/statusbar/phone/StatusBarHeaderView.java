@@ -401,6 +401,8 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
         mEmergencyCallsOnly.setVisibility(mExpanded && mShowEmergencyCallsOnly ? VISIBLE : GONE);
         mBatteryLevel.setForceShown(mExpanded && mShowBatteryTextExpanded);
         mBatteryLevel.setVisibility(View.VISIBLE);
+                TunerService.isTunerEnabled(mContext) ? View.INVISIBLE : View.INVISIBLE);
+        TunerService.setTunerEnabled(mContext, true);
     }
 
     private void updateSignalClusterDetachment() {
@@ -585,12 +587,7 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
     @Override
     public void onClick(View v) {
         if (v == mSettingsButton) {
-            if (mSettingsButton.isTunerClick()) {
-                mSettingsButton.consumeClick();
-                mQSPanel.getHost().setEditing(!mQSPanel.getHost().isEditing());
-            } else {
-                startSettingsActivity();
-            }
+            startSettingsActivity(); if (mSettingsButton.isTunerClick()) {
         } else if (v == mSystemIconsSuperContainer) {
             startBatteryActivity();
         } else if (v == mAlarmStatus && mNextAlarm != null) {
