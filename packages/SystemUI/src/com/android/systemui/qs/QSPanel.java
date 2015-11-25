@@ -161,7 +161,7 @@ public class QSPanel extends ViewGroup {
         }
     }
 
-    pprotected void updateDetailText() {
+    protected void updateDetailText() {
         mDetailDoneButton.setText(R.string.quick_settings_done);
         mDetailSettingsButton.setText(R.string.quick_settings_more_settings);
     }
