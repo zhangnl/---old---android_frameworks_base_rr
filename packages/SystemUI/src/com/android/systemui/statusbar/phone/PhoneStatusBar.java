@@ -547,11 +547,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             showRRLogo(mRRlogo, mRRLogoColor);
             if (oldWeatherState != mWeatherTempState) {
                 updateTempView();
-
 	}
-
-            }
-
             if (mNavigationBarView != null) {
                 boolean navLeftInLandscape = CMSettings.System.getIntForUser(resolver,
                         CMSettings.System.NAVBAR_LEFT_IN_LANDSCAPE, 0, UserHandle.USER_CURRENT) == 1;
@@ -563,7 +559,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 
 
             mShowStatusBarCarrier = Settings.System.getIntForUser(resolver,
-                    Settings.System.STATUS_BAR_CARRIER, 1, mCurrentUserId) == 1;
+                    Settings.System.STATUS_BAR_CARRIER, 0, mCurrentUserId) == 1;
             showStatusBarCarrierLabel(mShowStatusBarCarrier);	
 
             int sidebarPosition = Settings.System.getInt(
