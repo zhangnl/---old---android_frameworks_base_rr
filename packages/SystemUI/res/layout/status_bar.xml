@@ -69,8 +69,8 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:textAppearance="@style/TextAppearance.StatusBar.Clock"
-                    android:singleLine="true"
-                    android:ellipsize="end"/>
+           	    android:visibility="gone"
+                    android:singleLine="true" />
 
                
                 <ImageView
