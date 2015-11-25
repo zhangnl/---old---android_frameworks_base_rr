@@ -3828,6 +3828,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
      * meantime, just update the things that we know change.
      */
     void updateResources(Configuration newConfig) {
+       SettingsObserver observer = new SettingsObserver(mHandler);
         // detect theme change.
         ThemeConfig newTheme = newConfig != null ? newConfig.themeConfig : null;
         final boolean updateStatusBar = shouldUpdateStatusbar(mCurrentTheme, newTheme);
@@ -3836,6 +3837,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         if (updateStatusBar) {
             mContext.recreateTheme();
             recreateStatusBar();
+            observer.update();
         } else {
             loadDimens();
         }
