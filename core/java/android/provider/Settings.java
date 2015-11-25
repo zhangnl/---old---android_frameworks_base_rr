@@ -6497,12 +6497,6 @@ public final class Settings {
           */
          public static final String QUICK_SETTINGS_TILES_VIBRATE = "quick_settings_vibrate";
 
-        /** Whether to show the brightness slider in quick settings panel.
-         *
-         * @hide
-         */
-        public static final String QS_SHOW_BRIGHTNESS_SLIDER = "qs_show_brightness_slider";
-
         /**
          * Whether the camera launch gesture should be disabled.
          *
