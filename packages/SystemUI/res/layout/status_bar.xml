@@ -112,6 +112,7 @@
                     android:src="@drawable/stat_notify_more"
                     android:visibility="gone"
                     />
+
                 <com.android.systemui.statusbar.phone.IconMerger android:id="@+id/notificationIcons"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
