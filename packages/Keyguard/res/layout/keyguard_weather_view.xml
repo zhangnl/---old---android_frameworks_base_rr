@@ -140,3 +140,4 @@
         android:textStyle="normal|bold"
         android:textSize="8sp"
         android:textColor="@color/keyguard_default_secondary_text_color" />
+</LinearLayout>
