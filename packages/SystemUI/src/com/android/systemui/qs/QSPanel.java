@@ -83,6 +83,9 @@ public class QSPanel extends ViewGroup {
     protected QSFooter mFooter;
     private boolean mGridContentVisible = true;
 
+
+
+
     public QSPanel(Context context) {
         this(context, null);
     }
@@ -128,7 +131,7 @@ public class QSPanel extends ViewGroup {
      * Enable/disable brightness slider.
      */
     private boolean showBrightnessSlider() {
-        boolean brightnessSliderEnabled = CMSettings.System.getIntForUser(
+	    boolean brightnessSliderEnabled = CMSettings.System.getIntForUser(
             mContext.getContentResolver(), CMSettings.System.QS_SHOW_BRIGHTNESS_SLIDER,
                 1, UserHandle.USER_CURRENT) == 1;
         ToggleSlider brightnessSlider = (ToggleSlider) findViewById(R.id.brightness_slider);

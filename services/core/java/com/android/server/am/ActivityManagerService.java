@@ -319,7 +319,7 @@ public final class ActivityManagerService extends ActivityManagerNative
 
     // Amount of time after a call to stopAppSwitches() during which we will
     // prevent further untrusted switches from happening.
-    static final long APP_SWITCH_DELAY_TIME = 5*1000;
+    static final long APP_SWITCH_DELAY_TIME = 1*1000;
 
     // How long we wait for a launched process to attach to the activity manager
     // before we decide it's never going to come up for real.
@@ -1462,10 +1462,16 @@ public final class ActivityManagerService extends ActivityManagerNative
                         return;
                     }
                     if (mShowDialogs && !mSleeping && !mShuttingDown) {
-                        Dialog d = new AppErrorDialog(getUiContext(),
+                        if (Settings.System.getInt(mContext.getContentResolver(),
+                                Settings.System.DISABLE_FC_NOTIFICATIONS, 0) != 1) {
+                            Dialog d = new AppErrorDialog(getUiContext(),
                                 ActivityManagerService.this, res, proc);
-                        d.show();
-                        proc.crashDialog = d;
+                            d.show();
+                            proc.crashDialog = d;
+                        } else {
+                            Slog.w(TAG, "Skipping crash dialog of " + proc + ": disabled");
+                            res.set(0);
+                        }
                     } else {
                         // The device is asleep, so just pretend that the user
                         // saw a crash dialog and hit "force quit".
@@ -8853,6 +8859,10 @@ public final class ActivityManagerService extends ActivityManagerNative
             SparseArray<ProcessRecord> uids = pmap.valueAt(i);
             for (int j = 0; j < uids.size(); j++) {
                 ProcessRecord proc = uids.valueAt(j);
+                if (proc.thread == null) {
+                    // Don't kill process if it is not attached.
+                    continue;
+                }
                 if (proc.userId != tr.userId) {
                     // Don't kill process for a different user.
                     continue;

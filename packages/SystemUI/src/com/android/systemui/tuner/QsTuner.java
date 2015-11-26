@@ -149,6 +149,7 @@ public class QsTuner extends Fragment implements Callback {
     @Override
     public boolean isEditing() {
         return mTileHost.isEditing();
+
     }
 
     private static class CustomHost extends QSTileHost {
@@ -299,6 +300,9 @@ public class QsTuner extends Fragment implements Callback {
             else if (mSpec.equals("location")) return R.drawable.ic_signal_location_enable;
             else if (mSpec.equals("cast")) return R.drawable.ic_qs_cast_on;
             else if (mSpec.equals("hotspot")) return R.drawable.ic_hotspot_enable;
+            else if (mSpec.equals("brightness")) return R.drawable.ic_qs_brightness_auto_off_alpha;
+            else if (mSpec.equals("screenOff")) return R.drawable.ic_qs_power;
+            else if (mSpec.equals("screenshot")) return R.drawable.ic_qs_screenshot;
             return R.drawable.android;
         }
 

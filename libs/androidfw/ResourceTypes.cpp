@@ -568,7 +568,7 @@ status_t ResStringPool::setTo(const void* data, size_t size, bool copyData)
 
         if ((mHeader->flags&ResStringPool_header::UTF8_FLAG &&
                 ((uint8_t*)mStrings)[mStringPoolSize-1] != 0) ||
-                (!mHeader->flags&ResStringPool_header::UTF8_FLAG &&
+                (!(mHeader->flags&ResStringPool_header::UTF8_FLAG) &&
                 ((uint16_t*)mStrings)[mStringPoolSize-1] != 0)) {
             ALOGW("Bad string block: last string is not 0-terminated\n");
             return (mError=BAD_TYPE);
@@ -3836,7 +3836,7 @@ bool ResTable::getResourceName(uint32_t resID, bool allowUtf8, resource_name* ou
 
     if (p < 0) {
         if (Res_GETPACKAGE(resID)+1 == 0) {
-            ALOGW("No package identifier when getting name for resource number 0x%08x", resID);
+            ALOGV("No package identifier when getting name for resource number 0x%08x", resID);
         } else {
             ALOGW("No known package when getting name for resource number 0x%08x", resID);
         }

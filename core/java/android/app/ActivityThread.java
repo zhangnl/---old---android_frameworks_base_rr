@@ -4467,7 +4467,7 @@ public final class ActivityThread {
         if (mCurDefaultDisplayDpi != Configuration.DENSITY_DPI_UNDEFINED
                 && mCurDefaultDisplayDpi != DisplayMetrics.DENSITY_DEVICE
                 && !mDensityCompatMode) {
-            Slog.i(TAG, "Switching default density from "
+            if (DEBUG_MESSAGES) Slog.i(TAG, "Switching default density from "
                     + DisplayMetrics.DENSITY_DEVICE + " to "
                     + mCurDefaultDisplayDpi);
             DisplayMetrics.DENSITY_DEVICE = mCurDefaultDisplayDpi;
@@ -5290,11 +5290,15 @@ public final class ActivityThread {
                                                     UserHandle.myUserId());
             RuntimeInit.setApplicationObject(mAppThread.asBinder());
             final IActivityManager mgr = ActivityManagerNative.getDefault();
-            try {
-                mgr.attachApplication(mAppThread);
-            } catch (RemoteException ex) {
-                // Ignore
-            }
+            new Thread() {
+                public void run() {
+                    try {
+                        mgr.attachApplication(mAppThread);
+                    } catch (RemoteException ex) {
+                        // Ignore
+                    }
+                }
+            }.start();
             // Watch for getting close to heap limit.
             BinderInternal.addGcWatcher(new Runnable() {
                 @Override public void run() {

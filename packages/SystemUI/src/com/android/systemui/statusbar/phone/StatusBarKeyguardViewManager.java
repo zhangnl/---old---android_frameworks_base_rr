@@ -547,5 +547,5 @@ public class StatusBarKeyguardViewManager {
 
     public boolean isKeyguardShowingMedia() {
         return mPhoneStatusBar.isKeyguardShowingMedia();
-    }
+ 	}
 }

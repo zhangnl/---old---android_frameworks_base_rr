@@ -87,3 +87,4 @@ public abstract class UserContentObserver extends ContentObserver {
         update();
     }
 }
+
