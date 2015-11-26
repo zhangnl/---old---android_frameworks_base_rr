@@ -3929,10 +3929,26 @@ public final class Settings {
         public static final String STATUS_BAR_WEATHER_TEMP_STYLE = "status_bar_weather_temp_style";
 
         /**
-         * show carrier in statusbar. The value is
-         * int (1: Show or 0: Hide).
+         * Switch for headset icon
+         * @hide
          */
-        public static final String STATUS_BAR_CARRIER = "status_bar_carrier";
+        public static final String SHOW_HEADSET_ICON = "show_headset_icon";
+
+        /** Whether to vibrate when quick settings tile is pressed.
+         *
+         * @hide
+         */
+        public static final String QUICK_SETTINGS_TILES_VIBRATE = "quick_settings_vibrate";
+
+        /**
+         * Status bar carrier label
+         * 0: Hide
+         * 1: Display on keyguard status bar
+         * 2: Display on Normal status bar
+         * 3: Enabled for both
+         * @hide
+         */
+        public static final String STATUS_BAR_SHOW_CARRIER = "status_bar_show_carrier";
 
         /**
          * custom carrier label. The value is
@@ -3947,10 +3963,16 @@ public final class Settings {
         public static final String STATUS_BAR_CARRIER_COLOR = "status_bar_carrier_color";
 
         /**
-         * Switch for headset icon
+         * Disable Immersive Message
          * @hide
          */
-        public static final String SHOW_HEADSET_ICON = "show_headset_icon";
+        public static final String DISABLE_IMMERSIVE_MESSAGE = "disable_immersive_message";
+
+        /**
+         * Disable FC Notifications
+         * @hide
+         */
+        public static final String DISABLE_FC_NOTIFICATIONS = "disable_fc_notifications";
 
         /**
          * Settings to backup. This is here so that it's in the same place as the settings

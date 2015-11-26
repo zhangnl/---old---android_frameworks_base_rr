@@ -23,7 +23,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.ContentObserver;
 import android.os.Handler;
-import com.android.internal.util.tesla.TeslaUtils;
 import android.os.UserHandle;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
@@ -34,6 +33,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.android.internal.telephony.TelephonyIntents;
+import com.android.internal.util.rr.RRUtils;
 import com.android.systemui.utils.SpnOverride;
 
 import java.text.SimpleDateFormat;
@@ -48,7 +48,6 @@ public class CarrierLabel extends TextView {
     private boolean mAttached;
     private static boolean isCN;
 
-    protected int mCarrierColor = com.android.internal.R.color.white;
     Handler mHandler;
 
     class SettingsObserver extends ContentObserver {
@@ -118,7 +117,7 @@ public class CarrierLabel extends TextView {
                         intent.getStringExtra(TelephonyIntents.EXTRA_SPN),
                         intent.getBooleanExtra(TelephonyIntents.EXTRA_SHOW_PLMN, false),
                         intent.getStringExtra(TelephonyIntents.EXTRA_PLMN));
-                isCN = TeslaUtils.isChineseLanguage();
+                isCN = RRUtils.isChineseLanguage();
             }
         }
     };
@@ -160,17 +159,18 @@ public class CarrierLabel extends TextView {
         if (TextUtils.isEmpty(operatorName)) {
             operatorName = telephonyManager.getSimOperatorName();
         }
-        return operatorName.toUpperCase();
+        return operatorName;
     }
 
     private void updateColor() {
-        int newColor = 0;
-        mCarrierColor = Settings.System.getInt(mContext.getContentResolver(),
-                            Settings.System.STATUS_BAR_CARRIER_COLOR, newColor);
+        ContentResolver resolver = mContext.getContentResolver();
+
+        int defaultColor = getResources().getColor(R.color.status_bar_clock_color);
+        int mCarrierColor = Settings.System.getInt(resolver,
+                Settings.System.STATUS_BAR_CARRIER_COLOR, defaultColor);
 
         if  (mCarrierColor == Integer.MIN_VALUE) {
-             // flag to reset the color
-             mCarrierColor = newColor;
+             mCarrierColor = defaultColor;
         }
         setTextColor(mCarrierColor);
     }
