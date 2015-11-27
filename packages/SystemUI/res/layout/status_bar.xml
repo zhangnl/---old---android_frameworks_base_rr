@@ -72,7 +72,17 @@
            	    android:visibility="gone"
                     android:singleLine="true" />
 
-               
+                 <com.android.systemui.statusbar.policy.Clock
+                    android:id="@+id/left_clock"
+                    android:textAppearance="@style/TextAppearance.StatusBar.Clock"
+                    android:layout_width="wrap_content"
+                    android:layout_height="fill_parent"
+                    android:singleLine="true"
+                    android:paddingEnd="1dip"
+                    android:gravity="center"
+                    android:visibility="gone"
+                    />               
+
                 <ImageView
                     android:id="@+id/rr_logo"
                     android:layout_width="wrap_content"
@@ -83,35 +93,6 @@
                     android:visibility="gone"
                     />
 
-                 <com.android.systemui.statusbar.policy.Clock
-                    android:id="@+id/left_clock"
-                    android:textAppearance="@style/TextAppearance.StatusBar.Clock"
-                    android:layout_width="wrap_content"
-                    android:layout_height="fill_parent"
-                    android:singleLine="true"
-                    android:paddingEnd="1dip"
-                    android:gravity="center"
-                    android:visibility="gone"
-                    />
-
-                <TextView
-                    android:id="@+id/left_weather_temp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:singleLine="true"
-                    android:gravity="center"
-                    android:textAppearance="@style/TextAppearance.StatusBar.WeatherTemp"
-                    android:paddingStart="2dp"
-                    android:paddingEnd="4dp"
-                    android:visibility="gone"
-                    />
-
-                <com.android.systemui.statusbar.StatusBarIconView android:id="@+id/moreIcon"
-                    android:layout_width="@dimen/status_bar_icon_size"
-                    android:layout_height="match_parent"
-                    android:src="@drawable/stat_notify_more"
-                    android:visibility="gone"
-                    />
                 <com.android.systemui.statusbar.widget.CarrierLabel
                     android:id="@+id/statusbar_carrier_text"
                     android:layout_width="wrap_content"
@@ -121,6 +102,26 @@
                     android:visibility="gone"
                     android:singleLine="true"
                     />
+
+                <com.android.systemui.statusbar.StatusBarIconView android:id="@+id/moreIcon"
+                    android:layout_width="@dimen/status_bar_icon_size"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/stat_notify_more"
+                    android:visibility="gone"
+                    />
+                    
+                <TextView
+                    android:id="@+id/left_weather_temp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:singleLine="true"
+                    android:gravity="center"
+                    android:textAppearance="@style/TextAppearance.StatusBar.WeatherTemp"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp"
+                    android:visibility="gone"
+                    />
+
                 <com.android.systemui.statusbar.phone.IconMerger android:id="@+id/notificationIcons"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
