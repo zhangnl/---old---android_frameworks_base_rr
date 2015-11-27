@@ -270,7 +270,6 @@ public class StatusBarWindowView extends FrameLayout {
                 if (DEBUG) Log.w(TAG, "logging lock screen double tap gesture");
                 mDoubleTapGesture.onTouchEvent(ev);
            		 }      	
-            mDoubleTapGesture.onTouchEvent(ev);
 	}
         if (mNotificationPanel.isFullyExpanded()
                 && mStackScrollLayout.getVisibility() == View.VISIBLE
