@@ -3912,17 +3912,6 @@ public final class Settings {
         public static final String LOCK_SCREEN_VISIBLE_NOTIFICATIONS = "lock_screen_visible_notifications";
 
         /**
-         * Status bar weather temperature
-         * 0: Hide the temperature
-         * 1: Display the temperature with scale
-         * 2: Display the temperature without scale
-         * @hide
-         */
-        public static final String STATUS_BAR_SHOW_WEATHER_TEMP = "status_bar_show_weather_temp";
-
-
-
-        /**
          * Switch for headset icon
          * @hide
          */
