@@ -271,6 +271,8 @@ public class StatusBarWindowView extends FrameLayout {
                 mDoubleTapGesture.onTouchEvent(ev);
            		 }
         	}
+            mDoubleTapGesture.onTouchEvent(ev);
+        }
         if (mNotificationPanel.isFullyExpanded()
                 && mStackScrollLayout.getVisibility() == View.VISIBLE
                 && mService.getBarState() == StatusBarState.KEYGUARD
