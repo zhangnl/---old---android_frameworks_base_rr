@@ -547,21 +547,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                         mBatterySaverWarningColor = mContext.getResources()
                                 .getColor(com.android.internal.R.color.battery_saver_mode_color);
                     } 
-
-            update();
-        }
-   }	
-
-        @Override
-        protected void unobserve() {
-            super.unobserve();
-            ContentResolver resolver = mContext.getContentResolver();
-            resolver.unregisterContentObserver(this);
-        }
-
-        @Override
-        public void onChange(boolean selfChange, Uri uri) {
-            if (uri.equals(Settings.System.getUriFor(
+	}            else if (uri.equals(Settings.System.getUriFor(
                     Settings.System.STATUS_BAR_WEATHER_TEMP_STYLE))
                     || uri.equals(Settings.System.getUriFor(
                     Settings.System.STATUS_BAR_WEATHER_COLOR))
@@ -575,8 +561,18 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                     updateClearAll();
                     updateEmptyShadeView();
             }
+
             update();
+
+   }	
+
+        @Override
+        protected void unobserve() {
+            super.unobserve();
+            ContentResolver resolver = mContext.getContentResolver();
+            resolver.unregisterContentObserver(this);
         }
+
 
         @Override
         public void update() {
@@ -667,8 +663,8 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             intent.setPackage("com.android.settings");
             mContext.sendBroadcastAsUser(intent, new UserHandle(UserHandle.USER_CURRENT));
 
-        }
-	
+         }
+	}	
 
     private void forceAddNavigationBar() {
         // If we have no Navbar view and we should have one, create it
