@@ -1195,6 +1195,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         }
 
         addSidebarView();
+        addAppCircleSidebar();
 
         mAssistManager = new AssistManager(this, context);
         if (mNavigationBarView == null) {
