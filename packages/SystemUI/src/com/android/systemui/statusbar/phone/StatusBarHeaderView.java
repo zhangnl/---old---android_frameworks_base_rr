@@ -415,7 +415,8 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
         mEmergencyCallsOnly.setVisibility(mExpanded && mShowEmergencyCallsOnly ? VISIBLE : GONE);
         mBatteryLevel.setForceShown(mExpanded && mShowBatteryTextExpanded);
         mBatteryLevel.setVisibility(View.VISIBLE);
-                TunerService.isTunerEnabled(mContext) ? View.INVISIBLE : View.INVISIBLE);
+	mSettingsContainer.findViewById(R.id.tuner_icon).setVisibility(
+        TunerService.isTunerEnabled(mContext) ? View.INVISIBLE : View.INVISIBLE);
         TunerService.setTunerEnabled(mContext, true);
     }
 
@@ -601,10 +602,10 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
         });
     }
 
-    @Override
+	@Override
     public void onClick(View v) {
         if (v == mSettingsButton) {
-            startSettingsActivity(); if (mSettingsButton.isTunerClick()) {
+            startSettingsActivity();
         } else if (v == mSystemIconsSuperContainer) {
             startBatteryActivity();
         } else if (v == mAlarmStatus && mNextAlarm != null) {
@@ -619,7 +620,7 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
         } else if (v == mWeatherContainer) {
             startForecastActivity();
         }
-    }
+     }
 
     private void startSettingsActivity() {
         mActivityStarter.startActivity(new Intent(android.provider.Settings.ACTION_SETTINGS),

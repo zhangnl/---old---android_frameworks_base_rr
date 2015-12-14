@@ -1517,23 +1517,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         mQSPanel.getHost().setCustomTileListenerService(mCustomTileListenerService);
 
 
-        // task manager
-        if (Settings.System.getInt(mContext.getContentResolver(),
-                Settings.System.ENABLE_TASK_MANAGER, 0) == 1) {
-            mTaskManagerPanel =
-                    (LinearLayout) mStatusBarWindow.findViewById(R.id.task_manager_panel);
-            mTaskManager = new TaskManager(mContext, mTaskManagerPanel);
-            mTaskManager.setActivityStarter(this);
-            mTaskManagerButton = (ImageButton) mHeader.findViewById(R.id.task_manager_button);
-            mTaskManagerButton.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View arg0) {
-                    showTaskList = !showTaskList;
-                    mNotificationPanel.setTaskManagerVisibility(showTaskList);
-                }
-            });
-        }
-
         // Task manager
         mTaskManagerPanel =
                 (LinearLayout) mStatusBarWindowContent.findViewById(R.id.task_manager_panel);
