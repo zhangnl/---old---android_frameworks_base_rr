@@ -18,13 +18,8 @@
          all of the currently visible notifications. [CHAR LIMIT=10]-->
     <string name="clear_recents">Close all recent</string>
 
-
-    <string name="gestures_message">Draw your gesture here</string>
-
     <string name="gestures_message">Draw gesture here</string>
 
-
- 
      <!-- App sidebar -->
      <string name="default_folder_text">Folder</string>
      <string name="title_activity_sidebar_configuration">Appbar content setup</string>
