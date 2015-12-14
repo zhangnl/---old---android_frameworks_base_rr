@@ -4207,10 +4207,6 @@ public final class Settings {
 
         /**
          * Boolean value whether to link ringtone and notification volume
-<<<<<<< HEAD
-=======
-         *
->>>>>>> 1ff8d0b... [1/2] base: unlink notification volume is back
          * @hide
          */
         public static final String VOLUME_LINK_NOTIFICATION = "volume_link_notification";
