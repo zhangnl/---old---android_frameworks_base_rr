@@ -3287,7 +3287,7 @@ public final class Settings {
          */
         public static final String FORCE_EXPANDED_NOTIFICATIONS = "force_expanded_notifications";
 
-     
+
 
         /**
          * Show pointer location on screen?
@@ -3514,6 +3514,12 @@ public final class Settings {
         public static final String ENABLE_TASK_MANAGER = "enable_task_manager";
 
         /**
+         * Custom Color For CAF Task Manager
+         * @hide
+         */
+         public static final String TASK_MANAGER_TITLE_COLOR = "task_manager_title_color";
+
+        /**
          * Show icon when stylus is used?
          * 0 = no
          * 1 = yes
@@ -3704,7 +3710,7 @@ public final class Settings {
 	public static final String CUSTOM_LOGO_COLOR = "custom_logo_color";
 
  	 /**
-         * Take your Pick 
+         * Take your Pick
          * @hide
          */
         public static final String CUSTOM_LOGO_STYLE = "custom_logo_style";
@@ -3799,10 +3805,10 @@ public final class Settings {
          */
         public static final String SYSTEMUI_RECENTS_MEM_DISPLAY = "systemui_recents_mem_display";
 
-        /**  
+        /**
          * AOKP Custom System Animations
          * @hide
-         */  
+         */
         public static final String[] ACTIVITY_ANIMATION_CONTROLS = new String[] {
                 "activity_open",
                 "activity_close",
@@ -3815,7 +3821,7 @@ public final class Settings {
                 "wallpaper_intra_open",
                 "wallpaper_intra_close",
                 "task_open_behind",
-        };  
+        };
         public static final String ANIMATION_CONTROLS_DURATION = "animation_controls_duration";
 
         /**
@@ -4306,7 +4312,7 @@ public final class Settings {
          * @hide
          */
         public static final String BATTERY_SAVER_MODE_COLOR = "battery_save_mode_color";
- 	
+
  	/**
          * Navigation bar button color
          * @hide
@@ -4558,7 +4564,7 @@ public final class Settings {
          * @hide
          */
         public static final String STATUSBAR_CLOCK_FONT_SIZE = "statusbar_clock_font_size";
-	
+
 	/**
          * Display second in the Clock
          * @hide
@@ -4622,7 +4628,7 @@ public final class Settings {
 
         /**
          * A list of packages to include in app circle bar.
-         * This should be a string of packages separated by |			
+         * This should be a string of packages separated by |
          * @hide
          */
         public static final String WHITELIST_APP_CIRCLE_BAR = "whitelist_app_circle_bar";
@@ -5087,10 +5093,10 @@ public final class Settings {
          * Volume key controls ringtone or media sound stream
          * @hide
          */
-        public static final String VOLUME_KEYS_CONTROL_RING_STREAM = "volume_keys_control_ring_stream";  
+        public static final String VOLUME_KEYS_CONTROL_RING_STREAM = "volume_keys_control_ring_stream";
 
 
-        /** 
+        /**
          * Position of date
          * 0 - Left of clock
          * 1 - Right of clock
@@ -5403,7 +5409,7 @@ public final class Settings {
          * 1 = Statusbar only
          * 2 = Navbar only
          * 3 = Fullscreen
-         */ 
+         */
         public static final String IMMERSIVE_RECENTS = "immersive_recents";
 
         /**
@@ -11040,4 +11046,3 @@ public final class Settings {
         return packages[0];
     }
 }
-

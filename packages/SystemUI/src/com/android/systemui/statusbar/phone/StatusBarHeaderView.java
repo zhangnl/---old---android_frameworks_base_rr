@@ -152,16 +152,19 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
     private int mStatusBarHeaderClockFont = FONT_NORMAL;
     private int mStatusBarHeaderWeatherFont = FONT_NORMAL;
     private int mStatusBarHeaderAlarmFont = FONT_NORMAL;
-    private int mStatusBarHeaderDateFont = FONT_NORMAL;	
-    private int mStatusBarHeaderDetailFont = FONT_NORMAL;	
+    private int mStatusBarHeaderDateFont = FONT_NORMAL;
+    private int mStatusBarHeaderDetailFont = FONT_NORMAL;
 
 
     // Task manager
     private boolean mShowTaskManager;
     private View mTaskManagerButton;
+    private int mTaskManagerTextColor;
+    private TextView mTaskManagerTitle;;
+
 
     protected Vibrator mVibrator;
-    private boolean mQsVibLongpress = false;	
+    private boolean mQsVibLongpress = false;
     private boolean mQsVibrateHeader = false;
     private boolean mQsVibrateHeaderLong = false;
 
@@ -206,7 +209,7 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
     // QS header alpha
     private int mQSHeaderAlpha;
 
-    private boolean mQsColorSwitch = false ;	
+    private boolean mQsColorSwitch = false ;
     private int mHeaderColor;
 
     // Font style
@@ -267,6 +270,7 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
         mSettingsButton.setOnClickListener(this);
         mTaskManagerButton = findViewById(R.id.task_manager_button);
         mTaskManagerButton.setOnLongClickListener(this);
+        mTaskManagerTitle = (TextView) findViewById(R.id.memory_usage_text);
         mQsDetailHeader = findViewById(R.id.qs_detail_header);
         mQsDetailHeader.setAlpha(0);
         mVibrator = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
@@ -296,11 +300,12 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
 	setdetailcolor();
 	setweathercolor1();
 	setweathercolor2();
-	setalarmtextcolor();   
-	setbatterytextcolor();     
-        setQSHeaderAlpha();
+	setalarmtextcolor();
+	setbatterytextcolor();
+  setTaskManagerTitleColor();
+  setQSHeaderAlpha();
 	setHeaderColor();
-        setStatusBarClockFontStyle(mStatusBarHeaderClockFont);
+  setStatusBarClockFontStyle(mStatusBarHeaderClockFont);
 	setStatusBarWeatherFontStyle(mStatusBarHeaderWeatherFont);
 	setStatusBarHeaderFontStyle(mStatusBarHeaderFontStyle);
 	setStatusBarAlarmFontStyle(mStatusBarHeaderAlarmFont);
@@ -380,7 +385,7 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
 	if ( mQsDetailHeaderTitle != null) {
 	    mQsDetailHeaderTitle.setTextColor(mStockHeaderText);
 		}
-	}	
+	}
    }
 
     @Override
@@ -427,11 +432,12 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
 	setclockcolor();
 	setdetailcolor();
 	setweathercolor1();
-	setweathercolor2();	
+	setweathercolor2();
 	setalarmtextcolor();
-	    
 	setbatterytextcolor();
-	     
+  setTaskManagerTitleColor();
+
+
     }
 
 
@@ -499,9 +505,10 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
 	setweathercolor1();
 	setweathercolor2();
 	setalarmtextcolor();
-	    
 	setbatterytextcolor();
-	     	
+  setTaskManagerTitleColor();
+
+
     }
 
     public void setBatteryController(BatteryController batteryController) {
@@ -561,9 +568,10 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
 	setweathercolor1();
 	setweathercolor2();
 	setalarmtextcolor();
-	    
 	setbatterytextcolor();
-	     	
+  setTaskManagerTitleColor();
+
+
     }
 
     void setTaskManagerEnabled(boolean enabled) {
@@ -602,11 +610,12 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
 	    setclockcolor();
 	    setdetailcolor();
 	    setweathercolor1();
-	    setweathercolor2();	
+	    setweathercolor2();
 	    setalarmtextcolor();
-	        
 	    setbatterytextcolor();
-	         				
+      setTaskManagerTitleColor();
+
+
     }
 
 	public void hidepanelItems() {
@@ -614,7 +623,7 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
                 Settings.System.HIDE_PANEL_CLOCK, 1) == 1) {
        	    mTime = (TextView) findViewById(R.id.time_view);
             mTime.setVisibility(View.VISIBLE);
-	    
+
         } else {
         mTime = (TextView) findViewById(R.id.time_view);
         mAmPm = (TextView) findViewById(R.id.am_pm_view);
@@ -657,7 +666,7 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
                Settings.System.HIDE_SETTINGS_ICON, 1) == 1) {
 	mSettingsButton = (SettingsButton) findViewById(R.id.settings_button);
 	mSettingsButton.setVisibility(View.VISIBLE);
-	} else {	
+	} else {
 	mSettingsButton = (SettingsButton) findViewById(R.id.settings_button);
 	mSettingsButton.setVisibility(View.INVISIBLE);
         	}
@@ -716,7 +725,7 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
             mAlarmStatus.setTextColor(color);
         	}
 	}
- 
+
   public void setdetailcolor()
 	{
 	ContentResolver resolver = getContext().getContentResolver();
@@ -756,6 +765,18 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
             mWeatherLine2.setTextColor(color);
         }
 	}
+
+  public void setTaskManagerTitleColor()
+  {
+    ContentResolver resolver = getContext().getContentResolver();
+    mTaskManagerTitle = (TextView) findViewById(R.id.memory_usage_text);
+    int color = Settings.System.getInt(resolver,
+            Settings.System.TASK_MANAGER_TITLE_COLOR, 0xFFFFFFFF);
+        if (mTaskManagerTitle != null)
+        {
+          mTaskManagerTitle.setTextColor(color);
+        }
+  }
 
 
 
@@ -907,7 +928,7 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
 
             post(new Runnable() {
                  public void run() {
-                    RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) mBackgroundImage.getLayoutParams(); 
+                    RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) mBackgroundImage.getLayoutParams();
                     params.height = (int)heightFinal;
                     mBackgroundImage.setLayoutParams(params);
                 }
@@ -957,7 +978,7 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
         if (v == mSettingsButton) {
 	    	if (mQsVibLongpress) {
 		vibrateheader(20);
-		} else { 
+		} else {
 		 vibrateheader(0);
 		}
             if (mSettingsButton.isTunerClick()) {
@@ -981,12 +1002,12 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
             startForecastActivity();
         }
 	if (mQsVibrateHeader) {
-	vibrateheader(20);	
+	vibrateheader(20);
 	} else {
 	vibrateheader(0);
-	}	
+	}
     }
-	
+
      public void checktile() {
 
 	}
@@ -1004,12 +1025,12 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
         } else if (v == mWeatherContainer) {
             startForecastLongClickActivity();
         } else if (v == mMultiUserSwitch) {
-            startUserLongClickActivity();       
+            startUserLongClickActivity();
         } else if (v == mTaskManagerButton) {
             startTaskManagerLongClickActivity();
         }
 	if (mQsVibrateHeaderLong) {
-	vibrateheader(20);	
+	vibrateheader(20);
 	} else {
 	vibrateheader(0);
 	}
@@ -1501,7 +1522,7 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
  resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.QS_COLOR_SWITCH), false, this,
                     UserHandle.USER_ALL);
-	
+
             update();
         }
 
@@ -1512,7 +1533,7 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
                     || uri.equals(Settings.System.getUriFor(
                     Settings.System.QS_HEADER_COLOR))) {
                	   setHeaderColor();
-            } 
+            }
             update();
 	}
 
@@ -1582,11 +1603,12 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
 	    setclockcolor();
 	    setdetailcolor();
 	    setweathercolor1();
-	    setweathercolor2();	
+	    setweathercolor2();
 	    setalarmtextcolor();
-	    setbatterytextcolor();	    
-            updateVisibilities();
-            requestCaptureValues();
+	    setbatterytextcolor();
+      setTaskManagerTitleColor();
+      updateVisibilities();
+      requestCaptureValues();
 	    setHeaderColor();
         }
     }
@@ -1795,7 +1817,7 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
                 break;
             case FONT_BOLD_ITALIC:
                 mDateCollapsed.setTypeface(Typeface.create("sans-serif", Typeface.BOLD_ITALIC));
-                mDateExpanded.setTypeface(Typeface.create("sans-serif", Typeface.BOLD_ITALIC));       
+                mDateExpanded.setTypeface(Typeface.create("sans-serif", Typeface.BOLD_ITALIC));
                 mAlarmStatus.setTypeface(Typeface.create("sans-serif", Typeface.BOLD_ITALIC));
                 break;
             case FONT_LIGHT:
@@ -1803,7 +1825,7 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
                 mDateExpanded.setTypeface(Typeface.create("sans-serif-light", Typeface.NORMAL));
                 mAlarmStatus.setTypeface(Typeface.create("sans-serif-light", Typeface.NORMAL));
                 break;
-            case FONT_LIGHT_ITALIC:  
+            case FONT_LIGHT_ITALIC:
                 mDateCollapsed.setTypeface(Typeface.create("sans-serif-light", Typeface.ITALIC));
                 mDateExpanded.setTypeface(Typeface.create("sans-serif-light", Typeface.ITALIC));
                 break;
@@ -1991,7 +2013,7 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
                 mTime.setTypeface(Typeface.create("sans-serif-light", Typeface.NORMAL));
                 break;
             case FONT_LIGHT_ITALIC:
-                mTime.setTypeface(Typeface.create("sans-serif-light", Typeface.ITALIC));   
+                mTime.setTypeface(Typeface.create("sans-serif-light", Typeface.ITALIC));
                 break;
             case FONT_THIN:
                 mTime.setTypeface(Typeface.create("sans-serif-thin", Typeface.NORMAL));
@@ -2083,7 +2105,7 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
                 break;
             case FONT_THIN:
                 mWeatherLine1.setTypeface(Typeface.create("sans-serif-thin", Typeface.NORMAL));
-                mWeatherLine2.setTypeface(Typeface.create("sans-serif-thin", Typeface.NORMAL));        
+                mWeatherLine2.setTypeface(Typeface.create("sans-serif-thin", Typeface.NORMAL));
                 break;
             case FONT_THIN_ITALIC:
                 mWeatherLine1.setTypeface(Typeface.create("sans-serif-thin", Typeface.ITALIC));

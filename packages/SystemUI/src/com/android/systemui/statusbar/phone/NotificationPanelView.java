@@ -2735,7 +2735,7 @@ public class NotificationPanelView extends PanelView implements
                         Settings.System.QS_BACKGROUND_COLOR))) {
 		    setQSBackgroundColor();
                     setQSColors();
-                } 
+                }
 		update();
         }
 
@@ -2781,7 +2781,7 @@ public class NotificationPanelView extends PanelView implements
             mQsPanel.setQSShadeAlphaValue(mQSShadeAlpha);
  		}
         }
-          
+
     @Override
     public boolean hasOverlappingRendering() {
         return !mDozing;
@@ -2901,7 +2901,7 @@ public class NotificationPanelView extends PanelView implements
         mQsColorSwitch = Settings.System.getIntForUser(mContext.getContentResolver(),
                 Settings.System.QS_COLOR_SWITCH, 0,
                 UserHandle.USER_CURRENT) == 1;
-        int mQSBackgroundColor = Settings.System.getInt( mContext.getContentResolver(), 
+        int mQSBackgroundColor = Settings.System.getInt( mContext.getContentResolver(),
 			Settings.System.QS_BACKGROUND_COLOR, 0xff263238);
 	if (mQsColorSwitch) {
         	if (mQsContainer != null) {
