@@ -91,6 +91,8 @@ public class KeyguardStatusView extends GridLayout implements
 
         @Override
         public void onTimeChanged() {
+			updateClockColor();
+            updateClockDateColor();
             if (mEnableRefresh) {
                 refresh();
             }
@@ -110,12 +112,16 @@ public class KeyguardStatusView extends GridLayout implements
         @Override
         public void onStartedWakingUp() {
             setEnableMarquee(true);
+			updateClockColor();
+            updateClockDateColor();
             mEnableRefresh = true;
             refresh();
         }
 
         @Override
         public void onFinishedGoingToSleep(int why) {
+			updateClockColor();
+            updateClockDateColor();
             setEnableMarquee(false);
             mEnableRefresh = false;
         }
