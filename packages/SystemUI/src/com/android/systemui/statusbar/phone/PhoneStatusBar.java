@@ -4071,14 +4071,16 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     }
 
     private void DontStressOnRecreate() { // Update maps and remove children,views after the recreate statusbar .Provides to rest in the recreate
+    SettingsObserver observer = new SettingsObserver(mHandler);
         recreateStatusBar();
-        updateNotificationShadeForChildren();
         updateRowStates();
         updateSpeedbump();
+        checkBarModes();
         updateClearAll();
         updateEmptyShadeView();
-        removeAllViews(mStatusBarWindowContent);
-        makeStatusBarView();
+        repositionNavigationBar();
+        mIconController.updateResources();
+        observer.update();
     }    
 
     private void checkBarModes() {
@@ -5008,7 +5010,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         final boolean updateNavBar = shouldUpdateNavbar(mCurrentTheme, newTheme);
         if (newTheme != null) mCurrentTheme = (ThemeConfig) newTheme.clone();
         if (updateStatusBar) {
-            DontStressOnRecreate();
+            recreateStatusBar();
             if (mNavigationBarView != null) {
                 mNavigationBarView.onRecreateStatusbar();
             }
