@@ -4073,15 +4073,12 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     private void DontStressOnRecreate() { // Update maps and remove children,views after the recreate statusbar .Provides to rest in the recreate
         recreateStatusBar();
         updateNotificationShadeForChildren();
-        mTmpChildOrderMap.clear();
         updateRowStates();
         updateSpeedbump();
         updateClearAll();
         updateEmptyShadeView();
-        updateQsExpansionEnabled();
-        mShadeUpdates.check();
-        mNotificationPanel.resetViews();
-        mQSPanel.refreshAllTiles();
+        removeAllViews(mStatusBarWindowContent);
+        makeStatusBarView();
     }    
 
     private void checkBarModes() {
