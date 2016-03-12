@@ -4071,7 +4071,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     }
 
     private void DontStressOnRecreate() { // Update maps and remove children,views after the recreate statusbar .Provides to rest in the recreate
-    SettingsObserver observer = new SettingsObserver(mHandler);
         recreateStatusBar();
         updateRowStates();
         updateSpeedbump();
@@ -4080,7 +4079,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         updateEmptyShadeView();
         repositionNavigationBar();
         mIconController.updateResources();
-        observer.update();
+        notifyUiVisibilityChanged(mSystemUiVisibility);
     }    
 
     private void checkBarModes() {
