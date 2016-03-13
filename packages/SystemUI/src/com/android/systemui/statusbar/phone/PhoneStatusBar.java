@@ -4077,9 +4077,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         checkBarModes();
         updateClearAll();
         updateEmptyShadeView();
-        repositionNavigationBar();
-        mIconController.updateResources();
-        notifyUiVisibilityChanged(mSystemUiVisibility);
     }    
 
     private void checkBarModes() {
