@@ -562,28 +562,7 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
             if (mShowingDetail && !expanded) {
                 mQsPanelCallback.onShowingDetail(null);
             }
-            updateEverything();
         }
-    }
-
-    public void updateEverything() {
-	updateHeights();
-	updateVisibilities();
-	updateSystemIconsLayoutParams();
-	updateMultiUserSwitch();
-	updateClockScale();
-	updateAvatarScale();
-	updateClockLp();
-	requestCaptureValues();
-	hidepanelItems();
-	setclockcolor();
-	setdetailcolor();
-	setweathercolor1();
-	setweathercolor2();
-	setalarmtextcolor();
-	
-	setbatterytextcolor();
-	     	
     }
 
     void setTaskManagerEnabled(boolean enabled) {
@@ -853,7 +832,6 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
             mAlarmStatus.setText(KeyguardStatusView.formatNextAlarm(getContext(), nextAlarm));
         }
         mAlarmShowing = nextAlarm != null;
-        updateEverything();
         requestCaptureValues();
     }
 
@@ -1128,7 +1106,6 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
         if (changed) {
             mShowEmergencyCallsOnly = show;
             if (mExpanded) {
-                updateEverything();
                 requestCaptureValues();
             }
         }
@@ -1294,7 +1271,6 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
             };
         }
         mQsPanelCallback.onShowingDetail(mEditing ? mEditingDetailAdapter : null);
-        updateEverything();
     }
 
     /**
