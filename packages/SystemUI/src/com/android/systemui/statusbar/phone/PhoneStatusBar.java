@@ -1857,14 +1857,16 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 	 mRRLogoStyle = Settings.System.getIntForUser(mContext.getContentResolver(),
                 Settings.System.STATUS_BAR_RR_LOGO_STYLE, 0,
                 UserHandle.USER_CURRENT);
+        if (rrLogo == null) {  
         if ( mRRLogoStyle == 0) {
                 rrLogo = (ImageView) mStatusBarView.findViewById(R.id.left_rr_logo);
             } else if ( mRRLogoStyle == 1) {
                 rrLogo = (ImageView) mStatusBarView.findViewById(R.id.center_rr_logo);
             } else if ( mRRLogoStyle == 2) {
 			 rrLogo = (ImageView) mStatusBarView.findViewById(R.id.rr_logo);
-	    }else if ( mRRLogoStyle == 3) {
+	    } else if ( mRRLogoStyle == 3) {
                 rrLogo = (ImageView) mStatusBarView.findViewById(R.id.before_icons_rr_logo);
+	    }
 		}
         mRRlogo = Settings.System.getIntForUser(mContext.getContentResolver(),
                 Settings.System.STATUS_BAR_RR_LOGO, 0, mCurrentUserId) == 1;
@@ -1879,6 +1881,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                     Settings.System.SHOW_CUSTOM_LOGO, 0, mCurrentUserId) == 1;
             mCustomlogoColor = Settings.System.getIntForUser(mContext.getContentResolver(),
                     Settings.System.CUSTOM_LOGO_COLOR, 0xFFFFFFFF, mCurrentUserId);
+                if (mCLogo == null) {    
 		if ( mCustomlogoStyle == 0) {
 		mCLogo = (ImageView) mStatusBarView.findViewById(R.id.custom);
 		} else if ( mCustomlogoStyle == 1) {
@@ -1963,7 +1966,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 		mCLogo = (ImageView) mStatusBarView.findViewById(R.id.custom_40);
 		}
 		showmCustomlogo(mCustomlogo, mCustomlogoColor,  mCustomlogoStyle);
-
+	    }
         mQsIconColor = Settings.System.getIntForUser(mContext.getContentResolver(),
                 Settings.System.QS_ICON_COLOR, 0xFFFFFFFF, mCurrentUserId);
 
@@ -4957,7 +4960,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
      * meantime, just update the things that we know change.
      */
     void updateResources(Configuration newConfig) {
-       SettingsObserver observer = new SettingsObserver(mHandler);
         // detect theme change.
         ThemeConfig newTheme = newConfig != null ? newConfig.themeConfig : null;
         final boolean updateStatusBar = shouldUpdateStatusbar(mCurrentTheme, newTheme);
@@ -4968,7 +4970,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             if (mNavigationBarView != null) {
                 mNavigationBarView.onRecreateStatusbar();
             }
-            observer.update();
         } else {
             loadDimens();
         }
