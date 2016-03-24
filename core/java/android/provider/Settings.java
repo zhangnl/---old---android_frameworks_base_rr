@@ -3845,35 +3845,6 @@ public final class Settings {
         public static final String RECENTS_FULL_SCREEN_DATE = "recents_full_screen_date";
 
         /**
-         * ListView Animations
-         * 0 == None
-         * 1 == Wave (Left)
-         * 2 == Wave (Right)
-         * 3 == Scale
-         * 4 == Alpha
-         * 5 == Stack (Top)
-         * 6 == Stack (Bottom)
-         * 7 == Translate (Left)
-         * 8 == Translate (Right)
-         * @hide
-         */
-        public static final String LISTVIEW_ANIMATION = "listview_animation";
-
-        /**
-         * ListView Interpolators
-         * 0 == None
-         * 1 == accelerate_interpolator
-         * 2 == decelerate_interpolator
-         * 3 == accelerate_decelerate_interpolator
-         * 4 == anticipate_interpolator
-         * 5 == overshoot_interpolator
-         * 6 == anticipate_overshoot_interpolator
-         * 7 == bounce_interpolator
-         * @hide    */
-
-        public static final String LISTVIEW_INTERPOLATOR = "listview_interpolator";
-
-        /**
          * Toast icon
          *
          * @hide
@@ -4254,13 +4225,6 @@ public final class Settings {
         public static final String DISABLE_FC_NOTIFICATIONS = "disable_fc_notifications";
 
         /**
-         * Whether to enable status and navigation bar color in battery saver mode.
-         *
-         * @hide
-         */
-        public static final String BATTERY_SAVER_MODE_COLOR = "battery_save_mode_color";
-
-        /**
          * Status bar weather temperature
          * 0: Hide the temperature
          * 1: Display the temperature with scale
@@ -4622,16 +4586,6 @@ public final class Settings {
          * @hide
          */
         public static final String THREE_FINGER_GESTURE = "three_finger_gesture";
-
-
-       /**
-        * MediaScanner behavior on boot.
-        * 0 = enabled
-        * 1 = ask (notification)
-        * 2 = disabled
-        * @hide
-        */
-        public static final String MEDIA_SCANNER_ON_BOOT = "media_scanner_on_boot";
 
         /**
          * Boolean value whether to link ringtone and notification volume
