@@ -19,7 +19,7 @@
     android:paddingRight="16dp"
     style="@style/BrightnessDialogContainer">
 
-    <com.android.systemui.statusbar.AlphaOptimizedImageView
+    <ImageView
         android:id="@+id/brightness_icon"
         android:layout_width="48dp"
         android:layout_height="48dp"
