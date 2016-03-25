@@ -78,7 +78,8 @@
 
     </com.android.systemui.statusbar.AlphaOptimizedFrameLayout>
 
-    <ImageButton android:id="@+id/heads_up_button"
+    <com.android.keyguard.AlphaOptimizedImageButton 
+	android:id="@+id/heads_up_button"
         style="@android:style/Widget.Material.Button.Borderless"
         android:layout_toStartOf="@id/settings_button_container"
         android:layout_width="48dp"
@@ -87,7 +88,8 @@
         android:layout_marginStart="8dp"
         android:visibility="gone"/>
 
-    <ImageButton android:id="@+id/task_manager_button"
+    <com.android.keyguard.AlphaOptimizedImageButton  
+	android:id="@+id/task_manager_button"
         style="@android:style/Widget.Material.Button.Borderless"
         android:layout_toStartOf="@id/heads_up_button"
         android:layout_width="48dp"
@@ -234,7 +236,7 @@
         android:paddingEnd="10dp"
         android:gravity="center">
 
-     <ImageButton
+     <com.android.keyguard.AlphaOptimizedImageButton
         android:id="@+id/no_weather_image"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
