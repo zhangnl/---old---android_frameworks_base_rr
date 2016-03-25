@@ -894,7 +894,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 			Settings.System.STATUS_BAR_RR_LOGO, 0, mCurrentUserId) == 1;
 		mRRLogoColor = Settings.System.getIntForUser(resolver,
 			Settings.System.STATUS_BAR_RR_LOGO_COLOR, 0xFFFFFFFF, mCurrentUserId);
-	       if ( mRRLogoStyle == 0) {
+	       if (mRRLogoStyle == 0) {
 			rrLogo = (ImageView) mStatusBarView.findViewById(R.id.left_rr_logo);
 			} else if ( mRRLogoStyle == 1) {
 			rrLogo = (ImageView) mStatusBarView.findViewById(R.id.center_rr_logo);
@@ -912,7 +912,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 		Settings.System.SHOW_CUSTOM_LOGO, 0, mCurrentUserId) == 1;
 		mCustomlogoColor = Settings.System.getIntForUser(resolver,
 		Settings.System.CUSTOM_LOGO_COLOR, 0xFFFFFFFF, mCurrentUserId);
-		if ( mCustomlogoStyle == 0) {
+		if (mCustomlogoStyle == 0) {
 		mCLogo = (ImageView) mStatusBarView.findViewById(R.id.custom);
 		} else if ( mCustomlogoStyle == 1) {
 		mCLogo = (ImageView) mStatusBarView.findViewById(R.id.custom_1);
@@ -1871,7 +1871,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                     Settings.System.SHOW_CUSTOM_LOGO, 0, mCurrentUserId) == 1;
             mCustomlogoColor = Settings.System.getIntForUser(mContext.getContentResolver(),
                     Settings.System.CUSTOM_LOGO_COLOR, 0xFFFFFFFF, mCurrentUserId);
-		if ( mCustomlogoStyle == 0) {
+		if (mCustomlogoStyle == 0) {
 		mCLogo = (ImageView) mStatusBarView.findViewById(R.id.custom);
 		} else if ( mCustomlogoStyle == 1) {
 		mCLogo = (ImageView) mStatusBarView.findViewById(R.id.custom_1);
