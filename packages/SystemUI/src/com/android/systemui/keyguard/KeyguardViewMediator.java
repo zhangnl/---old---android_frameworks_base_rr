@@ -1948,4 +1948,8 @@ public class KeyguardViewMediator extends SystemUI {
             }
         }
     }
+
+    public void setBackgroundBitmap(Bitmap bmp) {
+        mStatusBarKeyguardViewManager.setBackgroundBitmap(bmp);
+    }
 }

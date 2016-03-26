@@ -591,6 +591,10 @@ public class StatusBarKeyguardViewManager {
         return mPhoneStatusBar.isKeyguardShowingMedia();
     }
 
+    public void setBackgroundBitmap(Bitmap bmp) {
+        mPhoneStatusBar.setBackgroundBitmap(bmp);
+    }
+
     public void setKeyguardExternalViewFocus(boolean hasFocus) {
         if (hasFocus) {
             showUnlockFab();

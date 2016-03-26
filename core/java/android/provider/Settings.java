@@ -4581,6 +4581,21 @@ public final class Settings {
           * @hide
           */
          public static final String APP_CIRCLE_BAR_SHOW_TRIGGER = "app_circle_bar_show_trigger";
+
+
+        /**
+         * Allows to show the background activity back the lockscreen
+         * 0 = off
+         * 1 = on
+         * @hide
+         */
+        public static final String LOCKSCREEN_SEE_THROUGH = "lockscreen_see_through";
+
+        /**
+         * Allows setting the radius for lockscreen blur
+         * @hide
+         */
+        public static final String LOCKSCREEN_BLUR_RADIUS = "lockscreen_blur_radius";
                       
         /**
          * Double Tap to Sleep Navbar

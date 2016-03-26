@@ -135,9 +135,10 @@ import com.android.internal.statusbar.NotificationVisibility;
 import com.android.internal.statusbar.IStatusBarService;
 import com.android.internal.statusbar.StatusBarIcon;
 import com.android.internal.util.cm.ActionUtils;
-import com.android.internal.util.cm.WeatherController;
-import com.android.internal.util.cm.WeatherControllerImpl;
-import com.android.internal.util.cm.WeatherController.WeatherInfo;
+import com.android.systemui.statusbar.policy.WeatherController;
+import com.android.systemui.statusbar.policy.WeatherControllerImpl;
+import com.android.systemui.statusbar.policy.WeatherController.WeatherInfo;
+import com.android.internal.util.cm.Blur;
 import com.android.internal.utils.du.ActionHandler;
 import com.android.internal.utils.du.DUActionUtils;
 import com.android.internal.utils.du.DUPackageMonitor;
@@ -566,8 +567,9 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     // - The custom Recents Long Press, if selected.  When null, use default (switch last app).
     private ComponentName mCustomRecentsLongPressHandler = null;
 
-
-    private NavigationController mNavigationController;
+    private int mBlurRadius;
+    private Bitmap mBlurredImage = null;
+        private NavigationController mNavigationController;
     private DUPackageMonitor mPackageMonitor;
 
     private final Runnable mRemoveNavigationBar = new Runnable() {
@@ -658,6 +660,8 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 			Settings.System.LOCKSCREEN_ROTATION),
 			false, this, UserHandle.USER_ALL);
 	resolver.registerContentObserver(Settings.System.getUriFor(
+			Settings.System.LOCKSCREEN_BLUR_RADIUS), false, this);	
+	resolver.registerContentObserver(Settings.System.getUriFor(
 			Settings.System.ENABLE_TASK_MANAGER),
 			false, this, UserHandle.USER_ALL);
 	resolver.registerContentObserver(Settings.System.getUriFor(
@@ -747,12 +751,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 	resolver.registerContentObserver(Settings.System.getUriFor(
 			Settings.System.CLEAR_RECENTS_STYLE_ENABLE),
 			false, this, UserHandle.USER_ALL);
-	resolver.registerContentObserver(Settings.System.getUriFor(
-			Settings.System.GESTURE_ANYWHERE_ENABLED),
-			false, this, UserHandle.USER_ALL);
-	resolver.registerContentObserver(Settings.System.getUriFor(
-			Settings.System.ENABLE_APP_CIRCLE_BAR),
-			false, this, UserHandle.USER_ALL);
+
 		    update();
         }
 
@@ -853,12 +852,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                     Settings.System.CLEAR_RECENTS_STYLE_ENABLE))) 
                     {
                	DontStressOnRecreate();
-	  }  else if (uri.equals(Settings.System.getUriFor(
-                    Settings.System.GESTURE_ANYWHERE_ENABLED))) {
-              DontStressOnRecreate();
-	} else if (uri.equals(Settings.System.getUriFor(
-                    Settings.System.ENABLE_APP_CIRCLE_BAR))) {
-           DontStressOnRecreate();
 	}
          update();
         }
@@ -1000,12 +993,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 		showmCustomlogo(mCustomlogo, mCustomlogoColor,  mCustomlogoStyle);
 
 
-
-       
-           boolean mGestureAnywhere = Settings.System.getIntForUser(resolver,
-                    Settings.System.GESTURE_ANYWHERE_ENABLED, 0, UserHandle.USER_CURRENT) == 1;
-
-
 	   int  mQSBackgroundColor = Settings.System.getInt(
                             resolver, Settings.System.QS_BACKGROUND_COLOR, 0xff263238);
 	   int SignalColor = Settings.System.getInt(mContext.getContentResolver(),
@@ -1061,6 +1048,9 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 
             mWeatherTempFontStyle = Settings.System.getIntForUser(resolver,
                     Settings.System.STATUS_BAR_WEATHER_FONT_STYLE, FONT_NORMAL, mCurrentUserId);
+
+            mBlurRadius = Settings.System.getInt(mContext.getContentResolver(),
+                    Settings.System.LOCKSCREEN_BLUR_RADIUS, 14);
 
             mMaxKeyguardNotifConfig = Settings.System.getIntForUser(resolver,
                     Settings.System.LOCKSCREEN_MAX_NOTIF_CONFIG, 5, mCurrentUserId);
@@ -1588,28 +1578,11 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         } catch (RemoteException ex) {
             // no window manager? good luck with that
         }
-         boolean mAppcircle = Settings.System.getInt(mContext.getContentResolver(),
-                    Settings.System.ENABLE_APP_CIRCLE_BAR, 0) == 1;
-              if(mAppcircle) {      
-        addAppCircleSidebar();
-        } else {
-        if (mAppCircleSidebar !=null) {
-        try { 
-       removeAppCircleSidebar();
-       } catch (Exception e) { }
-	}
-       }
-        boolean mGestureAnywhere = Settings.System.getInt(mContext.getContentResolver(),
-                    Settings.System.GESTURE_ANYWHERE_ENABLED, 0) == 1;
-	if(mGestureAnywhere) {
-	addGestureAnywhereView();
-	} else { 
-	if (mGestureAnywhereView !=null) {
-	try { 
-	removeGestureAnywhereView();
-	   } catch (Exception e) { }
-	  }
-	}
+        
+	if (!mRecreating) {
+            addGestureAnywhereView();
+            addAppCircleSidebar();
+        }
 
 
         if (mAssistManager == null) {
@@ -2980,6 +2953,11 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             }
         }
 
+        // apply blurred image
+        if (backdropBitmap == null) {
+            backdropBitmap = mBlurredImage;
+            // might still be null
+        }
 
         // HACK: Consider keyguard as visible if showing sim pin security screen
         KeyguardUpdateMonitor updateMonitor = KeyguardUpdateMonitor.getInstance(mContext);
@@ -2992,7 +2970,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                     && mMediaController.getPlaybackState().getState()
                             == PlaybackState.STATE_PLAYING);
         }
-        
+
         // apply user lockscreen image
         if (backdropBitmap == null && !mNotificationPanel.hasExternalKeyguardView()) {
             backdropBitmap = mKeyguardWallpaper;
@@ -6383,6 +6361,24 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                 || mFingerprintUnlockController.getMode()
                         == FingerprintUnlockController.MODE_WAKE_AND_UNLOCK_PULSING;
         updateDozingState();
+    }
+
+
+    public void setBackgroundBitmap(Bitmap bmp) {
+        if (bmp == null && mBlurredImage == null) return;
+
+        if (bmp != null && mBlurRadius != 0) {
+            mBlurredImage = Blur.blurBitmap(mContext, bmp, mBlurRadius);
+        } else {
+            mBlurredImage = bmp;
+        }
+
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                updateMediaMetaData(true);
+            }
+        });
     }
 
     public VisualizerView getVisualizer() {
