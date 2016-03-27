@@ -3941,14 +3941,14 @@ public final class Settings {
         public static final String MUTE_ANNOYING_NOTIFICATIONS_THRESHOLD = "mute_annoying_notifications_threshold";
 
 
-	/*
+	/**
          * Custom carrier label placement
          * @hide
          */
         public static final String STATUS_BAR_CARRIER_SPOT = "status_bar_carrier_spot";
 
 
-	/*
+	/**
          * Custom carrier label font style
          * @hide
          */
@@ -4067,6 +4067,7 @@ public final class Settings {
          * @hide
          */
         public static final String NETWORK_TRAFFIC_HIDEARROW = "network_traffic_hidearrow";
+        
         
         /**
          * Custom Pulse Widths
