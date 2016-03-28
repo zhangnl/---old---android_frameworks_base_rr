@@ -697,14 +697,9 @@ public class KeyguardViewMediator extends SystemUI {
                         CMSettings.Secure.LOCKSCREEN_INTERNALLY_ENABLED,
                         getPersistedDefaultOldSetting() ? 1 : 0,
                         UserHandle.USER_CURRENT) == 0;
-
-                synchronized (KeyguardViewMediator.this) {
-                    if (mKeyguardBound) {
-                        if (newDisabledState != mInternallyDisabled) {
-                            // it was updated,
-                            setKeyguardEnabledInternal(!newDisabledState);
-                        }
-                    }
+                if (newDisabledState != mInternallyDisabled && mKeyguardBound) {
+                    // it was updated,
+                    setKeyguardEnabledInternal(!newDisabledState);
                 }
             }
         };
