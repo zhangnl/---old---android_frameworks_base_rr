@@ -5945,9 +5945,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         mStatusBarWindowManager.setHeadsUpShowing(false);
         RemoveViews();
         updateVisibleToUser();
-        if (mQSTileHost.isEditing()) {
-            mQSTileHost.setEditing(false);
-        }
+        mVisualizerView.setVisible(false);
         if (mLaunchCameraOnFinishedGoingToSleep) {
             mLaunchCameraOnFinishedGoingToSleep = false;
 
