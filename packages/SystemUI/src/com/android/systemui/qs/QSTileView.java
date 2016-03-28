@@ -17,8 +17,11 @@
 
 package com.android.systemui.qs;
 
+<<<<<<< HEAD
 import android.annotation.Nullable;
 import android.content.ContentResolver;
+=======
+>>>>>>> parent of 8b59e88... WIP: draggable quick settings tiles
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -36,7 +39,6 @@ import android.os.Handler;
 import android.os.UserHandle;
 import android.os.Looper;
 import android.os.Message;
-import android.util.Log;
 import android.util.MathUtils;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -59,8 +61,6 @@ import java.util.Objects;
 public class QSTileView extends ViewGroup {
     private static final Typeface CONDENSED = Typeface.create("sans-serif-condensed",
             Typeface.NORMAL);
-
-    private static final String TAG = "QSTileView";
 
     protected final Context mContext;
     private final View mIcon;
@@ -144,7 +144,6 @@ public class QSTileView extends ViewGroup {
     }
 
     private void recreateLabel() {
-        Log.d(TAG, "recreateLabel() called with " + "");
         CharSequence labelText = null;
         CharSequence labelDescription = null;
         mQsColorSwitch = Settings.System.getIntForUser(mContext.getContentResolver(),
@@ -159,7 +158,7 @@ public class QSTileView extends ViewGroup {
         }
         if (mDualLabel != null) {
             labelText = mDualLabel.getText();
-            labelDescription = mDualLabel.getContentDescription();
+            labelDescription = mLabel.getContentDescription();
             removeView(mDualLabel);
             mDualLabel = null;
         }
@@ -211,33 +210,44 @@ public class QSTileView extends ViewGroup {
         }
     }
 
+<<<<<<< HEAD
     public boolean isDual() {
         return mDual;
     }
 
     public boolean setDual(boolean dual, boolean hasDetails) {
+=======
+    public boolean setDual(boolean dual) {
+>>>>>>> parent of 8b59e88... WIP: draggable quick settings tiles
         final boolean changed = dual != mDual;
         mDual = dual;
         mDualDetails = hasDetails;
         if (changed) {
             recreateLabel();
         }
-
+        if (mTileBackground instanceof RippleDrawable) {
+            setRipple((RippleDrawable) mTileBackground);
+        }
         if (dual) {
             mTopBackgroundView.setOnClickListener(mClickPrimary);
             mTopBackgroundView.setOnLongClickListener(mLongClick);
             setOnClickListener(null);
             setOnLongClickListener(null);
             setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+            mTopBackgroundView.setBackground(mTileBackground);
         } else {
             mTopBackgroundView.setOnClickListener(null);
             mTopBackgroundView.setOnLongClickListener(null);
             setOnClickListener(mClickPrimary);
             setOnLongClickListener(mLongClick);
             setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);
+            setBackground(mTileBackground);
         }
+<<<<<<< HEAD
         setTileBackground();
         mTopBackgroundView.setClickable(dual);
+=======
+>>>>>>> parent of 8b59e88... WIP: draggable quick settings tiles
         mTopBackgroundView.setFocusable(dual);
         setClickable(!dual);
         setFocusable(!dual);
@@ -247,6 +257,7 @@ public class QSTileView extends ViewGroup {
         return changed;
     }
 
+<<<<<<< HEAD
     public void setLabelColor() {
         updateColors();
         if (mLabel != null) {
@@ -288,9 +299,11 @@ public class QSTileView extends ViewGroup {
         setBackground(!mDual ? mTileBackground : null);
     }
 
+=======
+>>>>>>> parent of 8b59e88... WIP: draggable quick settings tiles
     private void setRipple(RippleDrawable tileBackground) {
         mRipple = tileBackground;
-        if (getWidth() != 0 && mRipple != null) {
+        if (getWidth() != 0) {
             updateRippleSize(getWidth(), getHeight());
         }
     }
@@ -315,7 +328,7 @@ public class QSTileView extends ViewGroup {
         return icon;
 	}
 
-    public Drawable newTileBackground() {
+    private Drawable newTileBackground() {
         final int[] attrs = new int[] { android.R.attr.selectableItemBackgroundBorderless };
         final TypedArray ta = mContext.obtainStyledAttributes(attrs);
         final Drawable d = ta.getDrawable(0);
@@ -439,6 +452,7 @@ public class QSTileView extends ViewGroup {
         return lastView;
     }
 
+<<<<<<< HEAD
     public void setEditing(boolean editing) {
         if (mDual) {
             if (mTopBackgroundView != null) {
@@ -458,6 +472,8 @@ public class QSTileView extends ViewGroup {
         }
     }
 
+=======
+>>>>>>> parent of 8b59e88... WIP: draggable quick settings tiles
     private class H extends Handler {
         private static final int STATE_CHANGED = 1;
         public H() {

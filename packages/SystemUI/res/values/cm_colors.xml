@@ -62,17 +62,9 @@
     <!-- Expanded Status Bar Battery Level Text Color -->
     <color name="status_bar_battery_level_text_color">#ffffff</color>
 
-    <!-- QS Toast Text color -->
-    <color name="quick_settings_toast_color">#ffbe1b</color>
 
     <!-- SystemUI Tuner Icon Tint Color -->
     <color name="tuner_icon_tint">#4dffffff</color>
-
-    <!-- QS Settings Text Colors -->
-    <color name="qs_tile_reset_to_default_text_color">@android:color/white</color>
-    <color name="qs_title_text_color">#80cbc4</color>
-    <color name="qs_edit_header_instruction_text_color">@android:color/white</color>
-    <color name="qs_row_text_color">@android:color/white</color>
 
     <!-- More exposed hard coded colors -->
     <color name="toggle_slider_text_color">#666666</color>
@@ -106,5 +98,6 @@
 
     <!-- Active color for volume slider -->
     <color name="volume_slider_active">@color/system_accent_color</color>
+
 
 </resources>

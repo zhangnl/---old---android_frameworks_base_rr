@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.phone;
 
+
 import android.app.ActivityManager;
 import android.app.PendingIntent;
 import android.content.ComponentName;
@@ -34,6 +35,7 @@ import android.util.Log;
 
 import com.android.internal.logging.MetricsLogger;
 import android.widget.RemoteViews;
+import android.util.Log;
 import com.android.systemui.R;
 import com.android.systemui.qs.QSTile;
 import com.android.systemui.qs.tiles.AdbOverNetworkTile;
@@ -50,8 +52,6 @@ import com.android.systemui.qs.tiles.ColorInversionTile;
 import com.android.systemui.qs.tiles.CompassTile;
 import com.android.systemui.qs.tiles.CustomQSTile;
 import com.android.systemui.qs.tiles.DndTile;
-import com.android.systemui.qs.tiles.EditTile;
-import com.android.systemui.qs.tiles.ExpandedDesktopTile;
 import com.android.systemui.qs.tiles.FlashlightTile;
 import com.android.systemui.qs.tiles.HeadsUpTile;
 import com.android.systemui.qs.tiles.HotspotTile;
@@ -116,7 +116,7 @@ public class QSTileHost implements QSTile.Host, Tunable {
     private static final String TAG = "QSTileHost";
     private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
 
-    public static final String TILES_SETTING = "sysui_qs_tiles";
+    protected static final String TILES_SETTING = "sysui_qs_tiles";
 
     private final Context mContext;
     private final PhoneStatusBar mStatusBar;
@@ -184,14 +184,6 @@ public class QSTileHost implements QSTile.Host, Tunable {
         TunerService.get(mContext).removeTunable(this);
     }
 
-    public boolean isEditing() {
-        return mCallback.isEditing();
-    }
-
-    public void setEditing(boolean editing) {
-        mCallback.setEditing(editing);
-    }
-
     @Override
     public void setCallback(Callback callback) {
         mCallback = callback;
@@ -200,19 +192,6 @@ public class QSTileHost implements QSTile.Host, Tunable {
     @Override
     public Collection<QSTile<?>> getTiles() {
         return mTiles.values();
-    }
-
-    public List<String> getTileSpecs() {
-        return mTileSpecs;
-    }
-
-    public String getSpec(QSTile<?> tile) {
-        for (Map.Entry<String, QSTile<?>> entry : mTiles.entrySet()) {
-            if (entry.getValue() == tile) {
-                return entry.getKey();
-            }
-        }
-        return null;
     }
 
     @Override
@@ -363,6 +342,7 @@ public class QSTileHost implements QSTile.Host, Tunable {
         }
     }
 
+
     public QSTile<?> createTile(String tileSpec) {
 	if (tileSpec.equals("wifi")) return new WifiTile(this);
 	else if (tileSpec.equals("bt")) return new BluetoothTile(this);
@@ -438,86 +418,5 @@ public class QSTileHost implements QSTile.Host, Tunable {
             }
         }
         return tiles;
-    }
-
-    public void remove(String tile) {
-        MetricsLogger.action(getContext(), MetricsLogger.TUNER_QS_REMOVE, tile);
-        List<String> tiles = new ArrayList<>(mTileSpecs);
-        tiles.remove(tile);
-        setTiles(tiles);
-    }
-
-    public void setTiles(List<String> tiles) {
-        Settings.Secure.putStringForUser(getContext().getContentResolver(), TILES_SETTING,
-                TextUtils.join(",", tiles), ActivityManager.getCurrentUser());
-    }
-
-    public static int getLabelResource(String spec) {
-        if (spec.equals("wifi")) return R.string.quick_settings_wifi_label;
-        else if (spec.equals("bt")) return R.string.quick_settings_bluetooth_label;
-        else if (spec.equals("inversion")) return R.string.quick_settings_inversion_label;
-        else if (spec.equals("cell")) return R.string.quick_settings_cellular_detail_title;
-        else if (spec.equals("airplane")) return R.string.airplane_mode;
-        else if (spec.equals("dnd")) return R.string.quick_settings_dnd_label;
-        else if (spec.equals("rotation")) return R.string.quick_settings_rotation_locked_label;
-        else if (spec.equals("flashlight")) return R.string.quick_settings_flashlight_label;
-        else if (spec.equals("location")) return R.string.quick_settings_location_label;
-        else if (spec.equals("cast")) return R.string.quick_settings_cast_title;
-        else if (spec.equals("hotspot")) return R.string.quick_settings_hotspot_label;
-        else if (spec.equals("edit")) return R.string.quick_settings_edit_label;
-        else if (spec.equals("adb_network")) return R.string.qs_tile_adb_over_network;
-        else if (spec.equals("compass")) return R.string.qs_tile_compass;
-        else if (spec.equals("nfc")) return R.string.quick_settings_nfc;
-        else if (spec.equals("profiles")) return R.string.quick_settings_profiles;
-        else if (spec.equals("sync")) return R.string.quick_settings_sync_label;
-        else if (spec.equals("volume_panel")) return R.string.quick_settings_volume_panel_label;
-        else if (spec.equals("usb_tether")) return R.string.quick_settings_usb_tether_label;
-        else if (spec.equals("screen_timeout")) return R.string.quick_settings_screen_timeout_detail_title;
-        else if (spec.equals("performance")) return R.string.qs_tile_performance;
-        else if (spec.equals("lockscreen")) return R.string.quick_settings_lockscreen_label;
-        else if (spec.equals("ambient_display")) return R.string.quick_settings_ambient_display_label;
-        else if (spec.equals("live_display")) return R.string.live_display_title;
-        else if (spec.equals("music")) return R.string.quick_settings_music_label;
-        else if (spec.equals("brightness")) return R.string.quick_settings_brightness_label;
-        else if (spec.equals("screen_off")) return R.string.quick_settings_screen_off_label;
-        else if (spec.equals("screenshot")) return R.string.quick_settings_screenshot_label;
-        else if (spec.equals("expanded_desktop")) return R.string.quick_settings_expanded_desktop_label;
-        else if (spec.equals("reboot")) return R.string.quick_settings_reboot_label;
-        else if (spec.equals("configurations")) return R.string.quick_settings_rrtools;
-        else if (spec.equals("heads_up")) return R.string.quick_settings_heads_up_label;
-        else if (spec.equals("lte")) return R.string.qs_lte_label;
-        else if (spec.equals("themes")) return R.string.quick_settings_themes;
-        else if (spec.equals("navbar")) return R.string.quick_settings_navigation_bar;
-        else if (spec.equals("appcirclebar")) return R.string.quick_settings_appcirclebar_title;
-        else if (spec.equals("kernel_adiutor")) return R.string.quick_settings_kernel_title;
-        else if (spec.equals("screenrecord")) return R.string.quick_settings_screenrecord;
-        else if (spec.equals("restartui")) return R.string.quick_settings_systemui_restart_label;
-        else if (spec.equals("gesture_anywhere")) return R.string.quick_settings_gesture_anywhere_label;
-        else if (spec.equals("battery_saver")) return R.string.quick_settings_battery_saver_label;
-        else if (spec.equals("power_menu")) return R.string.quick_settings_power_menu_label;
-        else if (spec.equals("app_picker")) return R.string.navbar_app_picker;
-        else if (spec.equals("kill_app")) return R.string.qs_kill_app;
-        else if (spec.equals("caffeine")) return R.string.quick_settings_caffeine_label;
-        else if (spec.equals("hw_keys")) return R.string.quick_settings_hwkeys_title;
-        else if (spec.equals("sound")) return R.string.quick_settings_sound_label;
-        return 0;
-    }
-
-    private void addCustomTile(StatusBarPanelCustomTile sbc) {
-        mCustomTileData.add(new CustomTileData.Entry(sbc));
-        mTiles.put(sbc.getKey(), new CustomQSTile(this, sbc));
-        if (mCallback != null) {
-            mCallback.onTilesChanged();
-        }
-    }
-
-    private void removeCustomTileSysUi(String key) {
-        if (mTiles.containsKey(key)) {
-            mTiles.remove(key);
-            mCustomTileData.remove(key);
-            if (mCallback != null) {
-                mCallback.onTilesChanged();
-            }
-        }
     }
 }

@@ -160,11 +160,14 @@ import com.android.systemui.cm.UserContentObserver;
 import com.android.systemui.doze.DozeHost;
 import com.android.systemui.doze.DozeLog;
 import com.android.systemui.keyguard.KeyguardViewMediator;
+<<<<<<< HEAD
 import com.android.systemui.navigation.NavigationController;
 import com.android.systemui.navigation.Navigator;
 import com.android.systemui.omni.StatusBarHeaderMachine;
 import com.android.systemui.qs.QSDragPanel;
 import com.android.systemui.qs.QSDetailItems;
+=======
+>>>>>>> parent of 8b59e88... WIP: draggable quick settings tiles
 import com.android.systemui.qs.QSPanel;
 import com.android.systemui.qs.QSTile;
 import com.android.systemui.qs.QSTileView;
@@ -418,6 +421,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     TextView mNotificationPanelDebugText;
 
     // settings
+<<<<<<< HEAD
     private QSDragPanel mQSPanel;
     private QSPanel mQsPanel;
 
@@ -435,6 +439,10 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 
     private boolean mShow4G;
     private boolean mShow3G;	
+=======
+    private QSPanel mQSPanel;
+    private DevForceNavbarObserver mDevForceNavbarObserver;
+>>>>>>> parent of 8b59e88... WIP: draggable quick settings tiles
 
     // top bar
     StatusBarHeaderView mHeader;
@@ -1933,7 +1941,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 
 
         // Set up the quick settings tile panel
-        mQSPanel = (QSDragPanel) mStatusBarWindowContent.findViewById(R.id.quick_settings_panel);
+        mQSPanel = (QSPanel) mStatusBarWindowContent.findViewById(R.id.quick_settings_panel);
         if (mQSPanel != null) {
             if (mQSTileHost == null) {
                 mQSTileHost = new QSTileHost(mContext, this,
@@ -1953,6 +1961,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             mQSTileHost.setCallback(new QSTileHost.Callback() {
                 @Override
                 public void onTilesChanged() {
+<<<<<<< HEAD
                     mHandler.post(new Runnable() {
                         @Override
                         public void run() {
@@ -1974,6 +1983,9 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                 @Override
                 public boolean isEditing() {
                     return mQSPanel.isEditing();
+=======
+                    mQSPanel.setTiles(qsh.getTiles());
+>>>>>>> parent of 8b59e88... WIP: draggable quick settings tiles
                 }
             });
         }
