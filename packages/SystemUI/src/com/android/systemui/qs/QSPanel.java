@@ -24,10 +24,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.database.ContentObserver;
 import android.os.Handler;
 import android.os.Message;
 import android.os.UserHandle;
 import android.os.Vibrator;
+import android.net.Uri;
 import android.provider.Settings;
 import android.util.AttributeSet;
 import android.util.TypedValue;
@@ -93,6 +95,8 @@ public class QSPanel extends ViewGroup {
     private boolean mGridContentVisible = true;
     private int mQsIconColor;
     private int mLabelColor;
+    private SettingsObserver mSettingsObserver;
+    private boolean mVibrationEnabled;
 
     protected Vibrator mVibrator;
     private boolean mUseMainTiles = false;
@@ -119,6 +123,7 @@ public class QSPanel extends ViewGroup {
         addView(mFooter.getView());
         mClipper = new QSDetailClipper(mDetail);
         mVibrator = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
+        mSettingsObserver = new SettingsObserver(mHandler);
         updateResources();
         mQsColorSwitch = Settings.System.getInt(mContext.getContentResolver(),
                 Settings.System.QS_COLOR_SWITCH, 0) == 1;
@@ -195,14 +200,8 @@ public class QSPanel extends ViewGroup {
 		}
      }
 	
-
-    public boolean isVibrationEnabled() {
-        return (Settings.System.getIntForUser(mContext.getContentResolver(),
-                Settings.System.QUICK_SETTINGS_TILES_VIBRATE, 0, UserHandle.USER_CURRENT) == 1);
-    }
-
-    public void vibrateTile(int duration) {
-        if (!isVibrationEnabled()) { return; }
+   public void vibrateTile(int duration) {
+        if (!mVibrationEnabled) { return; }
         if (mVibrator != null) {
             if (mVibrator.hasVibrator()) { mVibrator.vibrate(duration); }
         }
@@ -279,9 +278,9 @@ public class QSPanel extends ViewGroup {
         updateNumColumns();
         if (mListening) {
             refreshAllTiles();
+            mSettingsObserver.observe();
         }
         updateDetailText();
-	updatecolors();
     }
 
     public void updateNumColumns() {
@@ -366,6 +365,9 @@ public class QSPanel extends ViewGroup {
         mFooter.setListening(mListening);
         if (mListening) {
             refreshAllTiles();
+            mSettingsObserver.observe();
+        } else {
+        mSettingsObserver.unobserve();
         }
         if (listening && showBrightnessSlider()) {
             mBrightnessController.registerCallbacks();
@@ -456,6 +458,7 @@ public class QSPanel extends ViewGroup {
             public void onToggleStateChanged(boolean state) {
                 if (mDetailRecord == r) {
                     fireToggleStateChanged(state);
+                    vibrateTile(20);
                 }
             }
             @Override
@@ -497,13 +500,6 @@ public class QSPanel extends ViewGroup {
         r.tileView.init(click, clickSecondary, longClick);
         r.tile.setListening(mListening);
         callback.onStateChanged(r.tile.getState());
-        mQsColorSwitch = Settings.System.getInt(mContext.getContentResolver(),
-		Settings.System.QS_COLOR_SWITCH, 0) == 1;
-	updateicons();
-	if (mQsColorSwitch) {
-                r.tileView.setLabelColor();
-                r.tileView.setIconColor();
-            }
         r.tile.refreshState();
         mRecords.add(r);
 
@@ -634,10 +630,13 @@ public class QSPanel extends ViewGroup {
         int r = -1;
         int c = -1;
         int rows = 0;
-        for (TileRecord record : mRecords) {
+	 for (TileRecord record : mRecords) {
             if (record.tileView.getVisibility() == GONE) continue;
             // wrap to next column if we've reached the max # of columns
-            if (r == -1 || c == (mColumns - 1)) {
+            if (mUseMainTiles && r == 0 && c == 1) {
+                r = 1;
+                c = 0;
+            } else if (r == -1 || c == (mColumns - 1)) {
                 r++;
                 c = 0;
             } else {
@@ -647,7 +646,6 @@ public class QSPanel extends ViewGroup {
             record.col = c;
             rows = r + 1;
         }
-
  
         View previousView = mBrightnessView;
         for (TileRecord record : mRecords) {
@@ -709,7 +707,8 @@ public class QSPanel extends ViewGroup {
     private int getRowTop(int row) {
         if (row <= 0) return mBrightnessView.getMeasuredHeight() + mBrightnessPaddingTop;
         return mBrightnessView.getMeasuredHeight() + mBrightnessPaddingTop
-                + mLargeCellHeight - mDualTileUnderlap + (row - 1) * mCellHeight;
+                + (mUseMainTiles ? mLargeCellHeight - mDualTileUnderlap : mCellHeight)
+                + (row - 1) * mCellHeight;
     }
 
     private int getColumnCount(int row) {
@@ -828,4 +827,47 @@ public class QSPanel extends ViewGroup {
 	mQsIconColor = Settings.System.getInt(mContext.getContentResolver(),
                 Settings.System.QS_ICON_COLOR, 0xFFFFFFFF);
 	}
+	
+    private class SettingsObserver extends ContentObserver {
+        SettingsObserver(Handler handler) {
+            super(handler);
+        }
+
+        void observe() {
+            ContentResolver resolver = mContext.getContentResolver();
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.QUICK_SETTINGS_TILES_VIBRATE),
+                    false, this, UserHandle.USER_ALL);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.QS_USE_MAIN_TILES),
+                    false, this, UserHandle.USER_ALL);
+            update();
+        }
+
+        void unobserve() {
+            ContentResolver resolver = mContext.getContentResolver();
+            resolver.unregisterContentObserver(this);
+        }
+
+        @Override
+        public void onChange(boolean selfChange) {
+            super.onChange(selfChange);
+            update();
+        }
+
+        @Override
+        public void onChange(boolean selfChange, Uri uri) {
+            update();
+        }
+
+        public void update() {
+            ContentResolver resolver = mContext.getContentResolver();
+            mVibrationEnabled = Settings.System.getIntForUser(
+            mContext.getContentResolver(), Settings.System.QUICK_SETTINGS_TILES_VIBRATE,
+                0, UserHandle.USER_CURRENT) == 1;
+            mUseMainTiles = Settings.System.getIntForUser(
+            mContext.getContentResolver(), Settings.System.QS_USE_MAIN_TILES,
+                1, UserHandle.USER_CURRENT) == 1;
+        }
+    }
 }

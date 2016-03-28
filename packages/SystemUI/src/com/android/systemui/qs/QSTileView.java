@@ -243,7 +243,10 @@ public class QSTileView extends ViewGroup {
         setClickable(!dual);
         setFocusable(!dual);
         mDivider.setVisibility(dual ? VISIBLE : GONE);
-        mTopBackgroundView.setVisibility(dual ? VISIBLE : GONE);
+        if (changed) {
+            recreateLabel();
+            updateTopPadding();
+        }
         postInvalidate();
         return changed;
     }

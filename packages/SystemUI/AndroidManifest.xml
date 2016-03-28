@@ -250,6 +250,21 @@
                   android:label="@*android:string/usb_storage_activity_title"
                   android:excludeFromRecents="true">
         </activity>
+	
+	      <activity android:name=".tuner.QsActivity"
+                  android:enabled="true"
+                  android:theme="@android:style/Theme.Material.Settings"
+                  android:label="@string/systemui_tuner_qs_title"
+                  android:process=":tuner"
+                  android:parentActivityName="com.dirtyunicorns.dutweaks.DirtyTweaks"
+                  android:exported="true">
+            <intent-filter>
+                <action android:name="com.android.settings.action.EXTRA_SETTINGS" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <meta-data android:name="com.android.settings.category"
+                  android:value="com.android.settings.category.system" />
+        </activity>
 
         <activity android:name=".tuner.TunerActivity"
                   android:enabled="true"

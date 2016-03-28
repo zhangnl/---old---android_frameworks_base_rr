@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2014 The Android Open Source Project
+ * Copyright (C) 2015 The CyanogenMod Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +23,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.provider.Settings;
 import android.text.TextUtils;
-import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -38,6 +38,8 @@ import com.android.systemui.qs.QSDetailItems.Item;
 import com.android.systemui.qs.QSDetailItemsList;
 import com.android.systemui.qs.QSTile;
 import com.android.systemui.statusbar.policy.BluetoothController;
+
+import cyanogenmod.app.StatusBarPanelCustomTile;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -211,7 +213,6 @@ public class BluetoothTile extends QSTile<QSTile.BooleanState>  {
             ListView listView = mItemsList.getListView();
             listView.setDivider(null);
             listView.setOnItemClickListener(this);
-            mItemsList.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL);
             listView.setAdapter(mAdapter =
                     new QSDetailItemsList.QSDetailListAdapter(context, mBluetoothItems));
             mItemsList.setEmptyState(R.drawable.ic_qs_bluetooth_detail_empty,

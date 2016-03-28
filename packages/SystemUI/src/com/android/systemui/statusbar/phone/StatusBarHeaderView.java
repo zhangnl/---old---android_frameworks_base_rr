@@ -913,8 +913,8 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
 		vibrateheader(20);
 		} else { 
 		 vibrateheader(0);
-		startSettingsActivity();
 		}
+		startSettingsActivity();
         } else if (v == mSystemIconsSuperContainer) {
             startBatteryActivity();
         } else if (v == mAlarmStatus && mNextAlarm != null) {

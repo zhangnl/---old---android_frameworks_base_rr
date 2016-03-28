@@ -158,13 +158,11 @@ public class QSTileHost implements QSTile.Host, Tunable {
         mUserSwitcherController = userSwitcher;
         mKeyguard = keyguard;
         mSecurity = security;
-        mCustomTileData = new CustomTileData();
 
         final HandlerThread ht = new HandlerThread(QSTileHost.class.getSimpleName(),
                 Process.THREAD_PRIORITY_BACKGROUND);
         ht.start();
         mLooper = ht.getLooper();
-        mHandler = new Handler();
 
         TunerService.get(mContext).addTunable(this, TILES_SETTING);
     }

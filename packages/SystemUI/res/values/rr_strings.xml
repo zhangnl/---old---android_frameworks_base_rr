@@ -264,6 +264,9 @@
 
     <!-- vpn icon switch -->
     <string name="status_bar_volume">Vibration</string>
+    
+        <!-- Tuner -->
+    <string name="systemui_tuner_qs_title">UI Tuner</string>
 
 </resources>
 

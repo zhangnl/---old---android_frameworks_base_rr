@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2014 The Android Open Source Project
+ * Copyright (C) 2015 The CyanogenMod Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +20,9 @@ package com.android.systemui.qs.tiles;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.os.Looper;
 import android.provider.Settings;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -40,6 +41,8 @@ import com.android.systemui.statusbar.policy.NetworkController;
 import com.android.systemui.statusbar.policy.NetworkController.AccessPointController;
 import com.android.systemui.statusbar.policy.NetworkController.IconState;
 import com.android.systemui.statusbar.policy.SignalCallbackAdapter;
+
+import cyanogenmod.app.StatusBarPanelCustomTile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -124,16 +127,28 @@ public class WifiTile extends QSTile<QSTile.SignalState> {
     protected void handleUpdateState(SignalState state, Object arg) {
         state.visible = true;
         if (DEBUG) Log.d(TAG, "handleUpdateState arg=" + arg);
-        CallbackInfo cb = (CallbackInfo) arg;
-        if (cb == null) {
+        final CallbackInfo cb;
+        if (arg == null) {
             cb = mSignalCallback.mInfo;
+        } else {
+            cb = (CallbackInfo) arg;
         }
 
         boolean wifiConnected = cb.enabled && (cb.wifiSignalIconId > 0) && (cb.enabledDesc != null);
         boolean wifiNotConnected = (cb.wifiSignalIconId > 0) && (cb.enabledDesc == null);
         boolean enabledChanging = state.enabled != cb.enabled;
         if (enabledChanging) {
-            mDetailAdapter.setItemsVisible(cb.enabled);
+            if (Looper.myLooper() == Looper.getMainLooper()) {
+                // on main thread, bypass the handler
+                mDetailAdapter.setItemsVisible(cb.enabled);
+            } else {
+                mUiHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mDetailAdapter.setItemsVisible(cb.enabled);
+                    }
+                });
+            }
             fireToggleStateChanged(cb.enabled);
         }
         state.enabled = cb.enabled;
@@ -284,7 +299,6 @@ public class WifiTile extends QSTile<QSTile.SignalState> {
             ListView listView = mItemsList.getListView();
             listView.setDivider(null);
             listView.setOnItemClickListener(this);
-            mItemsList.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL);
             listView.setAdapter(mAdapter =
                     new QSDetailItemsList.QSDetailListAdapter(context, mDisplayedAccessPoints));
             mItemsList.setEmptyState(R.drawable.ic_qs_wifi_detail_empty,

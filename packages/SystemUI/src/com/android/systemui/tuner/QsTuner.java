@@ -10,7 +10,7 @@
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
+ * See the License for the mSpecific language governing permissions and
  * limitations under the License.
  */
 package com.android.systemui.tuner;
@@ -188,52 +188,52 @@ public class QsTuner extends Fragment implements Callback {
         mQsPanel.setTiles(mTileHost.getTiles());
     }
 
-    public static int getLabelResource(String spec) {
-        if (spec.equals("wifi")) return R.string.quick_settings_wifi_label;
-        else if (spec.equals("bt")) return R.string.quick_settings_bluetooth_label;
-        else if (spec.equals("inversion")) return R.string.quick_settings_inversion_label;
-        else if (spec.equals("cell")) return R.string.quick_settings_cellular_detail_title;
-        else if (spec.equals("airplane")) return R.string.airplane_mode;
-        else if (spec.equals("dnd")) return R.string.quick_settings_dnd_label;
-        else if (spec.equals("rotation")) return R.string.quick_settings_rotation_locked_label;
-        else if (spec.equals("flashlight")) return R.string.quick_settings_flashlight_label;
-        else if (spec.equals("location")) return R.string.quick_settings_location_label;
-        else if (spec.equals("cast")) return R.string.quick_settings_cast_title;
-        else if (spec.equals("hotspot")) return R.string.quick_settings_hotspot_label;
-        else if (spec.equals("adb_network")) return R.string.quick_settings_network_adb_label;
-        else if (spec.equals("compass")) return R.string.quick_settings_compass_label;
-        else if (spec.equals("nfc")) return R.string.quick_settings_nfc_label;
-        else if (spec.equals("profiles")) return R.string.quick_settings_profiles;
-        else if (spec.equals("sync")) return R.string.quick_settings_sync_label;
-        else if (spec.equals("volume_panel")) return R.string.quick_settings_volume_panel_label;
-        else if (spec.equals("usb_tether")) return R.string.quick_settings_usb_tether_label;
-        else if (spec.equals("screen_timeout")) return R.string.quick_settings_screen_timeout_detail_title;
-        else if (spec.equals("performance")) return R.string.qs_tile_performance;
-        else if (spec.equals("ambient_display")) return R.string.quick_settings_ambient_display_label;
-        else if (spec.equals("live_display")) return R.string.live_display_title;
-        else if (spec.equals("music")) return R.string.quick_settings_music_label;
-        else if (spec.equals("brightness")) return R.string.quick_settings_brightness_label;
-        else if (spec.equals("screen_off")) return R.string.quick_settings_screen_off_label;
-        else if (spec.equals("screenshot")) return R.string.quick_settings_screenshot_label;
-        else if (spec.equals("expanded_desktop")) return R.string.quick_settings_expanded_desktop_label;
-        else if (spec.equals("reboot")) return R.string.quick_settings_reboot_label;
-        else if (spec.equals("configurations")) return R.string.quick_settings_rrtools;
-        else if (spec.equals("heads_up")) return R.string.quick_settings_heads_up_label;
-        else if (spec.equals("lte")) return R.string.qs_lte_label;
-        else if (spec.equals("themes")) return R.string.quick_settings_themes;
-        else if (spec.equals("navbar")) return R.string.quick_settings_navigation_bar;
-        else if (spec.equals("appcirclebar")) return R.string.quick_settings_appcirclebar_title;
-        else if (spec.equals("kernel_adiutor")) return R.string.quick_settings_kernel_title;
-        else if (spec.equals("screenrecord")) return R.string.quick_settings_screenrecord;
-        else if (spec.equals("restartui")) return R.string.quick_settings_systemui_restart_label;
-        else if (spec.equals("gesture_anywhere")) return R.string.quick_settings_gesture_anywhere_label;
-        else if (spec.equals("battery_saver")) return R.string.quick_settings_battery_saver_label;
-        else if (spec.equals("power_menu")) return R.string.quick_settings_power_menu_label;
-        else if (spec.equals("app_picker")) return R.string.navbar_app_picker;
-        else if (spec.equals("kill_app")) return R.string.qs_kill_app;
-        else if (spec.equals("caffeine")) return R.string.quick_settings_caffeine_label;
-        else if (spec.equals("hw_keys")) return R.string.quick_settings_hwkeys_title;
-        else if (spec.equals("sound")) return R.string.quick_settings_sound_label;
+    public static int getLabelResource(String mSpec) {
+        if (mSpec.equals("wifi")) return R.string.quick_settings_wifi_label;
+        else if (mSpec.equals("bt")) return R.string.quick_settings_bluetooth_label;
+        else if (mSpec.equals("inversion")) return R.string.quick_settings_inversion_label;
+        else if (mSpec.equals("cell")) return R.string.quick_settings_cellular_detail_title;
+        else if (mSpec.equals("airplane")) return R.string.airplane_mode;
+        else if (mSpec.equals("dnd")) return R.string.quick_settings_dnd_label;
+        else if (mSpec.equals("rotation")) return R.string.quick_settings_rotation_locked_label;
+        else if (mSpec.equals("flashlight")) return R.string.quick_settings_flashlight_label;
+        else if (mSpec.equals("location")) return R.string.quick_settings_location_label;
+        else if (mSpec.equals("cast")) return R.string.quick_settings_cast_title;
+        else if (mSpec.equals("hotspot")) return R.string.quick_settings_hotspot_label;
+        else if (mSpec.equals("adb_network")) return R.string.quick_settings_network_adb_label;
+        else if (mSpec.equals("compass")) return R.string.quick_settings_compass_label;
+        else if (mSpec.equals("nfc")) return R.string.quick_settings_nfc_label;
+        else if (mSpec.equals("profiles")) return R.string.quick_settings_profiles;
+        else if (mSpec.equals("sync")) return R.string.quick_settings_sync_label;
+        else if (mSpec.equals("volume_panel")) return R.string.quick_settings_volume_panel_label;
+        else if (mSpec.equals("usb_tether")) return R.string.quick_settings_usb_tether_label;
+        else if (mSpec.equals("screen_timeout")) return R.string.quick_settings_screen_timeout_detail_title;
+        else if (mSpec.equals("performance")) return R.string.qs_tile_performance;
+        else if (mSpec.equals("ambient_display")) return R.string.quick_settings_ambient_display_label;
+        else if (mSpec.equals("live_display")) return R.string.live_display_title;
+        else if (mSpec.equals("music")) return R.string.quick_settings_music_label;
+        else if (mSpec.equals("brightness")) return R.string.quick_settings_brightness_label;
+        else if (mSpec.equals("screen_off")) return R.string.quick_settings_screen_off_label;
+        else if (mSpec.equals("screenshot")) return R.string.quick_settings_screenshot_label;
+        else if (mSpec.equals("expanded_desktop")) return R.string.quick_settings_expanded_desktop_label;
+        else if (mSpec.equals("reboot")) return R.string.quick_settings_reboot_label;
+        else if (mSpec.equals("configurations")) return R.string.quick_settings_rrtools;
+        else if (mSpec.equals("heads_up")) return R.string.quick_settings_heads_up_label;
+        else if (mSpec.equals("lte")) return R.string.qs_lte_label;
+        else if (mSpec.equals("themes")) return R.string.quick_settings_themes;
+        else if (mSpec.equals("navbar")) return R.string.quick_settings_navigation_bar;
+        else if (mSpec.equals("appcirclebar")) return R.string.quick_settings_appcirclebar_title;
+        else if (mSpec.equals("kernel_adiutor")) return R.string.quick_settings_kernel_title;
+        else if (mSpec.equals("screenrecord")) return R.string.quick_settings_screenrecord;
+        else if (mSpec.equals("restartui")) return R.string.quick_settings_systemui_restart_label;
+        else if (mSpec.equals("gesture_anywhere")) return R.string.quick_settings_gesture_anywhere_label;
+        else if (mSpec.equals("battery_saver")) return R.string.quick_settings_battery_saver_label;
+        else if (mSpec.equals("power_menu")) return R.string.quick_settings_power_menu_label;
+        else if (mSpec.equals("app_picker")) return R.string.navbar_app_picker;
+        else if (mSpec.equals("kill_app")) return R.string.qs_kill_app;
+        else if (mSpec.equals("caffeine")) return R.string.quick_settings_caffeine_label;
+        else if (mSpec.equals("hw_keys")) return R.string.quick_settings_hwkeys_title;
+        else if (mSpec.equals("sound")) return R.string.quick_settings_sound_label;
         return 0;
     }
 
@@ -284,6 +284,7 @@ public class QsTuner extends Fragment implements Callback {
             Secure.putStringForUser(getContext().getContentResolver(),
                     TILES_SETTING, "default", ActivityManager.getCurrentUser());
         }
+        
 
         private void setTiles(List<String> tiles) {
             Secure.putStringForUser(getContext().getContentResolver(), TILES_SETTING,
@@ -473,6 +474,39 @@ public class QsTuner extends Fragment implements Callback {
             else if (mSpec.equals("cast")) return R.drawable.ic_qs_cast_on;
             else if (mSpec.equals("hotspot")) return R.drawable.ic_hotspot_enable;
             else if (mSpec.equals("adb_network")) return R.drawable.ic_qs_network_adb_on;
+            else if (mSpec.equals("compass")) return R.drawable.ic_qs_compass_on;
+	    else if (mSpec.equals("nfc")) return R.drawable.ic_qs_nfc_on;
+	    else if (mSpec.equals("profiles")) return R.drawable.ic_qs_profiles_on;
+	    else if (mSpec.equals("sync")) return R.drawable.ic_qs_sync_on;
+	    else if (mSpec.equals("volume_panel")) return R.drawable.ic_qs_volume_panel;
+	    else if (mSpec.equals("usb_tether")) return R.drawable.ic_qs_usb_tether_on;
+	    else if (mSpec.equals("screen_timeout")) return R.drawable.ic_qs_screen_timeout_short_avd;
+	    else if (mSpec.equals("performance")) return R.drawable.ic_qs_perf_profile;
+	    else if (mSpec.equals("ambient_display")) return R.drawable.ic_qs_ambientdisplay_on;
+	    else if (mSpec.equals("live_display")) return R.drawable.ic_livedisplay_auto;
+	    else if (mSpec.equals("music")) return R.drawable.ic_qs_media_play;
+	    else if (mSpec.equals("brightness")) return R.drawable.ic_qs_brightness_auto_on;
+	    else if (mSpec.equals("screen_off")) return R.drawable.ic_qs_power;
+	    else if (mSpec.equals("screenshot")) return R.drawable.ic_qs_screenshot;
+	    else if (mSpec.equals("expanded_desktop")) return R.drawable.ic_qs_expanded_desktop;
+	    else if (mSpec.equals("reboot")) return R.drawable.ic_qs_reboot;
+	    else if (mSpec.equals("configurations")) return R.drawable.ic_qs_rrtools;
+	    else if (mSpec.equals("heads_up")) return R.drawable.ic_qs_heads_up_on;
+	    else if (mSpec.equals("lte")) return R.drawable.ic_qs_lte_on;
+	    else if (mSpec.equals("themes")) return R.drawable.ic_qs_themes;
+	    else if (mSpec.equals("navbar")) return R.drawable.ic_qs_navbar_on;
+	    else if (mSpec.equals("appcirclebar")) return R.drawable.ic_qs_appcirclebar_on;
+	    else if (mSpec.equals("kernel_adiutor")) return R.drawable.ic_qs_kernel_adiutor;	
+	    else if (mSpec.equals("screenrecord")) return R.drawable.ic_qs_screenrecord;	
+	    else if (mSpec.equals("restartui")) return R.drawable.ic_qs_systemui_restart;
+	    else if (mSpec.equals("gesture_anywhere")) return R.drawable.ic_qs_gestures_on;
+	    else if (mSpec.equals("battery_saver")) return R.drawable.ic_qs_battery_saver_on;
+	    else if (mSpec.equals("power_menu")) return R.drawable.ic_qs_power_menu;
+	    else if (mSpec.equals("app_picker")) return R.drawable.ic_qs_app_picker;
+	    else if (mSpec.equals("kill_app")) return R.drawable.ic_app_kill;
+	    else if (mSpec.equals("caffeine")) return R.drawable.ic_qs_caffeine_on;
+	    else if (mSpec.equals("hw_keys")) return R.drawable.ic_qs_hwkeys_on;
+	    else if (mSpec.equals("sound")) return R.drawable.ic_qs_ringer_silent;
             return R.drawable.android;
         }
 
