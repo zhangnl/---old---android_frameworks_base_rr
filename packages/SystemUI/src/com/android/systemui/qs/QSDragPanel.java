@@ -62,14 +62,6 @@ import com.android.systemui.statusbar.policy.BrightnessMirrorController;
 import com.android.systemui.tuner.QsTuner;
 
 import com.viewpagerindicator.CirclePageIndicator;
-import cyanogenmod.app.StatusBarPanelCustomTile;
-import cyanogenmod.providers.CMSettings;
-import org.cyanogenmod.internal.logging.CMMetricsLogger;
-import org.cyanogenmod.internal.util.QSUtils;
-
-import android.provider.Settings;
-
-import org.cyanogenmod.internal.util.QSUtils;
 
 import cyanogenmod.providers.CMSettings;
 
@@ -1746,25 +1738,26 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
                 numBroadcast++;
             }
         }
-        List<String> defaults = QSUtils.getAvailableTiles(getContext());
-        int availableSize = defaults.size() + 1 - (tiles.size() - numBroadcast);
+        String[] defaults =
+                getContext().getString(R.string.quick_settings_tiles_default).split(",");
+        int availableSize = defaults.length + 1 - (tiles.size() - numBroadcast);
         if (availableSize < 1) {
             availableSize = 1;
         }
         final String[] available = new String[availableSize];
         final String[] availableTiles = new String[availableSize];
         int index = 0;
-        for (int i = 0; i < defaults.size(); i++) {
-            if (tiles.contains(defaults.get(i))) {
+        for (int i = 0; i < defaults.length; i++) {
+            if (tiles.contains(defaults[i])) {
                 continue;
             }
-            int resource = mHost.getLabelResource(defaults.get(i));
+            int resource = mHost.getLabelResource(defaults[i]);
             if (resource != 0) {
-                availableTiles[index] = defaults.get(i);
+                availableTiles[index] = defaults[i];
                 available[index++] = getContext().getString(resource);
             } else {
-                availableTiles[index] = defaults.get(i);
-                available[index++] = defaults.get(i);
+                availableTiles[index] = defaults[i];
+                available[index++] = defaults[i];
             }
             title.setText(group);
 
@@ -1782,7 +1775,6 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
             }
             return row;
         }
-<<<<<<< HEAD
 
         // Add broadcast tile
         availableTilesLabel.add(getContext().getString(R.string.broadcast_tile));

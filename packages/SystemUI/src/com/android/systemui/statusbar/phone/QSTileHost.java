@@ -423,8 +423,7 @@ public class QSTileHost implements QSTile.Host, Tunable {
 
     protected List<String> loadTileSpecs(String tileList) {
         final Resources res = mContext.getResources();
-        final String defaultTileList = res.getString(org.cyanogenmod.platform.internal.
-                R.string.config_defaultQuickSettingsTiles);
+        final String defaultTileList = res.getString(R.string.quick_settings_tiles_default);
         if (tileList == null) {
             tileList = res.getString(R.string.quick_settings_tiles);
             if (DEBUG) Log.d(TAG, "Loaded tile specs from config: " + tileList);
