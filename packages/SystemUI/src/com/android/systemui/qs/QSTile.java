@@ -1,4 +1,3 @@
-
 /*
  * Copyright (C) 2014 The Android Open Source Project
  *
@@ -13,8 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- **/
- 
+ */
+
 package com.android.systemui.qs;
 
 import android.app.PendingIntent;
@@ -141,6 +140,10 @@ public abstract class QSTile<TState extends State> implements Listenable {
         mHandler.sendEmptyMessage(H.CLEAR_STATE);
     }
 
+    public boolean hasDualTargetsDetails() {
+        return true;
+    }
+
     public void userSwitch(int newUserId) {
         mHandler.obtainMessage(H.USER_SWITCH, newUserId, 0).sendToTarget();
     }
@@ -240,11 +243,6 @@ public abstract class QSTile<TState extends State> implements Listenable {
     protected void handleDestroy() {
         setListening(false);
         mCallback = null;
-    }
-    
-    
-    public boolean hasDualTargetsDetails() {
-        return true;
     }
 
     protected final class H extends Handler {

@@ -2766,7 +2766,7 @@ public class NotificationPanelView extends PanelView implements
                 mQsContainer.getBackground().setAlpha(mQSShadeAlpha);
             }
             if (mQsPanel != null) {
-                mQsPanel.setQSShadeAlphaValue(mQSShadeAlpha);
+                //mQsPanel.setQSShadeAlphaValue(mQSShadeAlpha);
             }
         }
     }
@@ -2898,7 +2898,7 @@ public class NotificationPanelView extends PanelView implements
                          mQSBackgroundColor, Mode.SRC_IN);
            		 }
        		if (mQsPanel != null) {
-            		mQsPanel.setDetailBackgroundColor(mQSBackgroundColor);
+            		//QsPanel.setDetailBackgroundColor(mQSBackgroundColor);
        			 }
 			}  else {
 
@@ -2907,7 +2907,7 @@ public class NotificationPanelView extends PanelView implements
                          mStockBg, Mode.SRC_OVER);
            		 }
        		if (mQsPanel != null) {
-            		mQsPanel.setDetailBackgroundColor(mStockBg);
+            		//mQsPanel.setDetailBackgroundColor(mStockBg);
        			 }
 		}
 	}
