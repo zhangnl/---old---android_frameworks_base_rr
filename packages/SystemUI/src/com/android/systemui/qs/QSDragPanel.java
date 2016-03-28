@@ -18,9 +18,13 @@ package com.android.systemui.qs;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.app.ActivityManager;
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Canvas;
 import android.graphics.PointF;
 import android.graphics.PorterDuff;
@@ -32,11 +36,11 @@ import android.os.Handler;
 import android.os.UserHandle;
 import android.os.Vibrator;
 import android.support.v4.graphics.drawable.DrawableCompat;
+import android.provider.Settings;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.DragEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -44,6 +48,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 import com.android.internal.logging.MetricsLogger;
 import com.android.systemui.R;
 import com.android.systemui.qs.tiles.EditTile;
@@ -53,7 +58,7 @@ import com.android.systemui.settings.ToggleSlider;
 import com.android.systemui.statusbar.phone.QSTileHost;
 import com.android.systemui.statusbar.phone.SystemUIDialog;
 import com.android.systemui.tuner.QsTuner;
-import com.viewpagerindicator.CirclePageIndicator;
+import cyanogenmod.providers.CMSettings;
 
 import cyanogenmod.providers.CMSettings;
 import java.util.ArrayList;
@@ -81,7 +86,6 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
     protected QSViewPager mViewPager;
     protected PagerAdapter mPagerAdapter;
     QSPanelTopView mQsPanelTop;
-    CirclePageIndicator mPageIndicator;
 
     private DragTileRecord mDraggingRecord;
     private boolean mEditing;
@@ -170,10 +174,8 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
                 });
         mViewPager = new QSViewPager(getContext());
 
-        mPageIndicator = new CirclePageIndicator(getContext());
         addView(mDetail);
         addView(mViewPager);
-        addView(mPageIndicator);
         addView(mFooter.getView());
 
 	mTileView = new QSTileView (mContext);
@@ -257,11 +259,7 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
                 return view == object;
             }
         };
-        mViewPager.setAdapter(mPagerAdapter);
-        mViewPager.setCurrentItem(0);
-
-        mPageIndicator.setViewPager(mViewPager);
-        mPageIndicator.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+        mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset,
                                        int positionOffsetPixels) {
@@ -306,6 +304,8 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
 
             }
         });
+        mViewPager.setAdapter(mPagerAdapter);
+        mViewPager.setCurrentItem(0);
 
         setClipChildren(false);
         updateResources();
@@ -665,13 +665,14 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
         final int width = MeasureSpec.getSize(widthMeasureSpec);
 
         mQsPanelTop.measure(exactly(width), MeasureSpec.UNSPECIFIED);
-        mViewPager.measure(exactly(width), MeasureSpec.UNSPECIFIED);
-        mPageIndicator.measure(exactly(width), MeasureSpec.UNSPECIFIED);
+
+        final int brightnessHeight = mQsPanelTop.getMeasuredHeight();
+
         mFooter.getView().measure(exactly(width), MeasureSpec.UNSPECIFIED);
 
-        int h = mQsPanelTop.getMeasuredHeight()
-                + mViewPager.getMeasuredHeight()
-                + mPageIndicator.getMeasuredHeight();
+        mViewPager.measure(exactly(width), MeasureSpec.UNSPECIFIED);
+
+        int h = brightnessHeight + mViewPager.getMeasuredHeight();
         if (mFooter.hasFooter()) {
             h += mFooter.getView().getMeasuredHeight();
         }
@@ -701,20 +702,12 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
         if (DEBUG_DRAG) Log.d(TAG, "onLayout()");
         final int w = getWidth();
 
-        int top = 0;
-        mQsPanelTop.layout(0, top, w, top + mQsPanelTop.getMeasuredHeight());
-        top += mQsPanelTop.getMeasuredHeight();
+        mQsPanelTop.layout(0, t, mQsPanelTop.getMeasuredWidth(),
+                t + mQsPanelTop.getMeasuredHeight());
 
-        mViewPager.layout(0, top, w, top + mViewPager.getMeasuredHeight());
-        top += mViewPager.getMeasuredHeight();
-
-        // layout page indicator below view pager
-        mPageIndicator.layout(0, top, w, top + mPageIndicator.getMeasuredHeight());
-
-        // detail takes up whole height
         final int dh = Math.max(mDetail.getMeasuredHeight(), mViewPager.getMeasuredHeight());
-        mDetail.layout(0, 0, mDetail.getMeasuredWidth(), getMeasuredHeight());
-
+        mViewPager.layout(0, t + mQsPanelTop.getMeasuredHeight(), w, t + dh);
+        mDetail.layout(0, t, mDetail.getMeasuredWidth(), t + dh);
         if (mFooter.hasFooter()) {
             View footer = mFooter.getView();
             footer.layout(0, getMeasuredHeight() - footer.getMeasuredHeight(),
