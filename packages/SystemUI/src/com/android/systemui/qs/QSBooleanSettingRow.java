@@ -81,7 +81,6 @@ public class QSBooleanSettingRow extends LinearLayout implements View.OnClickLis
 
         mTitle = a.getString(R.styleable.QuickSettingsRow_android_title);
         mKey = a.getString(R.styleable.QuickSettingsRow_android_key);
-        mDefaultValue = a.getInt(R.styleable.QuickSettingsRow_defaultValue, 0);
 
         if (mText != null) {
             mText.setText(mTitle);
@@ -144,25 +143,31 @@ public class QSBooleanSettingRow extends LinearLayout implements View.OnClickLis
     private boolean getCurrent() {
         ContentResolver cr = getContext().getContentResolver();
         int ret = 0;
-        switch (mWhichTable) {
-            case TABLE_GLOBAL:
-                ret = Settings.Global.getInt(cr, mKey, mDefaultValue);
-                break;
-            case TABLE_SECURE:
-                ret = Settings.Secure.getInt(cr, mKey, mDefaultValue);
-                break;
-            case TABLE_SYSTEM:
-                ret = Settings.System.getInt(cr, mKey, mDefaultValue);
-                break;
-            case TABLE_CM_GLOBAL:
-                ret = CMSettings.Global.getInt(cr, mKey, mDefaultValue);
-                break;
-            case TABLE_CM_SECURE:
-                ret = CMSettings.Secure.getInt(cr, mKey, mDefaultValue);
-                break;
-            case TABLE_CM_SYSTEM:
-                ret = CMSettings.System.getInt(cr, mKey, mDefaultValue);
-                break;
+        try {
+            switch (mWhichTable) {
+                case TABLE_GLOBAL:
+                    ret = Settings.Global.getInt(cr, mKey);
+                    break;
+                case TABLE_SECURE:
+                    ret = Settings.Secure.getInt(cr, mKey);
+                    break;
+                case TABLE_SYSTEM:
+                    ret = Settings.System.getInt(cr, mKey);
+                    break;
+                case TABLE_CM_GLOBAL:
+                    ret = CMSettings.Global.getInt(cr, mKey);
+                    break;
+                case TABLE_CM_SECURE:
+                    ret = CMSettings.Secure.getInt(cr, mKey);
+                    break;
+                case TABLE_CM_SYSTEM:
+                    ret = CMSettings.System.getInt(cr, mKey);
+                    break;
+            }
+        } catch (Settings.SettingNotFoundException|CMSettings.CMSettingNotFoundException e) {
+            Log.e(TAG, "need to add a default setting for key: " + mKey
+                    + " in table: " + mWhichTable);
+            e.printStackTrace();
         }
         return ret == 1;
     }

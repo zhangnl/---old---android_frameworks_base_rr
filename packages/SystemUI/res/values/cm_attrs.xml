@@ -28,7 +28,6 @@
 
         <attr name="android:key"/>
         <attr name="android:title" />
-        <attr name="defaultValue" format="integer"/>
     </declare-styleable>
 </resources>
 
