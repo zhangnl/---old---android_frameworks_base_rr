@@ -719,10 +719,8 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
         }
     }
 
-    public int getTilesPerPage(boolean firstPage) {
-        if ((!mFirstRowLarge && firstPage)|| !firstPage) {
-            return QSTileHost.TILES_PER_PAGE + 1;
-        }
+
+    public int getTilesPerPage() {
         return QSTileHost.TILES_PER_PAGE;
     }
 
@@ -2019,7 +2017,12 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
 		    Settings.System.QS_COLOR_SWITCH, 0) == 1;
             if (firstRowLarge != mFirstRowLarge) {
                 mFirstRowLarge = firstRowLarge;
-                setTiles(mHost.getTiles());
+                for (TileRecord record : mRecords) {
+                    DragTileRecord dr = (DragTileRecord) record;
+                    final boolean dual = getPage(dr.destinationPage).dualRecord(dr);
+                    record.tileView.setDual(dual, record.tile.hasDualTargetsDetails());
+                }
+                requestLayout();
             }
         }
     }
