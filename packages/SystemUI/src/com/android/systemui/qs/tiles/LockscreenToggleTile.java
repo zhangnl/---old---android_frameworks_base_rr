@@ -74,7 +74,6 @@ public class LockscreenToggleTile extends QSTile<QSTile.BooleanState>
         if (listening) {
             mSettingsObserver.observe();
             mKeyguard.addCallback(this);
-            refreshState();
         } else {
             mSettingsObserver.unobserve();
             mKeyguard.removeCallback(this);
@@ -89,7 +88,6 @@ public class LockscreenToggleTile extends QSTile<QSTile.BooleanState>
     @Override
     protected void handleClick() {
         setPersistedState(!mPersistedState);
-        refreshState();
     }
 
     @Override
