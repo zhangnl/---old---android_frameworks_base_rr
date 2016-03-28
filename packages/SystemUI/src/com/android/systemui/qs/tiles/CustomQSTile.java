@@ -55,7 +55,6 @@ public class CustomQSTile extends QSTile<QSTile.State> {
 
     private CustomTile.ExpandedStyle mExpandedStyle;
     private PendingIntent mOnClick;
-    private PendingIntent mOnLongClick;
     private Uri mOnClickUri;
     private int mCurrentUserId;
     private StatusBarPanelCustomTile mTile;
@@ -93,16 +92,7 @@ public class CustomQSTile extends QSTile<QSTile.State> {
 
     @Override
     protected void handleLongClick() {
-        if (mOnLongClick != null) {
-            if (mOnLongClick.isActivity()) {
-                getHost().collapsePanels();
-            }
-            try {
-                mOnLongClick.send();
-            } catch (Throwable e) {
-                Log.w(TAG, "Error sending long click intent", e);
-            }
-        } else if (mExpandedStyle == null) {
+        if (mExpandedStyle == null) {
             showDetail(true);
         }
     }
@@ -153,7 +143,6 @@ public class CustomQSTile extends QSTile<QSTile.State> {
             state.icon = new ExternalBitmapIcon(customTile.remoteIcon);
         }
         mOnClick = customTile.onClick;
-        mOnLongClick = customTile.onLongClick;
         mOnClickUri = customTile.onClickUri;
         mExpandedStyle = customTile.expandedStyle;
         mCollapsePanel = customTile.collapsePanel;
