@@ -2010,18 +2010,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             mShowTaskList = false;
         }
 
-
-        // Set up the initial custom tile listener state.
-        try {
-            mCustomTileListenerService.registerAsSystemService(mContext,
-                    new ComponentName(mContext.getPackageName(), getClass().getCanonicalName()),
-                    UserHandle.USER_ALL);
-        } catch (RemoteException e) {
-            Log.e(TAG, "Unable to register custom tile listener", e);
-        }
-
-        mQSPanel.getHost().setCustomTileListenerService(mCustomTileListenerService);
-
         // User info. Trigger first load.
         mHeader.setUserInfoController(mUserInfoController);
         mKeyguardStatusBar.setUserInfoController(mUserInfoController);
@@ -2232,40 +2220,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         return mNaturalBarHeight;
     }
 
-    private final CustomTileListenerService mCustomTileListenerService =
-            new CustomTileListenerService() {
-                @Override
-                public void onListenerConnected() {
-                    //Connected
-                }
-                @Override
-                public void onCustomTilePosted(final StatusBarPanelCustomTile sbc) {
-                    if (DEBUG) Log.d(TAG, "onCustomTilePosted: " + sbc.getCustomTile());
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            boolean isUpdate = mQSPanel.getHost().getCustomTileData()
-                                    .get(sbc.getKey()) != null;
-                            if (isUpdate) {
-                                mQSPanel.getHost().updateCustomTile(sbc);
-                            } else {
-                                mQSPanel.getHost().addCustomTile(sbc);
-                            }
-                        }
-                    });
-                }
-
-                @Override
-                public void onCustomTileRemoved(final StatusBarPanelCustomTile sbc) {
-                    if (DEBUG) Log.d(TAG, "onCustomTileRemoved: " + sbc.getCustomTile());
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            mQSPanel.getHost().removeCustomTileSysUi(sbc.getKey());
-                        }
-                    });
-                }
-            };
 
     private void awakenDreams() {
         if (mDreamManager != null) {
@@ -4783,21 +4737,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 
         // Stop the command queue until the new status bar container settles and has a layout pass
         mCommandQueue.pause();
-
-        if (mCustomTileListenerService != null) {
-            try {
-                mCustomTileListenerService.unregisterAsSystemService();
-            } catch (RemoteException e) {
-                Log.e(TAG, "Unable to unregister custom tile listener", e);
-            }
-        }
-
-        mQSPanel.getHost().setCustomTileListenerService(null);
-
-        // fix notification panel being shifted to the left by calling
-        // instantCollapseNotificationPanel()
-        instantCollapseNotificationPanel();
-
         mStatusBarWindow.requestLayout();
         mStatusBarWindow.getViewTreeObserver().addOnGlobalLayoutListener(
                 new ViewTreeObserver.OnGlobalLayoutListener() {

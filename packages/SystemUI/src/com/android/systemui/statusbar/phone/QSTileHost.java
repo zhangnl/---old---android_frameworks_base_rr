@@ -99,7 +99,6 @@ import com.android.systemui.statusbar.policy.ZenModeController;
 import com.android.systemui.tuner.TunerService;
 import com.android.systemui.tuner.TunerService.Tunable;
 import android.telephony.TelephonyManager;
-
 import cyanogenmod.app.CustomTileListenerService;
 import cyanogenmod.app.StatusBarPanelCustomTile;
 import cyanogenmod.providers.CMSettings;
@@ -135,9 +134,9 @@ public class QSTileHost implements QSTile.Host, Tunable {
     private final UserSwitcherController mUserSwitcherController;
     private final KeyguardMonitor mKeyguard;
     private final SecurityController mSecurity;
+    private Handler mHandler;
 
     private CustomTileData mCustomTileData;
-    private CustomTileListenerService mCustomTileListenerService;
 
     private Callback mCallback;
 
@@ -167,6 +166,16 @@ public class QSTileHost implements QSTile.Host, Tunable {
                 Process.THREAD_PRIORITY_BACKGROUND);
         ht.start();
         mLooper = ht.getLooper();
+        mHandler = new Handler();
+
+        // Set up the initial notification state.
+        try {
+            mCustomTileListenerService.registerAsSystemService(mContext,
+                    new ComponentName(mContext.getPackageName(), getClass().getCanonicalName()),
+                    UserHandle.USER_ALL);
+        } catch (RemoteException e) {
+            Log.e(TAG, "Unable to register custom tile listener", e);
+        }
 
         TunerService.get(mContext).addTunableByProvider(this, CMSettings.Secure.QS_TILES, true);
     }
@@ -184,10 +193,6 @@ public class QSTileHost implements QSTile.Host, Tunable {
 
     public void setEditing(boolean editing) {
         mCallback.setEditing(editing);
-    }
-
-    void setCustomTileListenerService(CustomTileListenerService customTileListenerService) {
-        mCustomTileListenerService = customTileListenerService;
     }
 
     @Override
@@ -233,10 +238,8 @@ public class QSTileHost implements QSTile.Host, Tunable {
 
     @Override
     public void removeCustomTile(StatusBarPanelCustomTile customTile) {
-        if (mCustomTileListenerService != null) {
-            mCustomTileListenerService.removeCustomTile(customTile.getPackage(),
-                    customTile.getTag(), customTile.getId());
-        }
+        mCustomTileListenerService.removeCustomTile(customTile.getPackage(),
+                customTile.getTag(), customTile.getId());
     }
 
     @Override
@@ -524,44 +527,21 @@ public class QSTileHost implements QSTile.Host, Tunable {
         return 0;
     }
 
-
-    void updateCustomTile(StatusBarPanelCustomTile sbc) {
-        synchronized (mTiles) {
-            if (mTiles.containsKey(sbc.getKey())) {
-                QSTile<?> tile = mTiles.get(sbc.getKey());
-                if (tile instanceof CustomQSTile) {
-                    CustomQSTile qsTile = (CustomQSTile) tile;
-                    qsTile.update(sbc);
-                }
-            }
+    private void addCustomTile(StatusBarPanelCustomTile sbc) {
+        mCustomTileData.add(new CustomTileData.Entry(sbc));
+        mTiles.put(sbc.getKey(), new CustomQSTile(this, sbc));
+        if (mCallback != null) {
+            mCallback.onTilesChanged();
         }
     }
 
-    void addCustomTile(StatusBarPanelCustomTile sbc) {
-        synchronized (mTiles) {
-            mCustomTileData.add(new CustomTileData.Entry(sbc));
-            mTileSpecs.add(sbc.getKey());
-            mTiles.put(sbc.getKey(), new CustomQSTile(this, sbc));
+    private void removeCustomTileSysUi(String key) {
+        if (mTiles.containsKey(key)) {
+            mTiles.remove(key);
+            mCustomTileData.remove(key);
             if (mCallback != null) {
                 mCallback.onTilesChanged();
             }
         }
-    }
-
-    void removeCustomTileSysUi(String key) {
-        synchronized (mTiles) {
-            if (mTiles.containsKey(key)) {
-                mTileSpecs.remove(key);
-                mTiles.remove(key);
-                mCustomTileData.remove(key);
-                if (mCallback != null) {
-                    mCallback.onTilesChanged();
-                }
-            }
-        }
-    }
-
-    CustomTileData getCustomTileData() {
-        return mCustomTileData;
     }
 }
