@@ -2,7 +2,7 @@
  * Copyright (C) 2015 The CyanogenMod Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
+//  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -50,6 +50,7 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
@@ -77,6 +78,7 @@ import org.cyanogenmod.internal.util.QSUtils;
 import android.provider.Settings;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -102,7 +104,6 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
     protected PagerAdapter mPagerAdapter;
     QSPanelTopView mQsPanelTop;
     CirclePageIndicator mPageIndicator;
-    private int mPageIndicatorHeight;
 
     private TextView mDetailRemoveButton;
     private DragTileRecord mDraggingRecord, mLastDragRecord;
@@ -182,11 +183,24 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
 	mQsVibSignlepress = Settings.System.getInt(mContext.getContentResolver(),
                 Settings.System.QUICK_SETTINGS_SP_VIBRATE, 0) == 1;
 
-        mQsPanelTop = (QSPanelTopView) LayoutInflater.from(mContext).inflate(R.layout.qs_tile_top,
-                this, false);
-
         mBrightnessView = mQsPanelTop.getBrightnessView();
         mFooter = new QSFooter(this, mContext);
+
+        getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                getViewTreeObserver().removeOnGlobalLayoutListener(this);
+
+                ViewPager.LayoutParams params = new ViewPager.LayoutParams();
+                params.isDecor = true;
+
+                mViewPager.addView(mQsPanelTop, params);
+
+                mQsPanelTop.setOnDragListener(QSDragPanel.this);
+                mPageIndicator.setOnDragListener(QSDragPanel.this);
+                mViewPager.setOnDragListener(QSDragPanel.this);
+            }
+        });
 
         // add target click listener
         mQsPanelTop.getAddTarget().setOnClickListener(
@@ -203,7 +217,6 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
 
         mPageIndicator = new CirclePageIndicator(getContext());
         addView(mDetail);
-        addView(mQsPanelTop);
         addView(mViewPager);
         addView(mPageIndicator);
         addView(mFooter.getView());
@@ -365,11 +378,6 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
         setClipChildren(false);
 
         mSettingsObserver = new SettingsObserver(new Handler());
-
-        mViewPager.setOnDragListener(QSDragPanel.this);
-        mQsPanelTop.setOnDragListener(QSDragPanel.this);
-        mPageIndicator.setOnDragListener(QSDragPanel.this);
-        setOnDragListener(QSDragPanel.this);
     }
 
     @Override
@@ -791,13 +799,16 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         final int width = MeasureSpec.getSize(widthMeasureSpec);
 
-        mQsPanelTop.measure(exactly(width), MeasureSpec.UNSPECIFIED);
+        if (isLaidOut()) {
+            mQsPanelTop.measure(exactly(width), MeasureSpec.UNSPECIFIED);
+        }
         mViewPager.measure(exactly(width), MeasureSpec.UNSPECIFIED);
-        mPageIndicator.measure(exactly(width), atMost(mPageIndicatorHeight));
+        mPageIndicator.measure(exactly(width), MeasureSpec.UNSPECIFIED);
         mFooter.getView().measure(exactly(width), MeasureSpec.UNSPECIFIED);
 
-        int h = getRowTop(getCurrentMaxRow() + 1) + mPanelPaddingBottom;
-
+        int h = mBrightnessPaddingTop
+                + mViewPager.getMeasuredHeight()
+                + mPageIndicator.getMeasuredHeight();
         if (mFooter.hasFooter()) {
             h += mFooter.getView().getMeasuredHeight();
         }
@@ -846,10 +857,6 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
         return MeasureSpec.makeMeasureSpec(size, MeasureSpec.EXACTLY);
     }
 
-    public static int atMost(int size) {
-        return MeasureSpec.makeMeasureSpec(size, MeasureSpec.AT_MOST);
-    }
-
     @Override
     protected void handleShowDetailTile(TileRecord r, boolean show) {
         if (r instanceof DragTileRecord) {
@@ -872,14 +879,13 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         final int w = getWidth();
 
-        mQsPanelTop.layout(0, 0, w, mQsPanelTop.getMeasuredHeight());
+        int top = mBrightnessPaddingTop;
 
-        int viewPagerBottom = mQsPanelTop.getMeasuredHeight() + mViewPager.getMeasuredHeight();
-        // view pager laid out from top of brightness view to bottom to page through settings
-        mViewPager.layout(0, 0, w, viewPagerBottom);
+        mViewPager.layout(0, top, w, top + mViewPager.getMeasuredHeight());
+        top += mViewPager.getMeasuredHeight();
 
-        // layout page indicator inside viewpager inset
-        mPageIndicator.layout(0, b - mPageIndicatorHeight, w, b);
+        // layout page indicator below view pager
+        mPageIndicator.layout(0, top, w, top + mPageIndicator.getMeasuredHeight());
 
         mDetail.layout(0, 0, w, mDetail.getMeasuredHeight());
 
@@ -887,10 +893,6 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
             View footer = mFooter.getView();
             footer.layout(0, getMeasuredHeight() - footer.getMeasuredHeight(),
                     footer.getMeasuredWidth(), getMeasuredHeight());
-        }
-
-        if (!isShowingDetail() && !isClosingDetail()) {
-            mQsPanelTop.bringToFront();
         }
 
         ensurePagerState();
@@ -998,10 +1000,6 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
         boolean dragRecordAttached = dragRecordIndex != -1;
         switch (event.getAction()) {
             case DragEvent.ACTION_DRAG_STARTED:
-                if (DEBUG_DRAG) {
-                    Log.v(TAG, "ACTION_DRAG_STARTED on view: " + v);
-                }
-
                 if (originatingTileEvent) {
                     if (DEBUG_DRAG) {
                         Log.v(TAG, "ACTION_DRAG_STARTED on target view.");
@@ -1009,33 +1007,14 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
                     mRestored = false;
                     mQsPanelTop.setDropIcon(R.drawable.ic_qs_tile_delete_disable, R.color.qs_tile_trash_normal_tint);
                 }
-
-                break;
+                return true;
 
             case DragEvent.ACTION_DRAG_ENTERED:
                 if (DEBUG_DRAG) {
-                    if (targetTile != null) {
-                        Log.v(TAG, "ACTION_DRAG_ENTERED on view with tile: " + targetTile);
-                    } else {
-                        Log.v(TAG, "ACTION_DRAG_ENTERED on view: " + v);
-                    }
+                    Log.v(TAG, "ACTION_DRAG_ENTERED on view with tile: " + targetTile);
                 }
                 mLocationHits = 0;
                 mMovedByLocation = false;
-
-                if (v == mQsPanelTop) {
-                    int icon, color;
-                    if (mDraggingRecord.tile instanceof EditTile) {
-                        // use a different warning, user can't erase this one
-                        icon = R.drawable.ic_qs_tile_delete_disable_avd;
-                        color = R.color.qs_tile_trash_delete_tint_warning;
-                    } else {
-                        icon = R.drawable.ic_qs_tile_delete_disable;
-                        color = R.color.qs_tile_trash_delete_tint;
-                    }
-
-                    mQsPanelTop.setDropIcon(icon, color);
-                }
 
                 if (!originatingTileEvent && v != getDropTarget() && targetTile != null) {
                     if (DEBUG_DRAG) {
@@ -1053,7 +1032,7 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
                     }
                 }
 
-                break;
+                return true;
             case DragEvent.ACTION_DRAG_ENDED:
                 if (DEBUG_DRAG) {
                     Log.v(TAG, "ACTION_DRAG_ENDED on view: " + v + "(tile: "
@@ -1064,7 +1043,7 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
                     restoreDraggingTilePosition(v);
                 }
 
-                break;
+                return true;
 
             case DragEvent.ACTION_DROP:
                 if (DEBUG_DRAG) {
@@ -1081,7 +1060,7 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
                     if (mDraggingRecord.tile instanceof EditTile) {
                         mQsPanelTop.toast(R.string.quick_settings_cannot_delete_edit_tile);
                         restoreDraggingTilePosition(v);
-                        break;
+                        return true;
                     } else {
                         mRestored = true;
                         // what spec is this tile?
@@ -1095,7 +1074,7 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
                 } else {
                     restoreDraggingTilePosition(v);
                 }
-                break;
+                return true;
 
             case DragEvent.ACTION_DRAG_EXITED:
                 if (DEBUG_DRAG) {
@@ -1105,11 +1084,6 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
                         Log.v(TAG, "ACTION_DRAG_EXITED on view: " + v);
                     }
                 }
-
-                if (v == mQsPanelTop) {
-                    mQsPanelTop.setDropIcon(R.drawable.ic_qs_tile_delete_disable, R.color.qs_tile_trash_normal_tint);
-                }
-
                 if (originatingTileEvent
                         && mCurrentlyAnimating.isEmpty()
                         && !mViewPager.isFakeDragging()
@@ -1125,7 +1099,7 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
 
                     // move tiles back
                     shiftTiles(mDraggingRecord, false);
-                    break;
+                    return true;
                 }
                 // fall through so exit events can trigger a left shift
             case DragEvent.ACTION_DRAG_LOCATION:
@@ -1187,20 +1161,17 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
                         shiftTiles((DragTileRecord) mRecords.get(mLastRightShift), false);
                         mMovedByLocation = true;
                     }
-
                 } else {
                     if (DEBUG_DRAG) {
                         Log.i(TAG, "ignoring location event because things are animating, size: "
                                 + mCurrentlyAnimating.size());
                     }
                 }
-                break;
-
+                return true;
             default:
                 Log.w(TAG, "unhandled event");
-                return false;
         }
-        return true;
+        return false;
     }
 
     private boolean isDropTargetEvent(DragEvent event, View v) {
@@ -1783,7 +1754,6 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
         mPanelPaddingBottom = res.getDimensionPixelSize(R.dimen.qs_panel_padding_bottom);
         mDualTileUnderlap = res.getDimensionPixelSize(R.dimen.qs_dual_tile_padding_vertical);
         mBrightnessPaddingTop = res.getDimensionPixelSize(R.dimen.qs_brightness_padding_top);
-        mPageIndicatorHeight = res.getDimensionPixelSize(R.dimen.qs_panel_page_indicator_height);
         if (mColumns != columns) {
             mColumns = columns;
             if (isLaidOut()) postInvalidate();
