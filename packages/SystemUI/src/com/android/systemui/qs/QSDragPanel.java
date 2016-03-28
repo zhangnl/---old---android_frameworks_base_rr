@@ -18,9 +18,7 @@ package com.android.systemui.qs;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.app.ActivityManager;
 import android.app.AlertDialog;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Resources;
@@ -49,7 +47,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import com.android.internal.logging.MetricsLogger;
 import com.android.systemui.R;
-import com.android.systemui.cm.UserContentObserver;
 import com.android.systemui.qs.tiles.EditTile;
 import com.android.systemui.qs.tiles.IntentTile;
 import com.android.systemui.settings.BrightnessController;
@@ -108,9 +105,6 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
     private boolean mRestoring;
     // whether the current view we are dragging in has shifted tiles
     private boolean mMovedByLocation = false;
-
-    protected boolean mFirstRowLarge = true;
-    private SettingsObserver mSettingsObserver;
 
     List<TileRecord> mCurrentlyAnimating
             = Collections.synchronizedList(new ArrayList<TileRecord>());
@@ -352,8 +346,6 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
         mViewPager.setOverScrollMode(OVER_SCROLL_NEVER);
 
         setClipChildren(false);
-
-        mSettingsObserver = new SettingsObserver(new Handler());
     }
 
     @Override
@@ -413,12 +405,6 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
         if (mListening) {
             refreshAllTiles();
         }
-        if (mListening) {
-            mSettingsObserver.observe();
-        } else {
-            mSettingsObserver.unobserve();
-        }
-
         if (isLaidOut() && listening && showBrightnessSlider()) {
             mBrightnessController.registerCallbacks();
         } else {
@@ -863,14 +849,14 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
     }
 
     public int getLeft(int page, int row, int col) {
-        final boolean firstRowLarge = mFirstRowLarge && page == 0 && row == 0;
-        int cols = firstRowLarge ? 2 : mColumns;
-        return getLeft(row, col, cols, firstRowLarge);
+        final boolean firstRow = page == 0 && row == 0;
+        int cols = firstRow ? 2 : mColumns;
+        return getLeft(row, col, cols, firstRow);
     }
 
     public int getLeft(int page, int row, int col, int cols) {
-        final boolean firstRowLarge = mFirstRowLarge && page == 0 && row == 0;
-        return getLeft(row, col, cols, firstRowLarge);
+        final boolean firstRow = page == 0 && row == 0;
+        return getLeft(row, col, cols, firstRow);
     }
 
     public int getLeft(int row, int col, int cols, boolean firstRowLarge) {
@@ -1991,8 +1977,6 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
             super.observe();
 
             ContentResolver resolver = mContext.getContentResolver();
-            resolver.registerContentObserver(CMSettings.Secure.getUriFor(
-                    CMSettings.Secure.QS_USE_MAIN_TILES), false, this, UserHandle.USER_ALL);
 	    resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.QS_COLOR_SWITCH),
                     false, this, UserHandle.USER_ALL);	
@@ -2010,20 +1994,7 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
         @Override
         public void update() {
             ContentResolver resolver = mContext.getContentResolver();
-            int currentUserId = ActivityManager.getCurrentUser();
-            boolean firstRowLarge = CMSettings.Secure.getIntForUser(resolver,
-	    mQsColorSwitch = Settings.System.getInt(mContext.getContentResolver(), 
-		    Settings.System.QS_COLOR_SWITCH, 0) == 1;
-            if (firstRowLarge != mFirstRowLarge) {
-                mFirstRowLarge = firstRowLarge;
-                for (TileRecord record : mRecords) {
-                    DragTileRecord dr = (DragTileRecord) record;
-                    final boolean dual = getPage(dr.destinationPage).dualRecord(dr);
-                    record.tileView.setDual(dual, record.tile.hasDualTargetsDetails());
-                }
-                requestLayout();
             }
-        }
     }
 
     public static final class DragTileRecord extends TileRecord {

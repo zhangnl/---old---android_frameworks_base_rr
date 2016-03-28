@@ -44,13 +44,6 @@
                 android:title="@string/quick_settings_title_show_weather"
                 systemui:table="cm_system"/>
 
-	<!-- brightness slider -->
-        <com.android.systemui.qs.QSBooleanSettingRow
-                style="@style/SettingRow"
-                android:key="qs_show_brightness_slider"
-                android:title="@string/quick_settings_title_show_brightness_slider"
-                systemui:table="cm_system"/>
-
         <TextView
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
