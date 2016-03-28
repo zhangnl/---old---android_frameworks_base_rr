@@ -463,42 +463,34 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
         }
     }
 
-    private void persistRecords() {
-        // persist the new config.
-        List<String> newTiles = new ArrayList<>();
-        for (TileRecord record : mRecords) {
-            newTiles.add(mHost.getSpec(record.tile));
-        }
-        mHost.setTiles(newTiles);
-    }
-
     public void setEditing(boolean editing) {
         if (mEditing == editing) return;
-        final boolean isOnSettings = isOnSettingsPage();
+        mEditing = editing;
 
-        mQsPanelTop.setEditing(editing, isOnSettings);
         if (!editing) {
-            persistRecords();
+            // persist the new config.
+            List<String> newTiles = new ArrayList<>();
+            for (TileRecord record : mRecords) {
+                newTiles.add(mHost.getSpec(record.tile));
+            }
+            mHost.setTiles(newTiles);
 
             refreshAllTiles();
 
-            mQsPanelTop.setTranslationX(0);
-            if (isOnSettings) {
-                mViewPager.setCurrentItem(1, true);
-            }
+            mQsPanelTop.animate().translationX(0).start();
         }
-        mEditing = editing;
-        mPagerAdapter.notifyDataSetChanged();
-
-        mPageIndicator.setEditing(editing);
-        mViewPager.setOffscreenPageLimit(mEditing ? getCurrentMaxPageCount() + 1 : 1);
-        mPagerAdapter.notifyDataSetChanged();
 
         // clear the record state
         for (TileRecord record : mRecords) {
             setupRecord(record);
             drawTile(record, record.tile.getState());
         }
+        mQsPanelTop.setEditing(editing);
+        mPageIndicator.setEditing(editing);
+        mPagerAdapter.notifyDataSetChanged();
+
+        mViewPager.setOffscreenPageLimit(mEditing ? getCurrentMaxPageCount() + 1 : 1);
+        mPagerAdapter.notifyDataSetChanged();
 
         requestLayout();
     }
@@ -2208,8 +2200,8 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
 		    Settings.System.QS_COLOR_SWITCH, 0) == 1;
             if (firstRowLarge != mFirstRowLarge) {
                 mFirstRowLarge = firstRowLarge;
+                setTiles(new ArrayList<QSTile<?>>()); // clear out states
                 setTiles(mHost.getTiles());
-                mPagerAdapter.notifyDataSetChanged();
             }
         }
     }

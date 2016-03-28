@@ -1218,7 +1218,7 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
 
     public void setEditing(boolean editing) {
         mEditing = editing;
-        if (editing && mEditingDetailAdapter == null) {
+        if (mEditingDetailAdapter == null) {
             mEditingDetailAdapter = new QSTile.DetailAdapter() {
                 @Override
                 public int getTitle() {
