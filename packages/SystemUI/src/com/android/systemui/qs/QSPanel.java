@@ -45,7 +45,6 @@ import com.android.internal.logging.MetricsLogger;
 import com.android.systemui.FontSizeUtils;
 import com.android.systemui.R;
 import com.android.systemui.qs.QSTile.DetailAdapter;
-import com.android.systemui.qs.QSTileView;
 import com.android.systemui.settings.BrightnessController;
 import com.android.systemui.settings.ToggleSlider;
 import com.android.systemui.statusbar.phone.QSTileHost;
@@ -92,9 +91,11 @@ public class QSPanel extends ViewGroup {
 
     private QSFooter mFooter;
     private boolean mGridContentVisible = true;
+    private int mQsIconColor;
+    private int mLabelColor;
 
     protected Vibrator mVibrator;
-
+    private boolean mUseMainTiles = false;
     public QSPanel(Context context) {
         this(context, null);
     }
@@ -105,7 +106,6 @@ public class QSPanel extends ViewGroup {
 
         mDetail = LayoutInflater.from(context).inflate(R.layout.qs_detail, this, false);
         mDetailContent = (ViewGroup) mDetail.findViewById(android.R.id.content);
-        mDetailRemoveButton = (TextView) mDetail.findViewById(android.R.id.button3);
         mDetailSettingsButton = (TextView) mDetail.findViewById(android.R.id.button2);
         mDetailDoneButton = (TextView) mDetail.findViewById(android.R.id.button1);
         updateDetailText();
@@ -120,9 +120,17 @@ public class QSPanel extends ViewGroup {
         mClipper = new QSDetailClipper(mDetail);
         mVibrator = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
         updateResources();
+        mQsColorSwitch = Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.QS_COLOR_SWITCH, 0) == 1;
+	mLabelColor = Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.QS_TEXT_COLOR, 0xFFFFFFFF);
+	mQsIconColor = Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.QS_ICON_COLOR, 0xFFFFFFFF);
+	 if (mQsColorSwitch) {
+            mDetailDoneButton.setTextColor(mLabelColor);
+            mDetailSettingsButton.setTextColor(mLabelColor);
+        }
 
-
-	mTileView = new QSTileView(mContext);
 	boolean brightnessIconEnabled = Settings.System.getIntForUser(
             mContext.getContentResolver(), Settings.System.BRIGHTNESS_ICON,
                 1, UserHandle.USER_CURRENT) == 1;
@@ -219,8 +227,26 @@ public class QSPanel extends ViewGroup {
     private void updateDetailText() {
         mDetailDoneButton.setText(R.string.quick_settings_done);
         mDetailSettingsButton.setText(R.string.quick_settings_more_settings);
-        mDetailRemoveButton.setText(R.string.quick_settings_remove);
     }
+    
+    
+  public void setDetailBackgroundColor(int color) {
+	final Resources res = getContext().getResources();
+	int mStockBg = res.getColor(R.color.quick_settings_panel_background);
+        mQsColorSwitch = Settings.System.getInt(getContext().getContentResolver(),
+                Settings.System.QS_COLOR_SWITCH, 0) == 1;
+        if (mQsColorSwitch) {
+            if (mDetail != null) {
+                    mDetail.getBackground().setColorFilter(
+                            color, Mode.SRC_OVER);
+                } 		
+            } else {
+	if (mDetail != null) {
+                    mDetail.getBackground().setColorFilter(
+                           mStockBg, Mode.SRC_OVER);
+                }
+	 }    
+	}
 
     public void setBrightnessMirror(BrightnessMirrorController c) {
         super.onFinishInflate();
@@ -307,7 +333,6 @@ public class QSPanel extends ViewGroup {
         super.onConfigurationChanged(newConfig);
         FontSizeUtils.updateFontSize(mDetailDoneButton, R.dimen.qs_detail_button_text_size);
         FontSizeUtils.updateFontSize(mDetailSettingsButton, R.dimen.qs_detail_button_text_size);
-        FontSizeUtils.updateFontSize(mDetailRemoveButton, R.dimen.qs_detail_button_text_size);
 
         // We need to poke the detail views as well as they might not be attached to the view
         // hierarchy but reused at a later point.
@@ -349,13 +374,17 @@ public class QSPanel extends ViewGroup {
         }
     }
 
-    public void refreshAllTiles() {
-        for (TileRecord r : mRecords) {
+     public void refreshAllTiles() {
+        mUseMainTiles = Settings.System.getIntForUser(getContext().getContentResolver(),
+                Settings.System.QS_USE_MAIN_TILES, 1, UserHandle.USER_CURRENT) == 1;
+        for (int i = 0; i < mRecords.size(); i++) {
+            TileRecord r = mRecords.get(i);
+            r.tileView.setDual(mUseMainTiles && i < 2);
             r.tile.refreshState();
         }
         mFooter.refreshState();
     }
-
+    
     public void showDetailAdapter(boolean show, DetailAdapter adapter, int[] locationInWindow) {
         int xInWindow = locationInWindow[0];
         int yInWindow = locationInWindow[1];
@@ -468,6 +497,13 @@ public class QSPanel extends ViewGroup {
         r.tileView.init(click, clickSecondary, longClick);
         r.tile.setListening(mListening);
         callback.onStateChanged(r.tile.getState());
+        mQsColorSwitch = Settings.System.getInt(mContext.getContentResolver(),
+		Settings.System.QS_COLOR_SWITCH, 0) == 1;
+	updateicons();
+	if (mQsColorSwitch) {
+                r.tileView.setLabelColor();
+                r.tileView.setIconColor();
+            }
         r.tile.refreshState();
         mRecords.add(r);
 
@@ -533,16 +569,7 @@ public class QSPanel extends ViewGroup {
                 @Override
                 public void onClick(View v) {
                     mHost.startActivityDismissingKeyguard(settingsIntent);
-                }
-            });
-
-            final StatusBarPanelCustomTile customTile = detailAdapter.getCustomTile();
-            mDetailRemoveButton.setVisibility(customTile != null ? VISIBLE : GONE);
-            mDetailRemoveButton.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    mHost.collapsePanels();
-                    mHost.removeCustomTile(customTile);
+                    vibrateTile(20);
                 }
             });
 
@@ -621,15 +648,12 @@ public class QSPanel extends ViewGroup {
             rows = r + 1;
         }
 
+ 
         View previousView = mBrightnessView;
         for (TileRecord record : mRecords) {
-            final boolean dualTarget = record.tile.hasDualTargetsDetails();
-            if (record.tileView.setDual(dualTarget, dualTarget)) {
-                record.tileView.handleStateChanged(record.tile.getState());
-            }
             if (record.tileView.getVisibility() == GONE) continue;
-            final int cw = record.row == 0 ? mLargeCellWidth : mCellWidth;
-            final int ch = record.row == 0 ? mLargeCellHeight : mCellHeight;
+            final int cw = (mUseMainTiles && record.row == 0) ? mLargeCellWidth : mCellWidth;
+            final int ch = (mUseMainTiles && record.row == 0) ? mLargeCellHeight : mCellHeight;
             record.tileView.measure(exactly(cw), exactly(ch));
             previousView = record.tileView.updateAccessibilityOrder(previousView);
         }
@@ -797,4 +821,11 @@ public class QSPanel extends ViewGroup {
         void onToggleStateChanged(boolean state);
         void onScanStateChanged(boolean state);
     }
+    
+     public void updateicons() {
+	mLabelColor = Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.QS_TEXT_COLOR, 0xFFFFFFFF);
+	mQsIconColor = Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.QS_ICON_COLOR, 0xFFFFFFFF);
+	}
 }

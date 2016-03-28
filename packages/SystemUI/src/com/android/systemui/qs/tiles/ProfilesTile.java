@@ -227,11 +227,6 @@ public class ProfilesTile extends QSTile<QSTile.State> {
         }
 
         @Override
-        public StatusBarPanelCustomTile getCustomTile() {
-            return null;
-        }
-
-        @Override
         public void setToggleState(boolean state) {
             CMSettings.System.putInt(mContext.getContentResolver(),
                     CMSettings.System.SYSTEM_PROFILES_ENABLED, state ? 1 : 0);

@@ -233,11 +233,6 @@ public class NavigationBarTile extends QSTile<NavigationBarTile.NavbarState> {
         }
         
         @Override
-        public StatusBarPanelCustomTile getCustomTile() {
-            return null;
-        }
-
-        @Override
         public Intent getSettingsIntent() {
             Intent intent = new Intent(Intent.ACTION_MAIN);
             intent.setClassName(SETTINGS_PACKAGE_NAME, NAVBAR_SETTINGS);

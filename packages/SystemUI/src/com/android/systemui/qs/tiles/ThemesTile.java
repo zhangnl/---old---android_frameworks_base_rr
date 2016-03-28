@@ -67,7 +67,7 @@ public class ThemesTile extends QSTile<QSTile.BooleanState> implements ThemeMana
     public ThemesTile(Host host) {
         super(host);
         mDetailAdapter = new ThemesDetailAdapter();
-        mService = ThemeManager.getInstance();
+        mService = ThemeManager.getInstance(mContext);
         mState.value = true;
         mService.registerThemeChangeListener(this);
         // Log.d("ThemesTile", "new");
@@ -256,11 +256,6 @@ public class ThemesTile extends QSTile<QSTile.BooleanState> implements ThemeMana
             intent.addCategory(CATEGORY_THEME_CHOOSER);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
             return intent;
-        }
-
-    	@Override
-        public StatusBarPanelCustomTile getCustomTile() {
-            return null;
         }
 
 

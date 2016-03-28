@@ -174,11 +174,6 @@ public class CastTile extends QSTile<QSTile.BooleanState> {
         }
 
         @Override
-        public StatusBarPanelCustomTile getCustomTile() {
-            return null;
-        }
-
-        @Override
         public void setToggleState(boolean state) {
             // noop
         }

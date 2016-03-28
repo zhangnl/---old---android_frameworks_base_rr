@@ -125,6 +125,7 @@ import android.view.animation.AccelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.PathInterpolator;
+import android.widget.AdapterView;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -163,6 +164,7 @@ import com.android.systemui.keyguard.KeyguardViewMediator;
 import com.android.systemui.navigation.NavigationController;
 import com.android.systemui.navigation.Navigator;
 import com.android.systemui.omni.StatusBarHeaderMachine;
+import com.android.systemui.qs.QSDetailItemsList;
 import com.android.systemui.qs.QSPanel;
 import com.android.systemui.qs.QSTile;
 import com.android.systemui.qs.QSTileView;
@@ -401,7 +403,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     private boolean mQsColorSwitch = false;
     public boolean mColorSwitch = false ;
     private  View mIcon;
-    public QSDetailItems mQsDetail;
     public SignalTileView mSignalView;	
     public boolean mNavSwitch = false ;
 
@@ -1939,23 +1940,19 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 
         // Set up the quick settings tile panel
         mQSPanel = (QSPanel) mStatusBarWindowContent.findViewById(R.id.quick_settings_panel);
-        if (mQSPanel != null) {
-            if (mQSTileHost == null) {
-                mQSTileHost = new QSTileHost(mContext, this,
-                        mBluetoothController, mLocationController, mRotationLockController,
-                        mNetworkController, mZenModeController, mHotspotController,
-                        mCastController, mFlashlightController,
-                        mUserSwitcherController, mKeyguardMonitor,
-                        mSecurityController);
-            }
-            mQSPanel.setHost(mQSTileHost);
-            mQSPanel.setTiles(mQSTileHost.getTiles());
-            if (mBrightnessMirrorController == null) {
-                mBrightnessMirrorController = new BrightnessMirrorController(mContext, mStatusBarWindowContent);
-            }
+	if (mQSPanel != null) {
+            final QSTileHost qsh = new QSTileHost(mContext, this,
+                    mBluetoothController, mLocationController, mRotationLockController,
+                    mNetworkController, mZenModeController, mHotspotController,
+                    mCastController, mFlashlightController,
+                    mUserSwitcherController, mKeyguardMonitor,
+                    mSecurityController);
+            mQSPanel.setHost(qsh);
+            mQSPanel.setTiles(qsh.getTiles());
+            mBrightnessMirrorController = new BrightnessMirrorController(mContext, mStatusBarWindowContent);
             mQSPanel.setBrightnessMirror(mBrightnessMirrorController);
             mHeader.setQSPanel(mQSPanel);
-            mQSTileHost.setCallback(new QSTileHost.Callback() {
+            qsh.setCallback(new QSTileHost.Callback() {
                 @Override
                 public void onTilesChanged() {
                     mQSPanel.setTiles(qsh.getTiles());
@@ -4750,7 +4747,16 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                 removeAllViews((ViewGroup) child);
             }
         }
-        parent.removeAllViews();
+        if (parent instanceof AdapterView) {
+            //We know that when it's AdapterView it's from CM's QS detail items list
+            QSDetailItemsList.QSDetailListAdapter adapter =
+                    (QSDetailItemsList.QSDetailListAdapter) ((AdapterView) parent).getAdapter();
+
+            adapter.clear();
+            adapter.notifyDataSetInvalidated();
+        } else {
+            parent.removeAllViews();
+        }
     }
 
     /**

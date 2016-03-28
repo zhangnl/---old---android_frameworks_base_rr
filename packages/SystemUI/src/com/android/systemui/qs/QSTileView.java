@@ -221,10 +221,6 @@ public class QSTileView extends ViewGroup {
     public boolean setDual(boolean dual) {
         final boolean changed = dual != mDual;
         mDual = dual;
-        mDualDetails = hasDetails;
-        if (changed) {
-            recreateLabel();
-        }
         if (mTileBackground instanceof RippleDrawable) {
             setRipple((RippleDrawable) mTileBackground);
         }

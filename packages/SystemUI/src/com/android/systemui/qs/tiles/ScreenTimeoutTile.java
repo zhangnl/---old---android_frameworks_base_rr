@@ -289,11 +289,6 @@ public class ScreenTimeoutTile extends QSTile<ScreenTimeoutTile.TimeoutState> {
         }
 
         @Override
-        public StatusBarPanelCustomTile getCustomTile() {
-            return null;
-        }
-
-        @Override
         public void setToggleState(boolean state) {
             // noop
         }

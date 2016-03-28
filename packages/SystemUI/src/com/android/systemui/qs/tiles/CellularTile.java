@@ -265,10 +265,6 @@ public class CellularTile extends QSTile<QSTile.SignalState> {
     };
 
     private final class CellularDetailAdapter implements DetailAdapter {
-        @Override
-        public StatusBarPanelCustomTile getCustomTile() {
-            return null;
-        }
 
         @Override
         public int getTitle() {

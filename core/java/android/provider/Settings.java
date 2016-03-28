@@ -5216,11 +5216,6 @@ public final class Settings {
          */
         public static final String NAV_BUTTONS_ROTATION = "nav_buttons_rotation";
 
-        /** Whether to vibrate when quick settings tile is pressed.
-         *
-         * @hide
-         */
-        public static final String QUICK_SETTINGS_TILES_VIBRATE = "quick_settings_vibrate";
 
         /** Whether to vibrate when quick settings tile is Single pressed.
          *
@@ -5245,7 +5240,12 @@ public final class Settings {
          * @hide
          */
         public static final String QUICK_SETTINGS_HEADER_VIBRATE_LONG = "quick_settings_header_vibrate_long";
-
+        
+        /** Whether to use show main tiles .
+         *
+         * @hide
+         */        
+        public static final String QS_USE_MAIN_TILES = "qs_use_main_tiles";
 
         /**
          * Quick Settings Smart Pulldown

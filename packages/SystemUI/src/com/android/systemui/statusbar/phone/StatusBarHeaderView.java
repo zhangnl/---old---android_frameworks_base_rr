@@ -79,7 +79,6 @@ import com.android.systemui.FontSizeUtils;
 import com.android.systemui.R;
 import com.android.systemui.cm.UserContentObserver;
 import com.android.systemui.omni.StatusBarHeaderMachine;
-import com.android.systemui.qs.QSDragPanel;
 import com.android.systemui.qs.QSPanel;
 import com.android.systemui.qs.QSTile;
 import com.android.systemui.statusbar.policy.BatteryController;
@@ -346,8 +345,6 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
     public void setHeaderColor() {
 	final Resources res = getContext().getResources();
 	mHeaderView = findViewById(R.id.header);
-	int mStockHeader = res.getColor(R.color.system_secondary_color);
-	int mStockHeaderText = res.getColor(R.color.qs_edit_header_instruction_text_color);
 	mQsDetailHeaderTitle = (TextView) mQsDetailHeader.findViewById(android.R.id.title);
 	mBackgroundImage = (ImageView) findViewById(R.id.background_image);
         int mHeaderColor = Settings.System.getInt(mContext.getContentResolver(),
@@ -364,16 +361,8 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
         }
 	if ( mQsDetailHeaderTitle != null) {
 	    mQsDetailHeaderTitle.setTextColor(mQsDetailColor);
+	  }
 	}
-
-	} else {
-	if (mHeaderView != null) {
-            mHeaderView.getBackground().setColorFilter(null);
-        }
-	if ( mQsDetailHeaderTitle != null) {
-	    mQsDetailHeaderTitle.setTextColor(mStockHeaderText);
-		}
-	}	
    }
 
     @Override
@@ -427,15 +416,6 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
             if (mVibrator.hasVibrator()) { mVibrator.vibrate(duration); }
         	}
 	}
-
-    @Override
-    protected void onDetachedFromWindow() {
-        super.onDetachedFromWindow();
-        if (mUserInfoController != null) {
-            mUserInfoController.removeListener(mUserInfoChangedListener);
-        }
-        setListening(false);
-    }
 
     private void updateClockCollapsedMargin() {
         Resources res = getResources();
@@ -912,21 +892,14 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
         setClipBounds(mClipBounds);
         invalidateOutline();
     }
-
-    private UserInfoController.OnUserInfoChangedListener mUserInfoChangedListener =
-            new UserInfoController.OnUserInfoChangedListener() {
-        @Override
-        public void onUserInfoChanged(String name, Drawable picture) {
-            mMultiUserAvatar.setImageDrawable(picture);
-        }
-    };
-
+    
     public void setUserInfoController(UserInfoController userInfoController) {
-        mUserInfoController = userInfoController;
-        userInfoController.addListener(mUserInfoChangedListener);
-        if (mMultiUserSwitch != null) {
-            mMultiUserSwitch.setUserInfoController(mUserInfoController);
-        }
+        userInfoController.addListener(new UserInfoController.OnUserInfoChangedListener() {
+            @Override
+            public void onUserInfoChanged(String name, Drawable picture) {
+                mMultiUserAvatar.setImageDrawable(picture);
+            }
+        });
     }
 
     @Override
@@ -940,11 +913,6 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
 		vibrateheader(20);
 		} else { 
 		 vibrateheader(0);
-		}
-            if (mSettingsButton.isTunerClick()) {
-                mSettingsButton.consumeClick();
-                mQSPanel.getHost().setEditing(!mQSPanel.getHost().isEditing());
-            } else {
 		startSettingsActivity();
 		}
         } else if (v == mSystemIconsSuperContainer) {
@@ -1067,7 +1035,7 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
         mActivityStarter.startActivity(intent, true /* dismissShade */);
     }
 
-     public void setQSPanel(QSDragPanel qsp) {
+     public void setQSPanel(QSPanel qsp) {
         mQSPanel = qsp;
         if (mQSPanel != null) {
             mQSPanel.setCallback(mQsPanelCallback);
@@ -1324,7 +1292,7 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
             }
         }
 
-        private void handleShowingDetail(final QSTile.DetailAdapter detail) {
+            private void handleShowingDetail(final QSTile.DetailAdapter detail) {
             final boolean showingDetail = detail != null;
             transition(mClock, !showingDetail);
             transition(mDateGroup, !showingDetail);
@@ -1339,23 +1307,11 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
             if (showingDetail) {
                 mQsDetailHeaderTitle.setText(detail.getTitle());
                 final Boolean toggleState = detail.getToggleState();
-                if (detail.getTitle() == R.string.quick_settings_edit_label) {
-                    mEditTileDoneText.setVisibility(View.VISIBLE);
-                    mQsDetailHeaderSwitch.setVisibility(View.INVISIBLE);
-                    mQsDetailHeader.setClickable(true);
-                    mQsDetailHeader.setOnClickListener(new OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            mQSPanel.getHost().setEditing(false);
-                        }
-                    });
-                } else if (toggleState == null) {
-                    mQsDetailHeaderSwitch.setVisibility(View.INVISIBLE);
-                    mEditTileDoneText.setVisibility(View.GONE);
+                if (toggleState == null) {
+                    mQsDetailHeaderSwitch.setVisibility(INVISIBLE);
                     mQsDetailHeader.setClickable(false);
                 } else {
-                    mEditTileDoneText.setVisibility(View.GONE);
-                    mQsDetailHeaderSwitch.setVisibility(View.VISIBLE);
+                    mQsDetailHeaderSwitch.setVisibility(VISIBLE);
                     mQsDetailHeaderSwitch.setChecked(toggleState);
                     mQsDetailHeader.setClickable(true);
                     mQsDetailHeader.setOnClickListener(new OnClickListener() {
@@ -1606,7 +1562,6 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
         mQsDetailHeaderTitle.setShadowLayer(5, 0, 0, Color.BLACK);
         mWeatherLine1.setShadowLayer(5, 0, 0, Color.BLACK);
         mWeatherLine2.setShadowLayer(5, 0, 0, Color.BLACK);
-        mEditTileDoneText.setShadowLayer(5, 0, 0, Color.BLACK);
     }
 
     /**
@@ -1622,7 +1577,6 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
         mQsDetailHeaderTitle.setShadowLayer(0, 0, 0, Color.BLACK);
         mWeatherLine1.setShadowLayer(0, 0, 0, Color.BLACK);
         mWeatherLine2.setShadowLayer(0, 0, 0, Color.BLACK);
-        mEditTileDoneText.setShadowLayer(0, 0, 0, Color.BLACK);
     }
 
     private void setQSHeaderAlpha() {
@@ -2108,127 +2062,102 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
             default:
                 mBatteryLevel.setTypeface(Typeface.create("sans-serif", Typeface.NORMAL));
                 mQsDetailHeaderTitle.setTypeface(Typeface.create("sans-serif", Typeface.NORMAL));
-                mEditTileDoneText.setTypeface(Typeface.create("sans-serif", Typeface.NORMAL));
                 break;
             case FONT_ITALIC:
                 mBatteryLevel.setTypeface(Typeface.create("sans-serif", Typeface.ITALIC));
                 mQsDetailHeaderTitle.setTypeface(Typeface.create("sans-serif", Typeface.ITALIC));
-                mEditTileDoneText.setTypeface(Typeface.create("sans-serif", Typeface.ITALIC));
                 break;
             case FONT_BOLD:
                 mBatteryLevel.setTypeface(Typeface.create("sans-serif", Typeface.BOLD));
                 mQsDetailHeaderTitle.setTypeface(Typeface.create("sans-serif", Typeface.BOLD));
-                mEditTileDoneText.setTypeface(Typeface.create("sans-serif", Typeface.BOLD));
                 break;
             case FONT_BOLD_ITALIC:
                 mBatteryLevel.setTypeface(Typeface.create("sans-serif", Typeface.BOLD_ITALIC));
                 mQsDetailHeaderTitle.setTypeface(Typeface.create("sans-serif", Typeface.BOLD_ITALIC));
-                mEditTileDoneText.setTypeface(Typeface.create("sans-serif", Typeface.BOLD_ITALIC));
                 break;
             case FONT_LIGHT:
                 mBatteryLevel.setTypeface(Typeface.create("sans-serif-light", Typeface.NORMAL));
                 mQsDetailHeaderTitle.setTypeface(Typeface.create("sans-serif-light", Typeface.NORMAL));
-                mEditTileDoneText.setTypeface(Typeface.create("sans-serif-light", Typeface.NORMAL));
                 break;
             case FONT_LIGHT_ITALIC:
                 mBatteryLevel.setTypeface(Typeface.create("sans-serif-light", Typeface.ITALIC));
                 mQsDetailHeaderTitle.setTypeface(Typeface.create("sans-serif-light", Typeface.ITALIC));
-                mEditTileDoneText.setTypeface(Typeface.create("sans-serif-light", Typeface.ITALIC));
                 break;
             case FONT_THIN:
                 mBatteryLevel.setTypeface(Typeface.create("sans-serif-thin", Typeface.NORMAL));
                 mQsDetailHeaderTitle.setTypeface(Typeface.create("sans-serif-thin", Typeface.NORMAL));
-                mEditTileDoneText.setTypeface(Typeface.create("sans-serif-thin", Typeface.NORMAL));
                 break;
             case FONT_THIN_ITALIC:
                 mBatteryLevel.setTypeface(Typeface.create("sans-serif-thin", Typeface.ITALIC));
                 mQsDetailHeaderTitle.setTypeface(Typeface.create("sans-serif-thin", Typeface.ITALIC));
-                mEditTileDoneText.setTypeface(Typeface.create("sans-serif-thin", Typeface.ITALIC));
                 break;
             case FONT_CONDENSED:
                 mBatteryLevel.setTypeface(Typeface.create("sans-serif-condensed", Typeface.NORMAL));
                 mQsDetailHeaderTitle.setTypeface(Typeface.create("sans-serif-condensed", Typeface.NORMAL));
-                mEditTileDoneText.setTypeface(Typeface.create("sans-serif-condensed", Typeface.NORMAL));
                 break;
             case FONT_CONDENSED_ITALIC:
                 mBatteryLevel.setTypeface(Typeface.create("sans-serif-condensed", Typeface.ITALIC));
                 mQsDetailHeaderTitle.setTypeface(Typeface.create("sans-serif-condensed", Typeface.ITALIC));
-                mEditTileDoneText.setTypeface(Typeface.create("sans-serif-condensed", Typeface.ITALIC));
                 break;
             case FONT_CONDENSED_LIGHT:
                 mBatteryLevel.setTypeface(Typeface.create("sans-serif-condensed-light", Typeface.NORMAL));
                 mQsDetailHeaderTitle.setTypeface(Typeface.create("sans-serif-condensed-light", Typeface.NORMAL));
-                mEditTileDoneText.setTypeface(Typeface.create("sans-serif-condensed-light", Typeface.NORMAL));
                 break;
             case FONT_CONDENSED_LIGHT_ITALIC:
                 mBatteryLevel.setTypeface(Typeface.create("sans-serif-condensed-light", Typeface.ITALIC));
                 mQsDetailHeaderTitle.setTypeface(Typeface.create("sans-serif-condensed-light", Typeface.ITALIC));
-                mEditTileDoneText.setTypeface(Typeface.create("sans-serif-condensed-light", Typeface.ITALIC));
                 break;
             case FONT_CONDENSED_BOLD:
                 mBatteryLevel.setTypeface(Typeface.create("sans-serif-condensed", Typeface.BOLD));
                 mQsDetailHeaderTitle.setTypeface(Typeface.create("sans-serif-condensed", Typeface.BOLD));
-                mEditTileDoneText.setTypeface(Typeface.create("sans-serif-condensed", Typeface.BOLD));
                 break;
             case FONT_CONDENSED_BOLD_ITALIC:
                 mBatteryLevel.setTypeface(Typeface.create("sans-serif-condensed", Typeface.BOLD_ITALIC));
                 mQsDetailHeaderTitle.setTypeface(Typeface.create("sans-serif-condensed", Typeface.BOLD_ITALIC));
-                mEditTileDoneText.setTypeface(Typeface.create("sans-serif-condensed", Typeface.BOLD_ITALIC));
                 break;
             case FONT_MEDIUM:
                 mBatteryLevel.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
                 mQsDetailHeaderTitle.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
-                mEditTileDoneText.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
                 break;
             case FONT_MEDIUM_ITALIC:
                 mBatteryLevel.setTypeface(Typeface.create("sans-serif-medium", Typeface.ITALIC));
                 mQsDetailHeaderTitle.setTypeface(Typeface.create("sans-serif-medium", Typeface.ITALIC));
-                mEditTileDoneText.setTypeface(Typeface.create("sans-serif-medium", Typeface.ITALIC));
                 break;
             case FONT_BLACK:
                 mBatteryLevel.setTypeface(Typeface.create("sans-serif-black", Typeface.NORMAL));
                 mQsDetailHeaderTitle.setTypeface(Typeface.create("sans-serif-black", Typeface.NORMAL));
-                mEditTileDoneText.setTypeface(Typeface.create("sans-serif-black", Typeface.NORMAL));
                 break;
             case FONT_BLACK_ITALIC:
                 mBatteryLevel.setTypeface(Typeface.create("sans-serif-black", Typeface.ITALIC));
                 mQsDetailHeaderTitle.setTypeface(Typeface.create("sans-serif-black", Typeface.ITALIC));
-                mEditTileDoneText.setTypeface(Typeface.create("sans-serif-black", Typeface.ITALIC));
                 break;
             case FONT_DANCINGSCRIPT:
                 mBatteryLevel.setTypeface(Typeface.create("cursive", Typeface.NORMAL));
                 mQsDetailHeaderTitle.setTypeface(Typeface.create("cursive", Typeface.NORMAL));
-                mEditTileDoneText.setTypeface(Typeface.create("cursive", Typeface.NORMAL));
                 break;
             case FONT_DANCINGSCRIPT_BOLD:
                 mBatteryLevel.setTypeface(Typeface.create("cursive", Typeface.BOLD));
                 mQsDetailHeaderTitle.setTypeface(Typeface.create("cursive", Typeface.BOLD));
-                mEditTileDoneText.setTypeface(Typeface.create("cursive", Typeface.BOLD));
                 break;
             case FONT_COMINGSOON:
                 mBatteryLevel.setTypeface(Typeface.create("casual", Typeface.NORMAL));
                 mQsDetailHeaderTitle.setTypeface(Typeface.create("casual", Typeface.NORMAL));
-                mEditTileDoneText.setTypeface(Typeface.create("casual", Typeface.NORMAL));
                 break;
             case FONT_NOTOSERIF:
                 mBatteryLevel.setTypeface(Typeface.create("serif", Typeface.NORMAL));
                 mQsDetailHeaderTitle.setTypeface(Typeface.create("serif", Typeface.NORMAL));
-                mEditTileDoneText.setTypeface(Typeface.create("serif", Typeface.NORMAL));
                 break;
             case FONT_NOTOSERIF_ITALIC:
                 mBatteryLevel.setTypeface(Typeface.create("serif", Typeface.ITALIC));
                 mQsDetailHeaderTitle.setTypeface(Typeface.create("serif", Typeface.ITALIC));
-                mEditTileDoneText.setTypeface(Typeface.create("serif", Typeface.ITALIC));
                 break;
             case FONT_NOTOSERIF_BOLD:
                 mBatteryLevel.setTypeface(Typeface.create("serif", Typeface.BOLD));
                 mQsDetailHeaderTitle.setTypeface(Typeface.create("serif", Typeface.BOLD));
-                mEditTileDoneText.setTypeface(Typeface.create("serif", Typeface.BOLD));
                 break;
             case FONT_NOTOSERIF_BOLD_ITALIC:
                 mBatteryLevel.setTypeface(Typeface.create("serif", Typeface.BOLD_ITALIC));
                 mQsDetailHeaderTitle.setTypeface(Typeface.create("serif", Typeface.BOLD_ITALIC));
-                mEditTileDoneText.setTypeface(Typeface.create("serif", Typeface.BOLD_ITALIC));
                 break;
         }
     }

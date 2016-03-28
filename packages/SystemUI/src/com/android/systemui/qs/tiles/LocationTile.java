@@ -283,11 +283,6 @@ public class LocationTile extends QSTile<QSTile.BooleanState> {
         }
 
         @Override
-        public StatusBarPanelCustomTile getCustomTile() {
-            return null;
-        }
-
-        @Override
         public void setToggleState(boolean state) {
             mController.setLocationEnabled(state);
             rebuildLocationList(state);

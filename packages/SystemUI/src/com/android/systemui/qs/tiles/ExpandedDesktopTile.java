@@ -280,10 +280,6 @@ public class ExpandedDesktopTile extends QSTile<QSTile.BooleanState> {
             return MetricsConstants.DONT_TRACK_ME_BRO;
         }
 
-        @Override
-        public StatusBarPanelCustomTile getCustomTile() {
-            return null;
-        }
 
         @Override
         public View createDetailView(Context context, View convertView, ViewGroup parent) {

@@ -240,11 +240,6 @@ public class DndTile extends QSTile<QSTile.BooleanState> {
         }
 
         @Override
-        public StatusBarPanelCustomTile getCustomTile() {
-            return null;
-        }
-
-        @Override
         public void setToggleState(boolean state) {
             MetricsLogger.action(mContext, MetricsLogger.QS_DND_TOGGLE, state);
             if (!state) {

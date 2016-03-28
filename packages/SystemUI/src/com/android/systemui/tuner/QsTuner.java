@@ -200,7 +200,6 @@ public class QsTuner extends Fragment implements Callback {
         else if (spec.equals("location")) return R.string.quick_settings_location_label;
         else if (spec.equals("cast")) return R.string.quick_settings_cast_title;
         else if (spec.equals("hotspot")) return R.string.quick_settings_hotspot_label;
-        else if (spec.equals("edit")) return R.string.quick_settings_edit_label;
         else if (spec.equals("adb_network")) return R.string.quick_settings_network_adb_label;
         else if (spec.equals("compass")) return R.string.quick_settings_compass_label;
         else if (spec.equals("nfc")) return R.string.quick_settings_nfc_label;
@@ -210,7 +209,6 @@ public class QsTuner extends Fragment implements Callback {
         else if (spec.equals("usb_tether")) return R.string.quick_settings_usb_tether_label;
         else if (spec.equals("screen_timeout")) return R.string.quick_settings_screen_timeout_detail_title;
         else if (spec.equals("performance")) return R.string.qs_tile_performance;
-        else if (spec.equals("lockscreen")) return R.string.quick_settings_lockscreen_label;
         else if (spec.equals("ambient_display")) return R.string.quick_settings_ambient_display_label;
         else if (spec.equals("live_display")) return R.string.live_display_title;
         else if (spec.equals("music")) return R.string.quick_settings_music_label;
@@ -424,11 +422,6 @@ public class QsTuner extends Fragment implements Callback {
         public QSTileView createTileView(Context context) {
             mView = super.createTileView(context);
             return mView;
-        }
-
-        @Override
-        public boolean supportsDualTargets() {
-            return "wifi".equals(mSpec) || "bt".equals(mSpec);
         }
 
         @Override

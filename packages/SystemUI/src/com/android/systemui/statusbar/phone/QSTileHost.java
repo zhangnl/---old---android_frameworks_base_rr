@@ -50,7 +50,6 @@ import com.android.systemui.qs.tiles.CastTile;
 import com.android.systemui.qs.tiles.CellularTile;
 import com.android.systemui.qs.tiles.ColorInversionTile;
 import com.android.systemui.qs.tiles.CompassTile;
-import com.android.systemui.qs.tiles.CustomQSTile;
 import com.android.systemui.qs.tiles.DndTile;
 import com.android.systemui.qs.tiles.FlashlightTile;
 import com.android.systemui.qs.tiles.HeadsUpTile;
@@ -59,11 +58,11 @@ import com.android.systemui.qs.tiles.IntentTile;
 import com.android.systemui.qs.tiles.LiveDisplayTile;
 import com.android.systemui.qs.tiles.LocationTile;
 import com.android.systemui.qs.tiles.AppCircleBarTile;
+import com.android.systemui.qs.tiles.ExpandedDesktopTile;
 import com.android.systemui.qs.tiles.KernelAdiutorTile;
 import com.android.systemui.qs.tiles.HardwareKeysTile;
 import com.android.systemui.qs.tiles.GestureAnyWhereTile;
 import com.android.systemui.qs.tiles.ScreenrecordTile;
-import com.android.systemui.qs.tiles.LockscreenToggleTile;
 import com.android.systemui.qs.tiles.MusicTile;
 import com.android.systemui.qs.tiles.RRTile;
 import com.android.systemui.qs.tiles.KillAppTile;
@@ -100,7 +99,6 @@ import com.android.systemui.tuner.TunerService;
 import com.android.systemui.tuner.TunerService.Tunable;
 import android.telephony.TelephonyManager;
 import cyanogenmod.app.CustomTileListenerService;
-import cyanogenmod.app.StatusBarPanelCustomTile;
 import cyanogenmod.providers.CMSettings;
 import com.android.internal.telephony.PhoneConstants;
 
@@ -168,15 +166,6 @@ public class QSTileHost implements QSTile.Host, Tunable {
         mLooper = ht.getLooper();
         mHandler = new Handler();
 
-        // Set up the initial notification state.
-        try {
-            mCustomTileListenerService.registerAsSystemService(mContext,
-                    new ComponentName(mContext.getPackageName(), getClass().getCanonicalName()),
-                    UserHandle.USER_ALL);
-        } catch (RemoteException e) {
-            Log.e(TAG, "Unable to register custom tile listener", e);
-        }
-
         TunerService.get(mContext).addTunable(this, TILES_SETTING);
     }
 
@@ -213,12 +202,6 @@ public class QSTileHost implements QSTile.Host, Tunable {
     }
 
     @Override
-    public void removeCustomTile(StatusBarPanelCustomTile customTile) {
-        mCustomTileListenerService.removeCustomTile(customTile.getPackage(),
-                customTile.getTag(), customTile.getId());
-    }
-
-    @Override
     public void startActivityDismissingKeyguard(PendingIntent intent) {
         mStatusBar.postStartActivityDismissingKeyguard(intent);
     }
@@ -231,11 +214,6 @@ public class QSTileHost implements QSTile.Host, Tunable {
     @Override
     public void collapsePanels() {
         mStatusBar.postAnimateCollapsePanels();
-    }
-
-    @Override
-    public RemoteViews.OnClickHandler getOnClickHandler() {
-        return mStatusBar.getOnClickHandler();
     }
 
     @Override
@@ -301,7 +279,7 @@ public class QSTileHost implements QSTile.Host, Tunable {
         return mSecurity;
     }
     
-    @Override
+        @Override
     public void onTuningChanged(String key, String newValue) {
         if (!TILES_SETTING.equals(key)) {
             return;
@@ -322,12 +300,7 @@ public class QSTileHost implements QSTile.Host, Tunable {
             } else {
                 if (DEBUG) Log.d(TAG, "Creating tile: " + tileSpec);
                 try {
-                    if (mCustomTileData.get(tileSpec) != null) {
-                        newTiles.put(tileSpec, new CustomQSTile(this,
-                                mCustomTileData.get(tileSpec).sbc));
-                    } else {
-                        newTiles.put(tileSpec, createTile(tileSpec));
-                    }
+                    newTiles.put(tileSpec, createTile(tileSpec));
                 } catch (Throwable t) {
                     Log.w(TAG, "Error creating tile for spec: " + tileSpec, t);
                 }
@@ -343,7 +316,7 @@ public class QSTileHost implements QSTile.Host, Tunable {
     }
 
 
-    public QSTile<?> createTile(String tileSpec) {
+    protected QSTile<?> createTile(String tileSpec) {
 	if (tileSpec.equals("wifi")) return new WifiTile(this);
 	else if (tileSpec.equals("bt")) return new BluetoothTile(this);
 	else if (tileSpec.equals("inversion")) return new ColorInversionTile(this);
@@ -355,7 +328,6 @@ public class QSTileHost implements QSTile.Host, Tunable {
 	else if (tileSpec.equals("location")) return new LocationTile(this);
 	else if (tileSpec.equals("cast")) return new CastTile(this);
 	else if (tileSpec.equals("hotspot")) return new HotspotTile(this);
-	else if (tileSpec.equals("edit")) return new EditTile(this);
 	else if (tileSpec.equals("adb_network")) return new AdbOverNetworkTile(this);
 	else if (tileSpec.equals("compass")) return new CompassTile(this);
 	else if (tileSpec.equals("nfc")) return new NfcTile(this);
@@ -365,7 +337,6 @@ public class QSTileHost implements QSTile.Host, Tunable {
 	else if (tileSpec.equals("usb_tether")) return new UsbTetherTile(this);
 	else if (tileSpec.equals("screen_timeout")) return new ScreenTimeoutTile(this);
 	else if (tileSpec.equals("performance")) return new PerfProfileTile(this);
-	else if (tileSpec.equals("lockscreen")) return  new LockscreenToggleTile(this);
 	else if (tileSpec.equals("ambient_display")) return new AmbientDisplayTile(this);
 	else if (tileSpec.equals("live_display")) return new LiveDisplayTile(this);
 	else if (tileSpec.equals("brightness")) return new BrightnessTile(this);
