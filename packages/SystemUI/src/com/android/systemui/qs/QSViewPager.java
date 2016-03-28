@@ -25,11 +25,6 @@ public class QSViewPager extends ViewPager {
     }
 
     @Override
-    public boolean hasOverlappingRendering() {
-        return mDragPanel.isEditing();
-    }
-
-    @Override
     public boolean canScrollHorizontally(int direction) {
         if (direction < 0
                 && mDragPanel.isDragging()

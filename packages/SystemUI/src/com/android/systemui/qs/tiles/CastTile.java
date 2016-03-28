@@ -93,11 +93,6 @@ public class CastTile extends QSTile<QSTile.BooleanState> {
     }
 
     @Override
-    protected void handleSecondaryClick() {
-        handleClick();
-    }
-
-    @Override
     protected void handleLongClick() {
         mHost.startActivityDismissingKeyguard(CAST_SETTINGS);
     }
@@ -139,11 +134,6 @@ public class CastTile extends QSTile<QSTile.BooleanState> {
             return mContext.getString(R.string.accessibility_casting_turned_off);
         }
         return null;
-    }
-
-    @Override
-    public boolean hasDualTargetsDetails() {
-        return true;
     }
 
     private String getDeviceName(CastDevice device) {
