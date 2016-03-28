@@ -1,3 +1,34 @@
+
+Skip to content
+This repository
+
+    Pull requests
+    Issues
+    Gist
+
+    @varund7726
+
+7
+5
+
+    35
+
+DirtyUnicorns/android_frameworks_base
+Code
+Issues 0
+Pull requests 0
+Wiki
+Pulse
+Graphs
+android_frameworks_base/packages/SystemUI/src/com/android/systemui/qs/QSTile.java
+23c33a9 on 15 Feb
+@beanstown106 beanstown106 Fix Dual tiles in qs tuner
+@JAMonk
+@cwren
+@Mazda--
+@beanstown106
+@cyanogen
+533 lines (459 sloc) 17.9 KB
 /*
  * Copyright (C) 2014 The Android Open Source Project
  *
@@ -239,6 +270,11 @@ public abstract class QSTile<TState extends State> implements Listenable {
     protected void handleDestroy() {
         setListening(false);
         mCallback = null;
+    }
+    
+    
+    public boolean hasDualTargetsDetails() {
+        return true;
     }
 
     protected final class H extends Handler {
@@ -530,3 +566,8 @@ public abstract class QSTile<TState extends State> implements Listenable {
         }
     }
 }
+
+    Status API Training Shop Blog About 
+
+    © 2016 GitHub, Inc. Terms Privacy Security Contact Help 
+
