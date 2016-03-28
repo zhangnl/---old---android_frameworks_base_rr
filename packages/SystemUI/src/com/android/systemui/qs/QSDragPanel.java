@@ -1647,7 +1647,6 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
         return mCurrentlyAnimating.contains(t);
     }
 
-<<<<<<< HEAD
     public void cleanup() {
         if (mSettingsObserver != null) {
             mSettingsObserver.unobserve();
@@ -1740,20 +1739,32 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
         }
     // todo implement proper add tile ui
     protected void showAddDialog() {
-        List<String> currentTileSpec = mHost.getTileSpecs();
-        final List<String> availableTilesSpec = QSUtils.getAvailableTiles(getContext());
-
-        // Remove tiles already used
-        availableTilesSpec.removeAll(currentTileSpec);
-
-        // Populate labels
-        List<String> availableTilesLabel = new ArrayList<String>();
-        for (String tileSpec : availableTilesSpec) {
-            int resource = QSTileHost.getLabelResource(tileSpec);
+        List<String> tiles = mHost.getTileSpecs();
+        int numBroadcast = 0;
+        for (int i = 0; i < tiles.size(); i++) {
+            if (tiles.get(i).startsWith(IntentTile.PREFIX)) {
+                numBroadcast++;
+            }
+        }
+        List<String> defaults = QSUtils.getAvailableTiles(getContext());
+        int availableSize = defaults.size() + 1 - (tiles.size() - numBroadcast);
+        if (availableSize < 1) {
+            availableSize = 1;
+        }
+        final String[] available = new String[availableSize];
+        final String[] availableTiles = new String[availableSize];
+        int index = 0;
+        for (int i = 0; i < defaults.size(); i++) {
+            if (tiles.contains(defaults.get(i))) {
+                continue;
+            }
+            int resource = mHost.getLabelResource(defaults.get(i));
             if (resource != 0) {
-                availableTilesLabel.add(getContext().getString(resource));
+                availableTiles[index] = defaults.get(i);
+                available[index++] = getContext().getString(resource);
             } else {
-                availableTilesLabel.add(tileSpec);
+                availableTiles[index] = defaults.get(i);
+                available[index++] = defaults.get(i);
             }
             title.setText(group);
 
@@ -1771,6 +1782,7 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
             }
             return row;
         }
+<<<<<<< HEAD
 
         // Add broadcast tile
         availableTilesLabel.add(getContext().getString(R.string.broadcast_tile));
@@ -1888,16 +1900,14 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
 
         String[] items = new String[availableTilesLabel.size()];
         availableTilesLabel.toArray(items);
-
         final AlertDialog d = new AlertDialog.Builder(getContext(), R.style.Theme_SystemUI_Dialog)
                 .setTitle(R.string.add_tile)
-                .setItems(items, new DialogInterface.OnClickListener() {
+                .setItems(available, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        String tileSpec = availableTilesSpec.get(which);
-                        if (tileSpec.equals(BROADCAST_TILE_SPEC_PLACEHOLDER)) {
-                            showBroadcastTileDialog();
+                        if (which < available.length - 1) {
+                            add(availableTiles[which]);
                         } else {
-                            add(tileSpec);
+                            showBroadcastTileDialog();
                         }
 
                     }
