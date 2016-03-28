@@ -24,7 +24,6 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Resources;
-import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.graphics.PointF;
 import android.graphics.PorterDuff;
@@ -49,7 +48,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import com.android.internal.logging.MetricsLogger;
-import com.android.systemui.FontSizeUtils;
 import com.android.systemui.R;
 import com.android.systemui.cm.UserContentObserver;
 import com.android.systemui.qs.tiles.EditTile;
@@ -60,13 +58,9 @@ import com.android.systemui.statusbar.phone.QSTileHost;
 import com.android.systemui.statusbar.phone.SystemUIDialog;
 import com.android.systemui.statusbar.policy.BrightnessMirrorController;
 import com.android.systemui.tuner.QsTuner;
-
 import com.viewpagerindicator.CirclePageIndicator;
 
 import cyanogenmod.providers.CMSettings;
-
-import cyanogenmod.app.StatusBarPanelCustomTile;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -93,7 +87,6 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
     QSPanelTopView mQsPanelTop;
     CirclePageIndicator mPageIndicator;
 
-    private TextView mDetailRemoveButton;
     private DragTileRecord mDraggingRecord;
     private boolean mEditing;
     private boolean mDragging;
@@ -147,7 +140,6 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
 
         mDetail = LayoutInflater.from(mContext).inflate(R.layout.qs_detail, this, false);
         mDetailContent = (ViewGroup) mDetail.findViewById(android.R.id.content);
-        mDetailRemoveButton = (TextView) mDetail.findViewById(android.R.id.button3);
         mDetailSettingsButton = (TextView) mDetail.findViewById(android.R.id.button2);
         mDetailDoneButton = (TextView) mDetail.findViewById(android.R.id.button1);
 	mVibrator = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
@@ -509,7 +501,7 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
         }
         return getPagesForCount(initialSize);
     }
-
+    
     public boolean isVibrationEnabled() {
         return (Settings.System.getIntForUser(mContext.getContentResolver(),
                 Settings.System.QUICK_SETTINGS_TILES_VIBRATE, 0, UserHandle.USER_CURRENT) == 1);
@@ -529,6 +521,37 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
     }
 
     public void setTiles(final Collection<QSTile<?>> tilesCollection) {
+    /**
+     * @return returns the number of pages that has at least 1 visible tile
+     */
+    protected int getVisibleTilePageCount() {
+        // if all tiles are invisible on the page, do not count it
+        int pages = 0;
+
+        int lastPage = -1;
+        boolean allTilesInvisible = true;
+
+        for (TileRecord record : mRecords) {
+            DragTileRecord dr = (DragTileRecord) record;
+            if (dr.destinationPage != lastPage) {
+                if (!allTilesInvisible) {
+                    pages++;
+                }
+                lastPage = dr.destinationPage;
+                allTilesInvisible = true;
+            }
+            if (allTilesInvisible && dr.tile.getState().visible) {
+                allTilesInvisible = false;
+            }
+        }
+        // last tile may have set this
+        if (!allTilesInvisible) {
+            pages++;
+        }
+        return pages;
+    }
+
+    public void setTiles(Collection<QSTile<?>> tiles) {
         if (DEBUG_DRAG) {
             Log.i(TAG, "setTiles() called with " + "tiles = ["
                     + tiles + "], mTempTiles: " + mTempTiles);
@@ -1592,12 +1615,6 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
         } else {
             return mColumns;
         }
-    }
-
-    @Override
-    protected void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        FontSizeUtils.updateFontSize(mDetailRemoveButton, R.dimen.qs_detail_button_text_size);
     }
 
     @Override
