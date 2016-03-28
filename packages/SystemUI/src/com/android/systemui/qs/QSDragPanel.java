@@ -81,6 +81,10 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
     private static final int INITIAL_OFFSCREEN_PAGE_LIMIT = 10;
 
 
+    public static final String ACTION_EDIT_TILES = "com.android.systemui.ACTION_EDIT_TILES";
+    public static final String EXTRA_EDIT = "edit";
+    public static final String EXTRA_RESET = "reset";
+
     protected final ArrayList<QSPage> mPages = new ArrayList<>();
 
     protected QSViewPager mViewPager;
@@ -113,12 +117,12 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
             = Collections.synchronizedList(new ArrayList<TileRecord>());
     private Collection<QSTile<?>> mTempTiles = null;
 
-    private Runnable mResetPage = new Runnable() {
+    private BroadcastReceiver mEditReceiver = new BroadcastReceiver() {
         @Override
-        public void run() {
-            if (!mListening) {
-                // only reset when the user isn't interacting at all
-                mViewPager.setCurrentItem(0);
+        public void onReceive(Context context, Intent intent) {
+            if (intent.hasExtra(EXTRA_RESET) && intent.getBooleanExtra(EXTRA_RESET, false)) {
+                setEditing(false);
+                setTiles(mHost.getTiles());
             }
         }
     };
@@ -397,6 +401,7 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
     }
 
     protected void onStopDrag() {
+        //mDraggingRecord.tileView.setVisibility(View.VISIBLE);
         mDraggingRecord.tileView.setAlpha(1f);
 
         mDraggingRecord = null;
@@ -1285,6 +1290,8 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
             ti.row = tnext.row;
             ti.col = tnext.col;
             ti.destination.x = getLeft(tnext.destinationPage, ti.row, ti.col, desiredColumnCount);
+//            ti.destination.x = getLeft(ti.row, ti.col, desiredColumnCount,
+//                    tnext.destinationPage == 0 && ti.row == 0);
             ti.destination.y = getRowTop(ti.row);
 
             if (ti.destinationPage != tnext.destinationPage) {
@@ -1862,6 +1869,14 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
         List<String> tiles = new ArrayList<>(mHost.getTileSpecs());
         tiles.add(tile);
         mHost.setTiles(tiles);
+    }
+
+    public void reset() {
+        CMSettings.Secure.putStringForUser(getContext().getContentResolver(),
+                CMSettings.Secure.QS_TILES, "default", ActivityManager.getCurrentUser());
+        setEditing(false);
+        setTiles(mHost.getTiles());
+        requestLayout();
     }
 
     public boolean isDragging() {
