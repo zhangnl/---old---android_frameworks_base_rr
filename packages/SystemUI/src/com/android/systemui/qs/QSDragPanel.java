@@ -2186,7 +2186,6 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
 		    Settings.System.QS_COLOR_SWITCH, 0) == 1;
             if (firstRowLarge != mFirstRowLarge) {
                 mFirstRowLarge = firstRowLarge;
-                setTiles(new ArrayList<QSTile<?>>()); // clear out states
                 setTiles(mHost.getTiles());
             }
         }
