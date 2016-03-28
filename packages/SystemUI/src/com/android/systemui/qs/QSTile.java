@@ -140,10 +140,6 @@ public abstract class QSTile<TState extends State> implements Listenable {
         mHandler.sendEmptyMessage(H.CLEAR_STATE);
     }
 
-    public boolean hasDualTargetsDetails() {
-        return true;
-    }
-
     public void userSwitch(int newUserId) {
         mHandler.obtainMessage(H.USER_SWITCH, newUserId, 0).sendToTarget();
     }

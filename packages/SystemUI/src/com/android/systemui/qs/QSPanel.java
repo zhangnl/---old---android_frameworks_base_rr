@@ -38,6 +38,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.ImageView;
+  
+import android.graphics.PorterDuff.Mode;
+import android.graphics.PorterDuffColorFilter;
 import android.widget.TextView;
 
 import com.android.internal.logging.MetricsLogger;
@@ -80,6 +83,9 @@ public class QSPanel extends ViewGroup {
     private boolean mExpanded;
     private boolean mListening;
     private boolean mClosingDetail;
+    private boolean mQsColorSwitch = false;
+    private int mQsIconColor;
+    private int mLabelColor;
 
     private boolean mVibrationEnabled;
 
@@ -122,6 +128,18 @@ public class QSPanel extends ViewGroup {
         mVibrator = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
         mSettingsObserver = new SettingsObserver(mHandler);
         updateResources();
+        updateResources();
+        mQsColorSwitch = Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.QS_COLOR_SWITCH, 0) == 1;
+	mLabelColor = Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.QS_TEXT_COLOR, 0xFFFFFFFF);
+	mQsIconColor = Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.QS_ICON_COLOR, 0xFFFFFFFF);
+	 if (mQsColorSwitch) {
+            mDetailDoneButton.setTextColor(mLabelColor);
+            mDetailSettingsButton.setTextColor(mLabelColor);
+        }
+
 
         boolean brightnessIconEnabled = Settings.System.getIntForUser(
             mContext.getContentResolver(), Settings.System.BRIGHTNESS_ICON,
@@ -155,21 +173,64 @@ public class QSPanel extends ViewGroup {
         ToggleSlider brightnessSlider = (ToggleSlider) findViewById(R.id.brightness_slider);
         ImageView brightnessIcon = (ImageView) findViewById(R.id.brightness_icon);
         if (brightnessSliderEnabled) {
-            mBrightnessView.setVisibility(VISIBLE);
-            brightnessSlider.setVisibility(VISIBLE);
+            mBrightnessView.setVisibility(View.VISIBLE);
+            brightnessSlider.setVisibility(View.VISIBLE);
             if (brightnessIconEnabled) {
-                brightnessIcon.setVisibility(VISIBLE);
+                brightnessIcon.setVisibility(View.VISIBLE);
             } else {
-                brightnessIcon.setVisibility(GONE);
+                brightnessIcon.setVisibility(View.GONE);
             }
         } else {
-            mBrightnessView.setVisibility(GONE);
-            brightnessSlider.setVisibility(GONE);
-            brightnessIcon.setVisibility(GONE);
+            mBrightnessView.setVisibility(View.GONE);
+            brightnessSlider.setVisibility(View.GONE);
+            brightnessIcon.setVisibility(View.GONE);
         }
         updateResources();
         return brightnessSliderEnabled;
     }
+    
+     public void updatecolors() {
+	ImageView brightnessIcon = (ImageView) findViewById(R.id.brightness_icon);
+	mQsColorSwitch = Settings.System.getInt(getContext().getContentResolver(),
+                Settings.System.QS_COLOR_SWITCH, 0) == 1;
+	int mIconColor = Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.QS_BRIGHTNESS_ICON_COLOR, 0xFFFFFFFF);
+	if (mQsColorSwitch) {	
+	 brightnessIcon.setColorFilter(mIconColor, Mode.SRC_IN);
+		}
+     }
+     
+        
+  public void setDetailBackgroundColor(int color) {
+	final Resources res = getContext().getResources();
+	int mStockBg = res.getColor(R.color.quick_settings_panel_background);
+        mQsColorSwitch = Settings.System.getInt(getContext().getContentResolver(),
+                Settings.System.QS_COLOR_SWITCH, 0) == 1;
+        if (mQsColorSwitch) {
+            if (mDetail != null) {
+                    mDetail.getBackground().setColorFilter(
+                            color, Mode.SRC_OVER);
+                } 		
+            } else {
+	if (mDetail != null) {
+                    mDetail.getBackground().setColorFilter(
+                           mStockBg, Mode.SRC_OVER);
+                }
+	 }    
+	}
+	
+  public void setQSShadeAlphaValue(int alpha) {
+        if (mDetail != null) {
+            mDetail.getBackground().setAlpha(alpha);
+        }
+    }
+    
+    public void updateicons() {
+	mLabelColor = Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.QS_TEXT_COLOR, 0xFFFFFFFF);
+	mQsIconColor = Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.QS_ICON_COLOR, 0xFFFFFFFF);
+	}
 
     public void vibrateTile(int duration) {
         if (!mVibrationEnabled) { return; }
@@ -777,6 +838,9 @@ public class QSPanel extends ViewGroup {
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.QUICK_SETTINGS_TILES_VIBRATE),
                     false, this, UserHandle.USER_ALL);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.QS_USE_MAIN_TILES),
+                    false, this, UserHandle.USER_ALL);
             update();
         }
 
@@ -801,6 +865,9 @@ public class QSPanel extends ViewGroup {
             mVibrationEnabled = Settings.System.getIntForUser(
             mContext.getContentResolver(), Settings.System.QUICK_SETTINGS_TILES_VIBRATE,
                 0, UserHandle.USER_CURRENT) == 1;
+           mUseMainTiles = Settings.System.getIntForUser(
+            mContext.getContentResolver(), Settings.System.QS_USE_MAIN_TILES,
+                1, UserHandle.USER_CURRENT) == 1;
         }
     }
 }

@@ -142,6 +142,7 @@ public class QsTuner extends Fragment implements Callback {
             @Override
             public void onDrop(String sourceText) {
                 mTileHost.remove(sourceText);
+                mQsPanel.refreshAllTiles();
             }
         });
     }
@@ -186,6 +187,7 @@ public class QsTuner extends Fragment implements Callback {
     @Override
     public void onTilesChanged() {
         mQsPanel.setTiles(mTileHost.getTiles());
+        mQsPanel.refreshAllTiles();
     }
 
     public static int getLabelResource(String mSpec) {
@@ -280,9 +282,10 @@ public class QsTuner extends Fragment implements Callback {
             setTiles(tiles);
         }
 
-        public void reset() {
-            Secure.putStringForUser(getContext().getContentResolver(),
-                    TILES_SETTING, "default", ActivityManager.getCurrentUser());
+      public void reset() {
+            Secure.putStringForUser(getContext().getContentResolver(), TILES_SETTING,
+                    getContext().getString(R.string.quick_settings_tiles_reset),
+                    ActivityManager.getCurrentUser());
         }
         
 

@@ -5241,10 +5241,13 @@ public final class Settings {
          */
         public static final String QUICK_SETTINGS_HEADER_VIBRATE_LONG = "quick_settings_header_vibrate_long";
         
-        /** Whether to use show main tiles .
-         *
+       
+        /**
+         * Use "main" tiles on the first row of the quick settings panel
+         * 0 = no, 1 = yes
          * @hide
-         */        
+         */
+         
         public static final String QS_USE_MAIN_TILES = "qs_use_main_tiles";
 
         /**

@@ -3013,6 +3013,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 
    public void updateQsColors() {		
 	mHeader.setHeaderColor();
+	mQSPanel.updateicons();
 	mNotificationPanel.setQSBackgroundColor();
 	mNotificationPanel.setQSColors();
 	mStatusBarHeaderMachine.doUpdateStatusHeaderObservers(true);
