@@ -30,7 +30,6 @@ import android.os.RemoteException;
 import android.os.UserHandle;
 import android.provider.Settings;
 import android.text.TextUtils;
-import android.util.ArrayMap;
 import android.util.Log;
 
 import com.android.internal.logging.MetricsLogger;
@@ -332,7 +331,7 @@ public class QSTileHost implements QSTile.Host, Tunable {
         final List<String> tileSpecs = loadTileSpecs(newValue);
         if (tileSpecs.equals(mTileSpecs)) return;
         for (Map.Entry<String, QSTile<?>> tile : mTiles.entrySet()) {
-            if (!tileSpecs.contains(tile.getKey()) && mCustomTileData.get(tile.getKey()) == null) {
+            if (!tileSpecs.contains(tile.getKey())) {
                 if (DEBUG) Log.d(TAG, "Destroying tile: " + tile.getKey());
                 tile.getValue().destroy();
             }
@@ -475,10 +474,6 @@ public class QSTileHost implements QSTile.Host, Tunable {
                 CMSettings.Secure.QS_TILES, "default", ActivityManager.getCurrentUser());
     }
 
-    public QSTile<?> getTile(String spec) {
-        return mTiles.get(spec);
-    }
-
     public static int getLabelResource(String spec) {
         if (spec.equals("wifi")) return R.string.quick_settings_wifi_label;
         else if (spec.equals("bt")) return R.string.quick_settings_bluetooth_label;
@@ -530,56 +525,6 @@ public class QSTileHost implements QSTile.Host, Tunable {
         return 0;
     }
 
-    public static int getIconResource(String spec) {
-        if (spec.equals("wifi")) return R.drawable.ic_qs_wifi_full_4;
-        else if (spec.equals("bt")) return R.drawable.ic_qs_bluetooth_on;
-        else if (spec.equals("inversion")) return R.drawable.ic_invert_colors_enable_animation;
-        else if (spec.equals("cell")) return R.drawable.ic_qs_signal_full_4;
-        else if (spec.equals("airplane")) return R.drawable.ic_signal_airplane_enable;
-        else if (spec.equals("dnd")) return R.drawable.ic_dnd;
-        else if (spec.equals("rotation")) return R.drawable.ic_portrait_from_auto_rotate;
-        else if (spec.equals("flashlight")) return R.drawable.ic_signal_flashlight_enable;
-        else if (spec.equals("location")) return R.drawable.ic_signal_location_enable;
-        else if (spec.equals("cast")) return R.drawable.ic_qs_cast_on;
-        else if (spec.equals("hotspot")) return R.drawable.ic_hotspot_enable;
-        else if (spec.equals("edit")) return R.drawable.ic_qs_edit_tiles;
-        else if (spec.equals("adb_network")) return R.drawable.ic_qs_network_adb_on;
-        else if (spec.equals("compass")) return R.drawable.ic_qs_compass_on;
-        else if (spec.equals("nfc")) return R.drawable.ic_qs_nfc_on;
-        else if (spec.equals("profiles")) return R.drawable.ic_qs_profiles_on;
-        else if (spec.equals("sync")) return R.drawable.ic_qs_sync_on;
-        else if (spec.equals("volume_panel")) return R.drawable.ic_qs_volume_panel;
-        else if (spec.equals("usb_tether")) return R.drawable.ic_qs_usb_tether_on;
-        else if (spec.equals("screen_timeout")) return R.drawable.ic_qs_screen_timeout_short_avd;
-        else if (spec.equals("performance")) return R.drawable.ic_qs_perf_profile;
-        else if (spec.equals("lockscreen")) return R.drawable.ic_qs_lock_screen_on;
-        else if (spec.equals("ambient_display")) return R.drawable.ic_qs_ambientdisplay_on;
-        else if (spec.equals("live_display")) return R.drawable.ic_livedisplay_auto;
-        else if (spec.equals("music")) return R.drawable.ic_qs_media_play;
-        else if (spec.equals("brightness")) return R.drawable.ic_qs_brightness_auto_on;
-        else if (spec.equals("screen_off")) return R.drawable.ic_qs_power;
-        else if (spec.equals("screenshot")) return R.drawable.ic_qs_screenshot;
-        else if (spec.equals("expanded_desktop")) return R.drawable.ic_qs_expanded_desktop;
-        else if (spec.equals("reboot")) return R.drawable.ic_qs_reboot;
-        else if (spec.equals("configurations")) return R.drawable.ic_qs_rrtools;
-        else if (spec.equals("heads_up")) return R.drawable.ic_qs_heads_up_on;
-        else if (spec.equals("lte")) return R.drawable.ic_qs_lte_on;
-        else if (spec.equals("themes")) return R.drawable.ic_qs_themes;
-        else if (spec.equals("navbar")) return R.drawable.ic_qs_navbar_on;
-        else if (spec.equals("appcirclebar")) return R.drawable.ic_qs_appcirclebar_on;
-        else if (spec.equals("kernel_adiutor")) return R.drawable.ic_qs_kernel_adiutor;	
-        else if (spec.equals("screenrecord")) return R.drawable.ic_qs_screenrecord;	
-        else if (spec.equals("restartui")) return R.drawable.ic_qs_systemui_restart;
-        else if (spec.equals("gesture_anywhere")) return R.drawable.ic_qs_gestures_on;
-        else if (spec.equals("battery_saver")) return R.drawable.ic_qs_battery_saver_on;
-        else if (spec.equals("power_menu")) return R.drawable.ic_qs_power_menu;
-        else if (spec.equals("app_picker")) return R.drawable.ic_qs_app_picker;
-        else if (spec.equals("kill_app")) return R.drawable.ic_app_kill;
-        else if (spec.equals("caffeine")) return R.drawable.ic_qs_caffeine_on;
-	else if (spec.equals("hw_keys")) return R.drawable.ic_qs_hwkeys_on;
-        else if (spec.equals("sound")) return R.drawable.ic_qs_ringer_silent;
-        return 0;
-    }
 
     void updateCustomTile(StatusBarPanelCustomTile sbc) {
         synchronized (mTiles) {
@@ -617,7 +562,7 @@ public class QSTileHost implements QSTile.Host, Tunable {
         }
     }
 
-    public CustomTileData getCustomTileData() {
+    CustomTileData getCustomTileData() {
         return mCustomTileData;
     }
 }

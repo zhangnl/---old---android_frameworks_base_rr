@@ -50,7 +50,6 @@ public class QSPanelTopView extends FrameLayout {
     protected View mDropTarget;
     protected View mBrightnessView;
     protected TextView mToastView;
-    protected View mAddTarget;
 
     private boolean mEditing = false;
     private boolean mDisplayingInstructions = false;
@@ -90,10 +89,6 @@ public class QSPanelTopView extends FrameLayout {
         return mBrightnessView;
     }
 
-    public View getAddTarget() {
-        return mAddTarget;
-    }
-
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
@@ -101,7 +96,6 @@ public class QSPanelTopView extends FrameLayout {
         mEditTileInstructionView = findViewById(R.id.edit_container);
         mBrightnessView = findViewById(R.id.brightness_container);
         mToastView = (TextView) findViewById(R.id.qs_toast);
-        mAddTarget = findViewById(R.id.add_target);
     }
 
     @Override

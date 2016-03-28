@@ -265,9 +265,6 @@
     <!-- Announcement made when the location tile changes to high accuracy (not shown on the screen). [CHAR LIMIT=NONE] -->
     <string name="accessibility_quick_settings_location_changed_high_accuracy">Location reporting changed to high accuracy mode.</string>
 
-    <string name="quick_settings_tiles_category_system">System tiles</string>
-    <!-- detail header when adding a tile -->
-    <string name="quick_settings_tiles_add_tiles">Add a tile</string>
 
     <!-- Hotspot dialog message -->
     <string name="hotspot_apm_message">Unable to connect to cellular networks while Airplane mode is enabled. Disable Airplane mode and try again.</string>

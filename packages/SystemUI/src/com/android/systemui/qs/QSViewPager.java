@@ -16,7 +16,6 @@ public class QSViewPager extends ViewPager {
     protected static final float SCROLL_PERCENT = .10f;
 
     QSDragPanel mDragPanel;
-    private int mLastHeight = 0;
 
     public QSViewPager(Context context) {
         super(context);
@@ -43,22 +42,14 @@ public class QSViewPager extends ViewPager {
     }
 
     @Override
-    public void requestLayout() {
-        if (mDragPanel == null || !mDragPanel.mSettingTiles) {
-            super.requestLayout();
-        }
-    }
-
-    @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        int height = mLastHeight;
+        int height = 0;
         for (int i = 0; i < getChildCount(); i++) {
             View child = getChildAt(i);
             child.measure(widthMeasureSpec, MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
             int h = child.getMeasuredHeight();
             if (h > height && !(child instanceof QSSettings)) height = h;
         }
-        mLastHeight = height;
         heightMeasureSpec = MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY);
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
