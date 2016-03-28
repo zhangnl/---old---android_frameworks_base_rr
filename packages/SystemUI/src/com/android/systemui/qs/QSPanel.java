@@ -56,7 +56,7 @@ import cyanogenmod.providers.CMSettings;
 
 /** View that represents the quick settings tile panel. **/
 public class QSPanel extends ViewGroup {
-    protected static final float TILE_ASPECT = 1.2f;
+    private static final float TILE_ASPECT = 1.2f;
 
     protected final ArrayList<TileRecord> mRecords = new ArrayList<>();
     protected View mDetail;
@@ -147,7 +147,7 @@ public class QSPanel extends ViewGroup {
     /**
      * Enable/disable brightness slider.
      */
-    protected boolean showBrightnessSlider() {
+    private boolean showBrightnessSlider() {
         boolean brightnessSliderEnabled = CMSettings.System.getIntForUser(
             mContext.getContentResolver(), CMSettings.System.QS_SHOW_BRIGHTNESS_SLIDER,
                 1, UserHandle.USER_CURRENT) == 1;

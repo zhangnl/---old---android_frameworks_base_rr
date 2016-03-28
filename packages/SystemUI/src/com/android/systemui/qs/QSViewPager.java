@@ -9,6 +9,9 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.AccelerateInterpolator;
 
+/**
+ * Created by roman on 11/5/15.
+ */
 public class QSViewPager extends ViewPager {
 
     private static final String TAG = "QSViewPager";
@@ -19,10 +22,6 @@ public class QSViewPager extends ViewPager {
 
     public QSViewPager(Context context) {
         super(context);
-    }
-
-    public void setDragPanel(QSDragPanel p) {
-        mDragPanel = p;
     }
 
     @Override
@@ -39,6 +38,7 @@ public class QSViewPager extends ViewPager {
             return false;
         }
         return super.canScrollHorizontally(direction);
+        return false;
     }
 
     @Override
@@ -102,4 +102,21 @@ public class QSViewPager extends ViewPager {
             Log.e(TAG, "can't start fake drag?");
         }
     }
+    
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent event) {
+        if (mPagingEnabled) {
+            return super.onInterceptTouchEvent(event);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        if (mPagingEnabled) {
+            return super.onTouchEvent(event);
+        }
+        return false;
+    }
+
 }

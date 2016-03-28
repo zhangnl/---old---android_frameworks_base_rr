@@ -132,7 +132,6 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
     private BatteryLevelTextView mDockBatteryLevel;
     private TextView mAlarmStatus;
     private TextView mWeatherLine1, mWeatherLine2;
-    private TextView mEditTileDoneText;
 
     private boolean mShowEmergencyCallsOnly;
     private boolean mAlarmShowing;
@@ -178,7 +177,7 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
     private ActivityStarter mActivityStarter;
     private NextAlarmController mNextAlarmController;
     private WeatherController mWeatherController;
-    private QSDragPanel mQSPanel;
+    private QSPanel mQSPanel;
 
     private final Rect mClipBounds = new Rect();
 
@@ -194,7 +193,6 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
     private SettingsObserver mSettingsObserver;
     private boolean mShowWeather;
     private boolean mShowBatteryTextExpanded;
-    private boolean mEditing;
 
 
     private ImageView mBackgroundImage;
@@ -286,7 +284,6 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
         mWeatherimage = (ImageButton) findViewById(R.id.no_weather_image);
         mWeatherLine1 = (TextView) findViewById(R.id.weather_line_1);
         mWeatherLine2 = (TextView) findViewById(R.id.weather_line_2);
-        mEditTileDoneText = (TextView) findViewById(R.id.done);
         mSettingsObserver = new SettingsObserver(new Handler());
         mBackgroundImage = (ImageView) findViewById(R.id.background_image);
         loadDimens();
@@ -538,9 +535,6 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
         boolean changed = expanded != mExpanded;
         mExpanded = expanded;
         if (changed) {
-            if (mShowingDetail && !expanded) {
-                mQsPanelCallback.onShowingDetail(null);
-            }
             updateEverything();
         }
     }
@@ -593,6 +587,9 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
             mDockBatteryLevel.setVisibility(View.VISIBLE);
         }
          applyHeaderBackgroundShadow();
+        mBatteryLevel.setVisibility(View.VISIBLE);
+        mSettingsContainer.findViewById(R.id.tuner_icon).setVisibility(
+                TunerService.isTunerEnabled(mContext) ? View.VISIBLE : View.INVISIBLE);
     }
 
 	public void hidepanelItems() {
@@ -1214,50 +1211,6 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
         updateAmPmTranslation();
     }
 
-    public void setEditing(boolean editing) {
-        mEditing = editing;
-        if (mEditing) {
-            mQsPanelCallback.onShowingDetail(new QSTile.DetailAdapter() {
-                @Override
-                public StatusBarPanelCustomTile getCustomTile() {
-                    return null;
-                }
-
-                @Override
-                public int getTitle() {
-                    return R.string.quick_settings_edit_label;
-                }
-
-                @Override
-                public Boolean getToggleState() {
-                    return null;
-                }
-
-                @Override
-                public View createDetailView(Context context, View convertView, ViewGroup parent) {
-                    return null;
-                }
-
-                @Override
-                public Intent getSettingsIntent() {
-                    return null;
-                }
-
-                @Override
-                public void setToggleState(boolean state) {
-
-                }
-
-                @Override
-                public int getMetricsCategory() {
-                    return CMMetricsLogger.DONT_LOG;
-                }
-            });
-        } else {
-            mQsPanelCallback.onShowingDetail(null);
-        }
-    }
-
     /**
      * Captures all layout values (position, visibility) for a certain state. This is used for
      * animations.
@@ -1379,7 +1332,7 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
                 transition(mWeatherContainer, !showingDetail);
             }
             if (mAlarmShowing) {
-                transition(mAlarmStatus, !showingDetail && !mDetailTransitioning);
+                transition(mAlarmStatus, !showingDetail);
             }
             transition(mQsDetailHeader, showingDetail);
             mShowingDetail = showingDetail;

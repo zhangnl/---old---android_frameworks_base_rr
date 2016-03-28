@@ -17,18 +17,18 @@ package com.android.systemui.statusbar.phone;
 
 import android.animation.Animator;
 import android.animation.Animator.AnimatorListener;
-import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.content.Context;
+import android.graphics.drawable.RippleDrawable;
+import android.os.Handler;
+import android.os.Message;
 import android.util.AttributeSet;
-import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 
-import android.view.animation.DecelerateInterpolator;
 import com.android.keyguard.AlphaOptimizedImageButton;
 
 public class SettingsButton extends AlphaOptimizedImageButton {
@@ -56,10 +56,6 @@ public class SettingsButton extends AlphaOptimizedImageButton {
         return mUpToSpeed;
     }
 
-    public void consumeClick() {
-        mUpToSpeed = false;
-    }
-
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getActionMasked()) {
@@ -82,7 +78,6 @@ public class SettingsButton extends AlphaOptimizedImageButton {
                 if ((x < -mSlop) || (y < -mSlop) || (x > getWidth() + mSlop)
                         || (y > getHeight() + mSlop)) {
                     cancelLongClick();
-                    startExitAnimation();
                 }
                 break;
         }
@@ -104,11 +99,32 @@ public class SettingsButton extends AlphaOptimizedImageButton {
     }
 
     private void startExitAnimation() {
-        cancelAnimation();
         animate()
-                .rotation(0)
-                .setDuration(ACCEL_LENGTH)
-                .setInterpolator(new DecelerateInterpolator(4))
+                .translationX(((View) getParent().getParent()).getWidth() - getX())
+                .alpha(0)
+                .setDuration(RUN_DURATION)
+                .setInterpolator(AnimationUtils.loadInterpolator(mContext,
+                        android.R.interpolator.accelerate_cubic))
+                .setListener(new AnimatorListener() {
+                    @Override
+                    public void onAnimationStart(Animator animation) {
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animator animation) {
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        setAlpha(1f);
+                        setTranslationX(0);
+                        cancelLongClick();
+                    }
+
+                    @Override
+                    public void onAnimationCancel(Animator animation) {
+                    }
+                })
                 .start();
     }
 
@@ -148,8 +164,6 @@ public class SettingsButton extends AlphaOptimizedImageButton {
         mAnimator.setDuration(FULL_SPEED_LENGTH);
         mAnimator.setRepeatCount(Animation.INFINITE);
         mAnimator.start();
-
-        performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
     }
 
     private final Runnable mLongPressCallback = new Runnable() {

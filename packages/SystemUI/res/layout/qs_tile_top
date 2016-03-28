@@ -15,13 +15,14 @@
 -->
 <com.android.systemui.qs.QSPanelTopView
         xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:systemui="http://schemas.android.com/apk/res-auto"
         android:id="@+id/qs_panel_top"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:paddingBottom="@dimen/qs_brightness_padding_top">
 
     <!-- brightness -->
     <include android:id="@+id/brightness_container"
-             android:paddingTop="@dimen/qs_brightness_padding_top"
              layout="@layout/quick_settings_brightness_dialog"/>
 
     <!-- delete target -->
@@ -39,7 +40,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center"
-                android:layout_gravity="center"
                 android:src="@drawable/ic_delete"
         />
     </LinearLayout>
@@ -79,9 +79,9 @@
             android:paddingLeft="16dp"
             android:paddingRight="16dp"
             android:gravity="center_vertical"
-            android:layout_gravity="center_vertical"
             android:layout_width="match_parent"
-            android:textColor="@color/quick_settings_toast_color"/>
+            android:textColor="@color/quick_settings_toast_color"
+            android:visibility="invisible"/>
 
 
 </com.android.systemui.qs.QSPanelTopView>
