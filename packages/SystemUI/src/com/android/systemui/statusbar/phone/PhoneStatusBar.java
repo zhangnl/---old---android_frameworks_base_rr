@@ -1986,40 +1986,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                         }
                     }, 500);
                 }
-
-                @Override
-                public void resetTiles() {
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            mQSPanel.setEditing(false);
-                            mHeader.setEditing(false);
-
-                            // unregister custom tile service while we reset to not get
-                            // callbacks from custom tiles
-                            try {
-                                mCustomTileListenerService.unregisterAsSystemService();
-                            } catch (RemoteException e) {
-                                Log.e(TAG, "Unable to unregister custom tile listener", e);
-                            }
-
-                            // clear out old tile states and views
-                            mQSPanel.setTiles(new ArrayList<QSTile<?>>());
-
-                            mQSTileHost.resetTiles();
-
-                            // reregister service
-                            try {
-                                mCustomTileListenerService.registerAsSystemService(mContext,
-                                        new ComponentName(mContext.getPackageName(),
-                                                PhoneStatusBar.this.getClass().getCanonicalName()),
-                                        UserHandle.USER_ALL);
-                            } catch (RemoteException e) {
-                                Log.e(TAG, "Unable to register custom tile listener", e);
-                            }
-                        }
-                    });
-                }
             });
         }
 
@@ -4791,19 +4757,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         copyNotifications(notifications, mNotificationData);
         // now remove all the notifications since we'll be re-creating these with the copied data
         mNotificationData.clear();
-
-        if (mCustomTileListenerService != null) {
-            try {
-                mCustomTileListenerService.unregisterAsSystemService();
-            } catch (RemoteException e) {
-                Log.e(TAG, "Unable to unregister custom tile listener", e);
-            }
-        }
-
-        mQSPanel.getHost().setCustomTileListenerService(null);
-        mQSPanel.setTiles(new ArrayList<QSTile<?>>());
-        mQSPanel.setListening(false);
-
         makeStatusBarView();
         repositionNavigationBar();
 
@@ -4829,6 +4782,16 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 
         // Stop the command queue until the new status bar container settles and has a layout pass
         mCommandQueue.pause();
+
+        if (mCustomTileListenerService != null) {
+            try {
+                mCustomTileListenerService.unregisterAsSystemService();
+            } catch (RemoteException e) {
+                Log.e(TAG, "Unable to unregister custom tile listener", e);
+            }
+        }
+
+        mQSPanel.getHost().setCustomTileListenerService(null);
 
         // fix notification panel being shifted to the left by calling
         // instantCollapseNotificationPanel()

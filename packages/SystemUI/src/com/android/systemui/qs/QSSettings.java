@@ -45,10 +45,11 @@ public class QSSettings extends ScrollView {
             + ".weather.PermissionRequestActivity";
 
     private QSTileHost mHost;
-
-    private boolean mAdapterEditingState;
     private QSBooleanSettingRow mShowWeather;
     private ResultReceiver mResultReceiver;
+    public QSSettings(Context context) {
+        super(context);
+    }
 
     public QSSettings(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -120,7 +121,7 @@ public class QSSettings extends ScrollView {
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                mHost.initiateReset();
+                                mHost.resetTiles();
                             }
                         }).create();
         SystemUIDialog.makeSystemUIDialog(d);
@@ -129,13 +130,5 @@ public class QSSettings extends ScrollView {
 
     public void setHost(QSTileHost host) {
         mHost = host;
-    }
-
-    public boolean getAdapterEditingState() {
-        return mAdapterEditingState;
-    }
-
-    public void setAdapterEditingState(boolean editing) {
-        this.mAdapterEditingState = editing;
     }
 }
