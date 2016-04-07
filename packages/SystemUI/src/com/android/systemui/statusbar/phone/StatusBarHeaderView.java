@@ -1066,7 +1066,7 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
     private void startHeadsUpLongClickActivity() {
         Intent intent = new Intent(Intent.ACTION_MAIN);
         intent.setClassName("com.android.settings",
-            "com.android.settings.Settings$HeadsUpSettingsActivity");
+            "android.settings.NOTIFICATION_MANAGER");
         mActivityStarter.startActivity(intent, true /* dismissShade */);
     }
     
