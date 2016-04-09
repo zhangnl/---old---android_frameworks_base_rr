@@ -5081,7 +5081,19 @@ public final class Settings {
          * @hide
          */
         public static final String STATUS_BAR_NOTIFICATION_ICONS_COLOR_DARK_MODE = "status_bar_notification_icons_color_dark_mode";
-
+        
+	/**
+         * Color of the traffic icons on the status bar, (dark mode)
+         * @hide
+         */
+        public static final String NETWORK_TRAFFIC_COLOR_DARK = "network_traffic_color_dark";
+        
+	/**
+         * Color of the clock on the status bar, (dark mode)
+         * @hide
+         */
+        public static final String STATUSBAR_CLOCK_COLOR_DARK = "statusbar_clock_color_dark";
+       
         /**
          * Color of the weather text on the lock screen
          * @hide

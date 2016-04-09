@@ -104,6 +104,10 @@ public class StatusBarIconController implements Tunable {
     private int mAirplaneModeColorTint;
     private int mNotificationIconsColor;
     private int mNotificationIconsColorTint;
+    private int mTrafficColorTint;
+    private int mTrafficColor;
+    private int mClockColor;
+    private int mClockTint;
     private float mDarkIntensity;
 
     private boolean mTransitionPending;
@@ -173,8 +177,14 @@ public class StatusBarIconController implements Tunable {
     }
 
     private void setUpCustomColors() {
+        int defaultColor = getResources().getColor(R.color.status_bar_clock_color);
 	mColorSwitch =  Settings.System.getInt(mContext.getContentResolver(),
 				 Settings.System.STATUSBAR_COLOR_SWITCH, 0) == 1;
+	mTrafficColor = Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.NETWORK_TRAFFIC_COLOR, 0xFFFFFFFF);
+        mClockColor =  Settings.System.getIntForUser(resolver,
+                Settings.System.STATUSBAR_CLOCK_COLOR, defaultColor,
+                UserHandle.USER_CURRENT);
 	if (mColorSwitch) {
         mStatusIconsColor = StatusBarColorHelper.getStatusIconsColor(mContext);
         mStatusIconsColorOld = mStatusIconsColor;
@@ -190,6 +200,8 @@ public class StatusBarIconController implements Tunable {
         mAirplaneModeColorTint = mAirplaneModeColor;
         mNotificationIconsColor = StatusBarColorHelper.getNotificationIconsColor(mContext);
         mNotificationIconsColorTint = mNotificationIconsColor; 
+        mTrafficColorTint = mTrafficColor;
+        mClockColorTint = mClockColor;
 	}
     }
 
@@ -449,8 +461,9 @@ public class StatusBarIconController implements Tunable {
     private void setIconTintInternal(float darkIntensity) {
         mDarkIntensity = darkIntensity;
 	mColorSwitch =  Settings.System.getInt(mContext.getContentResolver(),
-				 Settings.System.STATUSBAR_COLOR_SWITCH, 0) == 1;	
- 
+				 Settings.System.STATUSBAR_COLOR_SWITCH, 0) == 1;
+	mTrafficColor = Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.NETWORK_TRAFFIC_COLOR, 0xFFFFFFFF); 
 	if (mColorSwitch) {
         mStatusIconsColorTint = (int) ArgbEvaluator.getInstance().evaluate(darkIntensity,
                 mStatusIconsColor, StatusBarColorHelper.getStatusIconsColorDark(mContext));
@@ -466,6 +479,10 @@ public class StatusBarIconController implements Tunable {
 		 mIconTint = (int) ArgbEvaluator.getInstance().evaluate(darkIntensity,
               mLightModeIconColorSingleTone, mDarkModeIconColorSingleTone);
 	}
+	mTrafficColorTint = (int) ArgbEvaluator.getInstance().evaluate(darkIntensity,
+                mNotificationIconsColor, StatusBarColorHelper.getNetworkTrafficColorDark(mContext));
+        mClockColorTint =  (int) ArgbEvaluator.getInstance().evaluate(darkIntensity,
+                mClockColor, StatusBarColorHelper.getClockColorDark(mContext));       
         applyIconTint();
     }  
 

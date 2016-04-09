@@ -36,6 +36,20 @@ public class StatusBarColorHelper {
                 TRANSLUCENT_BLACK);
         return (153 << 24) | (color & 0x00ffffff);
     }
+    
+     public static int getNetworkTrafficColorDark(Context context) {
+        final int color = Settings.System.getInt(context.getContentResolver(),
+                Settings.System.NETWORK_TRAFFIC_COLOR_DARK,
+                TRANSLUCENT_BLACK);
+        return (153 << 24) | (color & 0x00ffffff);
+    }
+    
+     public static int getClockColorDark(Context context) {
+        final int color = Settings.System.getInt(context.getContentResolver(),
+                Settings.System.STATUSBAR_CLOCK_COLOR_DARK,
+                TRANSLUCENT_BLACK);
+        return (153 << 24) | (color & 0x00ffffff);
+    }
 
     public static int getNoSimColor(Context context) {
         return Settings.System.getInt(context.getContentResolver(),
