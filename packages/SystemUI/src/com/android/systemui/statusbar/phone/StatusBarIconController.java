@@ -365,9 +365,7 @@ public class StatusBarIconController implements Tunable {
             hideNotificationIconArea(true);
         } else {
             animateHide(mSystemIconArea, false);
-            if (mClockStyle == CLOCK_STYLE_CENTERED) {
-                animateHide(mCenterClockLayout, false);
-            }
+            animateHide(mCenterClockLayout, false);
             animateHide(mNotificationIconArea, false);
         }
         animateShow(mGreetingLayout, true, true);
@@ -375,9 +373,7 @@ public class StatusBarIconController implements Tunable {
 
     public void hideGreeting() {
         animateShow(mSystemIconArea, true);
-        if (mClockStyle == CLOCK_STYLE_CENTERED) {
-            animateShow(mCenterClockLayout, true);
-        }
+        animateShow(mCenterClockLayout, true);
         animateShow(mNotificationIconArea, true);
         animateHide(mGreetingLayout, true, true);
     }
@@ -392,9 +388,7 @@ public class StatusBarIconController implements Tunable {
             showGreeting(false);
         } else {
             animateShow(mSystemIconArea, animate);
-            if (mClockStyle == CLOCK_STYLE_CENTERED) {
-                animateShow(mCenterClockLayout, animate);
-            }
+            animateShow(mCenterClockLayout, animate);
         }
     }
 
@@ -944,9 +938,7 @@ public class StatusBarIconController implements Tunable {
         public void tickerDone() {
             if (!mShowTicker || mIsGreetingVisible) return;
             animateShow(mSystemIconArea, true);
-            if (mClockStyle == CLOCK_STYLE_CENTERED) {
-                animateShow(mCenterClockLayout, true);
-            }
+            animateShow(mCenterClockLayout, true);
             animateShow(mNotificationIconArea, true);
             mTickingEnd = true;
             animateHide(mTickerView, true);
@@ -955,9 +947,7 @@ public class StatusBarIconController implements Tunable {
         public void tickerHalting() {
             if (!mShowTicker || mIsGreetingVisible) return;
             animateShow(mSystemIconArea, true);
-            if (mClockStyle == CLOCK_STYLE_CENTERED) {
-                animateShow(mCenterClockLayout, true);
-            }
+            animateShow(mCenterClockLayout, true);
             animateShow(mNotificationIconArea, true);
             // we do not animate the ticker away at this point, just get rid of it (b/6992707)
             mTickerView.setVisibility(View.GONE);
