@@ -27,10 +27,12 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.provider.Settings;
+import android.service.notification.StatusBarNotification;
 import android.text.TextUtils;
 import android.util.ArraySet;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewStub;
 import android.view.animation.AnimationUtils;
 import android.view.animation.Interpolator;
 import android.widget.ImageView;
@@ -67,7 +69,11 @@ public class StatusBarIconController implements Tunable {
 
     public static final String ICON_BLACKLIST = "icon_blacklist";
 
+    private static final int GREETING_ALWAYS = 0;
+    private static final int GREETING_HIDDEN = 2;
+
     private Context mContext;
+    private View mStatusBar;
     private PhoneStatusBar mPhoneStatusBar;
     private Interpolator mLinearOutSlowIn;
     private Interpolator mFastOutSlowIn;
@@ -78,6 +84,8 @@ public class StatusBarIconController implements Tunable {
     private LinearLayout mStatusIcons;
     private SignalClusterView mSignalCluster;
     private LinearLayout mStatusIconsKeyguard;
+    private LinearLayout mGreetingLayout;
+    private TextView mGreetingView;
     private IconMerger mNotificationIcons;
     private View mNotificationIconArea;
     private ImageView mMoreIcon;
@@ -93,6 +101,12 @@ public class StatusBarIconController implements Tunable {
     private int mStatusIconsColor;
     private int mStatusIconsColorOld;
     private int mStatusIconsColorTint;
+
+    private Ticker mTicker;
+    private View mTickerView;
+
+    private int mGreetingColor;
+    private int mGreetingColorTint;
     private int mNetworkSignalColor;
     private int mNetworkSignalColorOld;
     private int mNetworkSignalColorTint;
@@ -104,6 +118,9 @@ public class StatusBarIconController implements Tunable {
     private int mAirplaneModeColorTint;
     private int mNotificationIconsColor;
     private int mNotificationIconsColorTint;
+    private int mTickerTextColor;
+    private int mTickerTextColorTint;
+
     private float mDarkIntensity;
 
     private boolean mTransitionPending;
@@ -114,11 +131,21 @@ public class StatusBarIconController implements Tunable {
     private int mDarkModeIconColorSingleTone;
     private int mLightModeIconColorSingleTone;
 
+
+    private int mShowGreeting;
+    private boolean mHideGreeting = false;
+    private int mGreetingTimeout;
+    private boolean mIsGreetingVisible = false;
+
     private static final int STATUS_ICONS_COLOR         = 0;
     private static final int NETWORK_SIGNAL_COLOR       = 1;
     private static final int NO_SIM_COLOR               = 2;
     private static final int AIRPLANE_MODE_COLOR        = 3;
     private int mColorToChange;
+
+    private boolean mShowTicker;
+    private boolean mTicking;
+    private boolean mTickingEnd = false;
 
     private final Handler mHandler;
     private boolean mTransitionDeferring;
@@ -127,6 +154,9 @@ public class StatusBarIconController implements Tunable {
 
     private Animator mColorTransitionAnimator;
     public Boolean mColorSwitch = false ;
+    
+    public  int CLOCK_STYLE_CENTERED  = mClockController.STYLE_CLOCK_CENTER;
+    private int mClockStyle;
 
     private final ArraySet<String> mIconBlacklist = new ArraySet<>();
 
@@ -140,6 +170,7 @@ public class StatusBarIconController implements Tunable {
     public StatusBarIconController(Context context, View statusBar, View keyguardStatusBar,
             PhoneStatusBar phoneStatusBar) {
         mContext = context;
+        mStatusBar = statusBar;
         mPhoneStatusBar = phoneStatusBar;
 	mColorSwitch =  Settings.System.getInt(mContext.getContentResolver(),
 				 Settings.System.STATUSBAR_COLOR_SWITCH, 0) == 1;
@@ -148,6 +179,8 @@ public class StatusBarIconController implements Tunable {
         mStatusIcons = (LinearLayout) statusBar.findViewById(R.id.statusIcons);
         mSignalCluster = (SignalClusterView) statusBar.findViewById(R.id.signal_cluster);
         mNotificationIconArea = statusBar.findViewById(R.id.notification_icon_area_inner);
+        mGreetingLayout = (LinearLayout) statusBar.findViewById(R.id.status_bar_greeting_layout);
+        mGreetingView = (TextView) statusBar.findViewById(R.id.status_bar_greeting_view);
         mNotificationIcons = (IconMerger) statusBar.findViewById(R.id.notificationIcons);
         mMoreIcon = (ImageView) statusBar.findViewById(R.id.moreIcon);
         mNotificationIcons.setOverflowIndicator(mMoreIcon);
@@ -179,6 +212,8 @@ public class StatusBarIconController implements Tunable {
         mStatusIconsColor = StatusBarColorHelper.getStatusIconsColor(mContext);
         mStatusIconsColorOld = mStatusIconsColor;
         mStatusIconsColorTint = mStatusIconsColor;
+        mGreetingColor = StatusBarColorHelper.getGreetingColor(mContext);
+        mGreetingColorTint = mGreetingColor;
         mNetworkSignalColor = StatusBarColorHelper.getNetworkSignalColor(mContext);
         mNetworkSignalColorOld = mNetworkSignalColor;
         mNetworkSignalColorTint = mNetworkSignalColor;
@@ -188,9 +223,12 @@ public class StatusBarIconController implements Tunable {
         mAirplaneModeColor = StatusBarColorHelper.getAirplaneModeColor(mContext);
         mAirplaneModeColorOld = mAirplaneModeColor;
         mAirplaneModeColorTint = mAirplaneModeColor;
+        mTickerTextColor = StatusBarColorHelper.getTickerTextColor(mContext);
+        mTickerTextColorTint = mTickerTextColor;
         mNotificationIconsColor = StatusBarColorHelper.getNotificationIconsColor(mContext);
         mNotificationIconsColorTint = mNotificationIconsColor; 
 	}
+        mColorTransitionAnimator = createColorTransitionAnimator(0, 1);
     }
 
     @Override
@@ -317,14 +355,47 @@ public class StatusBarIconController implements Tunable {
         applyNotificationIconsTint();
     }
 
+    public void showGreeting(boolean isPreview) {
+        if (mIsGreetingVisible || mTicking) {
+            return;
+        }
+        mIsGreetingVisible = true;
+        if (isPreview) {
+            hideSystemIconArea(true);
+            hideNotificationIconArea(true);
+        } else {
+            animateHide(mSystemIconArea, false);
+            if (mClockStyle == CLOCK_STYLE_CENTERED) {
+                animateHide(mCenterClockLayout, false);
+            }
+            animateHide(mNotificationIconArea, false);
+        }
+        animateShow(mGreetingLayout, true, true);
+    }
+
+    public void hideGreeting() {
+        animateShow(mSystemIconArea, true);
+        if (mClockStyle == CLOCK_STYLE_CENTERED) {
+            animateShow(mCenterClockLayout, true);
+        }
+        animateShow(mNotificationIconArea, true);
+        animateHide(mGreetingLayout, true, true);
+    }
+
     public void hideSystemIconArea(boolean animate) {
         animateHide(mSystemIconArea, animate);
         animateHide(mCenterClockLayout, animate);
     }
 
     public void showSystemIconArea(boolean animate) {
-        animateShow(mSystemIconArea, animate);
-        animateShow(mCenterClockLayout, animate);
+        if (mShowGreeting != GREETING_HIDDEN && !mHideGreeting && animate) {
+            showGreeting(false);
+        } else {
+            animateShow(mSystemIconArea, animate);
+            if (mClockStyle == CLOCK_STYLE_CENTERED) {
+                animateShow(mCenterClockLayout, animate);
+            }
+        }
     }
 
     public void hideNotificationIconArea(boolean animate) {
@@ -333,8 +404,10 @@ public class StatusBarIconController implements Tunable {
     }
 
     public void showNotificationIconArea(boolean animate) {
-        animateShow(mNotificationIconArea, animate);
-        animateShow(mCenterClockLayout, animate);
+        if (mShowGreeting == GREETING_HIDDEN || mHideGreeting || !animate) {
+            animateShow(mNotificationIconArea, animate);
+            animateShow(mCenterClockLayout, animate);
+        }
     }
 
     public void setClockVisibility(boolean visible) {
@@ -357,10 +430,14 @@ public class StatusBarIconController implements Tunable {
         mDemoStatusIcons.dispatchDemoCommand(command, args);
     }
 
+    private void animateHide(final View v, boolean animate) {
+        animateHide(v, animate, false);
+    }
+
     /**
      * Hides a view.
      */
-    private void animateHide(final View v, boolean animate) {
+    private void animateHide(final View v, boolean animate, final boolean isGreeting) {
         v.animate().cancel();
         if (!animate) {
             v.setAlpha(0f);
@@ -370,20 +447,32 @@ public class StatusBarIconController implements Tunable {
         v.animate()
                 .alpha(0f)
                 .setDuration(160)
-                .setStartDelay(0)
+                .setStartDelay(mIsGreetingVisible && isGreeting ? mGreetingTimeout : 0)
                 .setInterpolator(PhoneStatusBar.ALPHA_OUT)
                 .withEndAction(new Runnable() {
                     @Override
                     public void run() {
                         v.setVisibility(View.INVISIBLE);
+                        if (mTickingEnd) {
+                            mTicking = false;
+                            mTickingEnd = false;
+                        }
+                        if (isGreeting) {
+                            mIsGreetingVisible = false;
+                            mHideGreeting = true;
+                        }
                     }
                 });
+    }
+
+    private void animateShow(View v, boolean animate) {
+        animateShow(v, animate, false);
     }
 
     /**
      * Shows a view, and synchronizes the animation with Keyguard exit animations, if applicable.
      */
-    private void animateShow(View v, boolean animate) {
+    private void animateShow(View v, boolean animate, boolean isGreeting) {
         v.animate().cancel();
         v.setVisibility(View.VISIBLE);
         if (!animate) {
@@ -394,15 +483,26 @@ public class StatusBarIconController implements Tunable {
                 .alpha(1f)
                 .setDuration(320)
                 .setInterpolator(PhoneStatusBar.ALPHA_IN)
-                .setStartDelay(50)
+                .setStartDelay(mIsGreetingVisible && !isGreeting ? mGreetingTimeout : 50);
 
-                // We need to clean up any pending end action from animateHide if we call
-                // both hide and show in the same frame before the animation actually gets started.
-                // cancel() doesn't really remove the end action.
-                .withEndAction(null);
+        if (isGreeting) {
+            v.animate()
+                    .withEndAction(new Runnable() {
+                        @Override
+                        public void run() {
+                            hideGreeting();
+                        }
+                    });
+        } else {
+            // We need to clean up any pending end action from animateHide if we call
+            // both hide and show in the same frame before the animation actually gets started.
+            // cancel() doesn't really remove the end action.
+            v.animate()
+                    .withEndAction(null);
+        }
 
         // Synchronize the motion with the Keyguard fading if necessary.
-        if (mPhoneStatusBar.isKeyguardFadingAway()) {
+        if (mPhoneStatusBar.isKeyguardFadingAway() && !mIsGreetingVisible && !isGreeting) {
             v.animate()
                     .setDuration(mPhoneStatusBar.getKeyguardFadingAwayDuration())
                     .setInterpolator(mLinearOutSlowIn)
@@ -454,12 +554,16 @@ public class StatusBarIconController implements Tunable {
 	if (mColorSwitch) {
         mStatusIconsColorTint = (int) ArgbEvaluator.getInstance().evaluate(darkIntensity,
                 mStatusIconsColor, StatusBarColorHelper.getStatusIconsColorDark(mContext));
+        mGreetingColorTint = (int) ArgbEvaluator.getInstance().evaluate(darkIntensity,
+                mGreetingColor,  StatusBarColorHelper.getGreetingColorDark(mContext));
         mNetworkSignalColorTint = (int) ArgbEvaluator.getInstance().evaluate(darkIntensity,
                 mNetworkSignalColor, StatusBarColorHelper.getNetworkSignalColorDark(mContext));
         mNoSimColorTint = (int) ArgbEvaluator.getInstance().evaluate(darkIntensity,
                 mNoSimColor, StatusBarColorHelper.getNoSimColorDark(mContext));
         mAirplaneModeColorTint = (int) ArgbEvaluator.getInstance().evaluate(darkIntensity,
                 mAirplaneModeColor, StatusBarColorHelper.getAirplaneModeColorDark(mContext));
+        mTickerTextColorTint = (int) ArgbEvaluator.getInstance().evaluate(mDarkIntensity,
+                mTickerTextColor, StatusBarColorHelper.getTickerTextColorDark(mContext));
         mNotificationIconsColorTint = (int) ArgbEvaluator.getInstance().evaluate(darkIntensity,
                 mNotificationIconsColor, StatusBarColorHelper.getNotificationIconsColorDark(mContext));
 	} else {
@@ -478,6 +582,7 @@ public class StatusBarIconController implements Tunable {
     }
 
     public void applyIconTint() {
+        mGreetingView.setTextColor(mGreetingColorTint);
 	mColorSwitch =  Settings.System.getInt(mContext.getContentResolver(),
 				 Settings.System.STATUSBAR_COLOR_SWITCH, 0) == 1;	
 	int batterytext = Settings.System.getInt(mContext.getContentResolver(),
@@ -506,6 +611,9 @@ public class StatusBarIconController implements Tunable {
         }
         //mClockController.setTextColor(mIconTint);
         applyNotificationIconsTint();	
+        if (mShowTicker && mTicker != null && mTickerView != null) {
+            mTicker.setTextColor(mTickerTextColorTint);
+        }
     }
 
     private void applyNotificationIconsTint() {
@@ -522,6 +630,9 @@ public class StatusBarIconController implements Tunable {
 		v.setImageTintList(ColorStateList.valueOf(mIconTint));
 		}
             }
+        }
+        if (mShowTicker && mTicker != null && mTickerView != null) {
+            mTicker.setIconColorTint(ColorStateList.valueOf(mNotificationIconsColorTint));
         }
     }
 
@@ -721,6 +832,35 @@ public class StatusBarIconController implements Tunable {
         mColorTransitionAnimator.start();
 	}
 
+    public void resetHideGreeting() {
+        if (mShowGreeting == GREETING_ALWAYS) {
+            mHideGreeting = false;
+        }
+    }
+
+    public void updateShowGreeting(int show) {
+        mShowGreeting = show;
+    }
+
+    public void updateGreetingText(String text) {
+        mGreetingView.setText(text);
+    }
+
+    public void updateGreetingTimeout(int timeout) {
+        mGreetingTimeout = timeout;
+    }
+
+    public void updateGreetingColor() {
+        mGreetingColor = StatusBarColorHelper.getGreetingColor(mContext);
+        mGreetingView.setTextColor(mGreetingColor);
+        mGreetingColorTint = mGreetingColor;
+    }
+
+    public void updateShowTicker(boolean show) {
+        mShowTicker = show;
+        inflateTickerView();
+    }
+
     public void updateNotificationIconsColor() {
 	if(mColorSwitch) {
         mNotificationIconsColor = StatusBarColorHelper.getNotificationIconsColor(mContext);
@@ -737,5 +877,90 @@ public class StatusBarIconController implements Tunable {
 	} else {
 	applyIconTint();
 		}
+	updateTickerIconColor(mNotificationIconsColor);
 	}
+
+
+    private void updateTickerIconColor(int color) {
+        if (mShowTicker && mTicker != null && mTickerView != null) {
+            mTicker.setIconColorTint(ColorStateList.valueOf(color));
+        }
+    }
+
+    public void updateTickerTextColor() {
+        mTickerTextColor = StatusBarColorHelper.getTickerTextColor(mContext);
+        mTickerTextColorTint = mTickerTextColor;
+        if (mShowTicker && mTicker != null && mTickerView != null) {
+            mTicker.setTextColor(mTickerTextColor);
+        }
+    }
+
+    private void inflateTickerView() {
+        if (mShowTicker && (mTicker == null || mTickerView == null)) {
+            final ViewStub tickerStub = (ViewStub) mStatusBar.findViewById(R.id.ticker_stub);
+            if (tickerStub != null) {
+                mTickerView = tickerStub.inflate();
+                mTicker = new MyTicker(mContext, mStatusBar);
+
+                TickerView tickerView = (TickerView) mStatusBar.findViewById(R.id.tickerText);
+                tickerView.mTicker = mTicker;
+                updateTickerIconColor(mNotificationIconsColor);
+                updateTickerTextColor();
+            } else {
+                mShowTicker = false;
+            }
+        }
+    }
+
+    public void addTickerEntry(StatusBarNotification n) {
+        mTicker.addEntry(n);
+    }
+
+    public void removeTickerEntry(StatusBarNotification n) {
+        mTicker.removeEntry(n);
+    }
+
+    public void haltTicker() {
+        if (mTicking) {
+            mTicker.halt();
+        }
+    }
+
+    private class MyTicker extends Ticker {
+        MyTicker(Context context, View sb) {
+            super(context, sb);
+        }
+
+        @Override
+        public void tickerStarting() {
+            if (!mShowTicker || mIsGreetingVisible) return;
+            mTicking = true;
+            hideSystemIconArea(true);
+            hideNotificationIconArea(true);
+            animateShow(mTickerView, true);
+        }
+
+        @Override
+        public void tickerDone() {
+            if (!mShowTicker || mIsGreetingVisible) return;
+            animateShow(mSystemIconArea, true);
+            if (mClockStyle == CLOCK_STYLE_CENTERED) {
+                animateShow(mCenterClockLayout, true);
+            }
+            animateShow(mNotificationIconArea, true);
+            mTickingEnd = true;
+            animateHide(mTickerView, true);
+        }
+
+        public void tickerHalting() {
+            if (!mShowTicker || mIsGreetingVisible) return;
+            animateShow(mSystemIconArea, true);
+            if (mClockStyle == CLOCK_STYLE_CENTERED) {
+                animateShow(mCenterClockLayout, true);
+            }
+            animateShow(mNotificationIconArea, true);
+            // we do not animate the ticker away at this point, just get rid of it (b/6992707)
+            mTickerView.setVisibility(View.GONE);
+        }
+    }
 }

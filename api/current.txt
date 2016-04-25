@@ -40376,6 +40376,7 @@ package android.widget {
     method public void setImageDrawable(android.graphics.drawable.Drawable);
     method public void setImageResource(int);
     method public void setImageURI(android.net.Uri);
+    method public void setColoredImageDrawable(android.graphics.drawable.Drawable, android.content.res.ColorStateList);
   }
 
   public class ImageView extends android.view.View {
@@ -41518,6 +41519,7 @@ package android.widget {
     ctor public TextSwitcher(android.content.Context, android.util.AttributeSet);
     method public void setCurrentText(java.lang.CharSequence);
     method public void setText(java.lang.CharSequence);
+    method public void setTextColor(int);
   }
 
   public class TextView extends android.view.View implements android.view.ViewTreeObserver.OnPreDrawListener {

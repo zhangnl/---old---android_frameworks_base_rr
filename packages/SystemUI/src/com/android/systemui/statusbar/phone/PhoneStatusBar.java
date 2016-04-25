@@ -142,6 +142,8 @@ import com.android.internal.utils.du.ActionHandler;
 import com.android.internal.utils.du.DUActionUtils;
 import com.android.internal.utils.du.DUPackageMonitor;
 import com.android.internal.utils.du.DUSystemReceiver;
+import com.android.internal.util.darkkat.GreetingTextHelper;
+import com.android.keyguard.CarrierText;
 import com.android.keyguard.KeyguardHostView.OnDismissAction;
 import com.android.keyguard.KeyguardUpdateMonitor;
 import com.android.keyguard.KeyguardUpdateMonitorCallback;
@@ -497,6 +499,9 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     // the tracker view
     int mTrackingPosition; // the position of the top of the tracking view.
 
+    // ticker
+    private boolean mShowTicker;
+
     // Tracking finger for opening/closing.
     boolean mTracking;
     VelocityTracker mVelocityTracker;
@@ -763,6 +768,24 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 	resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.NAVBAR_BUTTON_COLOR),
                     false, this, UserHandle.USER_ALL);
+        resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.STATUS_BAR_GREETING_SHOW_GREETING),
+                    false, this, UserHandle.USER_ALL);
+       resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.STATUS_BAR_GREETING_CUSTOM_TEXT),
+                    false, this, UserHandle.USER_ALL);
+       resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.STATUS_BAR_GREETING_TIMEOUT),
+                    false, this, UserHandle.USER_ALL);
+       resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.STATUS_BAR_GREETING_COLOR),
+                    false, this, UserHandle.USER_ALL);
+       resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.STATUS_BAR_NOTIFICATION_SHOW_TICKER),
+                    false, this, UserHandle.USER_ALL);
+       resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.STATUS_BAR_NOTIFICATION_TICKER_TEXT_COLOR),
+                    false, this, UserHandle.USER_ALL);
 		    update();
         }
 
@@ -879,7 +902,25 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 		} else if (uri.equals(Settings.System.getUriFor(
                     Settings.System.NAVBAR_BUTTON_COLOR))) {
 		    mNavigationController.updateNavbarOverlay(getNavbarThemedResources());
-		} 
+		} else if (uri.equals(Settings.System.getUriFor(
+                    Settings.System.STATUS_BAR_GREETING_SHOW_GREETING))) {
+                updateShowGreeting();
+            } else if (uri.equals(Settings.System.getUriFor(
+                    Settings.System.STATUS_BAR_GREETING_CUSTOM_TEXT))) {
+                updateGreetingText();
+            } else if (uri.equals(Settings.System.getUriFor(
+                    Settings.System.STATUS_BAR_GREETING_TIMEOUT))) {
+                updateGreetingTimeout();
+            } else if (uri.equals(Settings.System.getUriFor(
+                    Settings.System.STATUS_BAR_GREETING_COLOR))) {
+                updateGreetingColor();
+            } else if (uri.equals(Settings.System.getUriFor(
+                    Settings.System.STATUS_BAR_NOTIFICATION_SHOW_TICKER))) {
+                updateShowTicker();
+            } else if (uri.equals(Settings.System.getUriFor(
+                    Settings.System.STATUS_BAR_NOTIFICATION_TICKER_TEXT_COLOR))) {
+                updateTickerTextColor();
+            }    
          update();
         }
 
@@ -2055,6 +2096,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         filter.addAction(Intent.ACTION_SCREEN_ON);
         filter.addAction(Intent.ACTION_KEYGUARD_WALLPAPER_CHANGED);
         filter.addAction(cyanogenmod.content.Intent.ACTION_SCREEN_CAMERA_GESTURE);
+        filter.addAction("com.android.settings.SHOW_GREETING_PREVIEW");
         context.registerReceiverAsUser(mBroadcastReceiver, UserHandle.ALL, filter, null, null);
 
         IntentFilter demoFilter = new IntentFilter();
@@ -2093,6 +2135,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         mStatusBarHeaderMachine.updateEnablement();
         UpdateNotifDrawerClearAllIconColor();
         updateNetworkIconColors();
+        updateSettings();
         return mStatusBarView;
     }
 
@@ -2369,6 +2412,8 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                 MetricsLogger.count(mContext, "note_fullscreen", 1);
             } catch (PendingIntent.CanceledException e) {
             }
+        } else {
+            tick(notification, true);
         }
         addNotificationViews(shadeEntry, ranking);
         // Recalculate the position of the sliding windows and the titles.
@@ -2400,6 +2445,9 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         if (SPEW) Log.d(TAG, "removeNotification key=" + key + " old=" + old);
 
         if (old != null) {
+            if (mShowTicker && mIconController != null) {
+                mIconController.removeTickerEntry(old);
+            }
             if (CLOSE_PANEL_WHEN_EMPTIED && !hasActiveNotifications()
                     && !mNotificationPanel.isTracking() && !mNotificationPanel.isQsExpanded()) {
                 if (mState == StatusBarState.SHADE) {
@@ -3002,6 +3050,49 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                 0xFFFFFFFF, mCurrentUserId);
         if (mDismissView != null) {
             mDismissView.updateIconColor(color);
+	  }
+	}
+	
+    private void updateSettings() {
+        updateShowGreeting();
+        updateGreetingText();
+        updateGreetingTimeout();
+        updateGreetingColor();
+        updateShowTicker();
+    }
+
+    private void updateShowGreeting() {
+        final int showGreeting = Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.STATUS_BAR_GREETING_SHOW_GREETING, 1);
+        if (mIconController != null) {
+            mIconController.updateShowGreeting(showGreeting);
+        }
+    }
+
+    private void updateGreetingText() {
+        String greetingText = Settings.System.getString(
+                mContext.getContentResolver(),
+                Settings.System.STATUS_BAR_GREETING_CUSTOM_TEXT);
+
+        if (greetingText == null || greetingText.isEmpty()) {
+            greetingText = GreetingTextHelper.getDefaultGreetingText(mContext);
+        }
+        if (mIconController != null) {
+            mIconController.updateGreetingText(greetingText);
+        }
+    }
+
+    private void updateGreetingTimeout() {
+        final int greetingTimeout = Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.STATUS_BAR_GREETING_TIMEOUT, 400);
+        if (mIconController != null) {
+            mIconController.updateGreetingTimeout(greetingTimeout);
+        }
+    }
+
+    private void updateGreetingColor() {
+        if (mIconController != null) {
+            mIconController.updateGreetingColor();
         }
     }
     
@@ -3071,6 +3162,23 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 				 Settings.System.STATUSBAR_COLOR_SWITCH, 0) == 1;
         if (mIconController != null) {
             mIconController.updateNotificationIconsColor();
+        }
+    }
+
+    private void updateShowTicker() {
+        final boolean tickerEnabledByConfig =
+                mContext.getResources().getBoolean(R.bool.enable_ticker);
+        mShowTicker = Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.STATUS_BAR_NOTIFICATION_SHOW_TICKER,
+                tickerEnabledByConfig ? 1 : 0) == 1;
+        if (mIconController != null) {
+            mIconController.updateShowTicker(mShowTicker);
+        }
+    }
+
+    private void updateTickerTextColor() {
+        if (mIconController != null) {
+            mIconController.updateTickerTextColor();
         }
     }
 
@@ -3166,6 +3274,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 
         if ((diff1 & StatusBarManager.DISABLE_NOTIFICATION_ICONS) != 0) {
             if ((state1 & StatusBarManager.DISABLE_NOTIFICATION_ICONS) != 0) {
+                haltTicker();
                 mIconController.hideNotificationIconArea(animate);
             } else {
                 mIconController.showNotificationIconArea(animate);
@@ -3810,6 +3919,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             if ((diff & View.SYSTEM_UI_FLAG_LOW_PROFILE) != 0) {
                 final boolean lightsOut = (vis & View.SYSTEM_UI_FLAG_LOW_PROFILE) != 0;
                 if (lightsOut) {
+                    haltTicker();
                     animateCollapsePanels();
                 }
 
@@ -4063,6 +4173,39 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         }
 
         setNavigationIconHints(flags);
+    }
+
+    @Override
+    protected void tick(StatusBarNotification n, boolean firstTime) {
+        if (!mShowTicker || mIconController == null) return;
+
+        // no ticking in lights-out mode
+        if (!areLightsOn()) return;
+
+        // no ticking in Setup
+        if (!isDeviceProvisioned()) return;
+
+        // not for you
+        if (!isNotificationForCurrentProfiles(n)) return;
+
+        // Show the ticker if one is requested. Also don't do this
+        // until status bar window is attached to the window manager,
+        // because...  well, what's the point otherwise?  And trying to
+        // run a ticker without being attached will crash!
+        if (n.getNotification().tickerText != null && mStatusBarWindow != null
+                && mStatusBarWindow.getWindowToken() != null) {
+            if (0 == (mDisabled1 & (StatusBarManager.DISABLE_NOTIFICATION_ICONS
+                    | StatusBarManager.DISABLE_NOTIFICATION_TICKER))) {
+                mIconController.addTickerEntry(n);
+            }
+        }
+    }
+
+    @Override
+    protected void haltTicker() {
+        if (mShowTicker && mIconController != null) {
+            mIconController.haltTicker();
+        }
     }
 
     public static String viewInfo(View v) {
@@ -4355,7 +4498,9 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                 }
             }
             else if (Intent.ACTION_SCREEN_OFF.equals(action)) {
-                mScreenOn = false;
+                if (mIconController != null) {
+                    mIconController.resetHideGreeting();
+                }
                 notifyNavigationBarScreenOn(false);
                 notifyHeadsUpScreenOff();
                 finishBarAnimations();
@@ -4383,6 +4528,11 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                 }
 
                 onCameraLaunchGestureDetected(StatusBarManager.CAMERA_LAUNCH_SOURCE_SCREEN_GESTURE);
+            }
+            else if (action.equals("com.android.settings.SHOW_GREETING_PREVIEW")) {
+                if (mIconController != null) {
+                    mIconController.showGreeting(true);
+                }
             }
         }
     };

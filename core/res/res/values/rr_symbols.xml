@@ -156,6 +156,7 @@
   
   <java-symbol type="drawable" name="rr_logo" />
 
+
   <!-- Boot dexopt layout -->
   <java-symbol type="drawable" name="dexopt_brand_logo" />
   <java-symbol type="color" name="dexopt_background" />
@@ -169,5 +170,6 @@
   <java-symbol type="id" name="dexopt_message" />
   <java-symbol type="id" name="dexopt_message_detail" />
   <java-symbol type="id" name="dexopt_progress" />
-  
+
+  <java-symbol type="string" name="default_greeting_welcome" />
 </resources>

@@ -46,6 +46,8 @@
         
     <!-- Powermenu Torch -->
     <string name="global_action_torch">Flashlight</string>
+    
+     <string name="default_greeting_welcome">Welcome To RR</string>
 
 
 </resources>

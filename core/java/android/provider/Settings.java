@@ -3708,7 +3708,38 @@ public final class Settings {
 
 	public static final String CUSTOM_LOGO_COLOR = "custom_logo_color";
 
- 	 /**
+ 	
+        /**
+         *  Whether to show a greeting on the status bar after unlocking the device
+         * @hide
+         */
+        public static final String STATUS_BAR_GREETING_SHOW_GREETING = "status_bar_greeting_show_greeting";
+
+        /**
+         *  Text used for the greeting on the status bar
+         * @hide
+         */
+        public static final String STATUS_BAR_GREETING_CUSTOM_TEXT = "status_bar_greeting_custom_text";
+
+        /**
+         *  Timeout for the greeting on the status bar
+         * @hide
+         */
+        public static final String STATUS_BAR_GREETING_TIMEOUT = "status_bar_greeting_timeout";
+
+        /**
+         *  Color of the greeting text on the status bar
+         * @hide
+         */
+        public static final String STATUS_BAR_GREETING_COLOR = "status_bar_greeting_color";
+
+        /**
+         *  Color of the greeting text on the status bar
+         * @hide
+         */
+        public static final String STATUS_BAR_GREETING_COLOR_DARK_MODE = "status_bar_greeting_color_dark_mode";
+
+         /**
          * Take your Pick 
          * @hide
          */
@@ -4520,6 +4551,12 @@ public final class Settings {
          */
         public static final String STATUSBAR_CLOCK_FONT_SIZE = "statusbar_clock_font_size";
 	
+       /**
+	 *
+         * Whether to show the ticker on the status bar
+         * @hide
+         */
+        public static final String STATUS_BAR_NOTIFICATION_SHOW_TICKER = "status_bar_notification_show_ticker_color";
 
         /**
          * Shows custom date before clock time
@@ -4538,6 +4575,18 @@ public final class Settings {
          * @hide
          */
         public static final String STATUS_BAR_DATE_STYLE = "status_bar_date_style";
+
+        /**
+         * Color of the ticker text on the status bar
+         * @hide
+         */
+        public static final String STATUS_BAR_NOTIFICATION_TICKER_TEXT_COLOR = "status_bar_notification_ticker_text_color_color";
+
+        /**
+         * Color of the ticker text on the status bar, (dark mode)
+         * @hide
+         */
+        public static final String STATUS_BAR_NOTIFICATION_TICKER_TEXT_COLOR_DARK_MODE = "status_bar_notification_ticker_text_color_dark_mode";
 
         /**
          * Stores the java DateFormat string for the date
