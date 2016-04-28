@@ -3317,9 +3317,9 @@ package android.app {
     method public void finishAffinity();
     method public void finishAfterTransition();
     method public void finishAndRemoveTask();
+    method public void finishFloating();
     method public void finishFromChild(android.app.Activity);
     method public android.app.ActionBar getActionBar();
-    method public void finishFloating();
     method public final android.app.Application getApplication();
     method public android.content.ComponentName getCallingActivity();
     method public java.lang.String getCallingPackage();
@@ -5353,8 +5353,8 @@ package android.app {
     method public android.content.Intent[] getIntents();
     method public android.app.PendingIntent getPendingIntent(int, int);
     method public android.app.PendingIntent getPendingIntent(int, int, android.os.Bundle);
-    method public void startActivities();
     method public void setTaskOnHome(boolean);
+    method public void startActivities();
     method public void startActivities(android.os.Bundle);
   }
 
@@ -29296,6 +29296,96 @@ package android.speech.tts {
     field public static final int QUALITY_NORMAL = 300; // 0x12c
     field public static final int QUALITY_VERY_HIGH = 500; // 0x1f4
     field public static final int QUALITY_VERY_LOW = 100; // 0x64
+  }
+
+}
+
+package android.suda.hardware {
+
+  public class ProximitySensorManager {
+    ctor public ProximitySensorManager(android.content.Context, android.suda.hardware.ProximitySensorManager.ProximitySensorListener);
+    method public void disable();
+    method public void enable();
+  }
+
+  public static abstract interface ProximitySensorManager.ProximitySensorListener {
+    method public abstract void onPickup();
+  }
+
+}
+
+package android.suda.lunar {
+
+  public class Constant {
+    ctor public Constant();
+    method public static java.lang.String[] getAnimals();
+    method public static java.lang.String getLeap();
+    method public static java.lang.String[] getLunarFestival();
+    method public static java.lang.String[] getSolarHoliday();
+    field public static final java.lang.String[] ANIMALS_CN;
+    field public static final java.lang.String[] ANIMALS_HK_TW;
+    field public static final java.lang.String[] CHINESE_NUMBER_CN;
+    field public static final java.lang.String[] CHINESE_TEN_CN;
+    field public static final java.lang.String[] GAN_CN;
+    field public static final java.lang.String[] HOLIDAY_CN;
+    field public static final java.lang.String[] HOLIDAY_HK;
+    field public static final java.lang.String[] HOLIDAY_TW;
+    field public static final java.lang.String[] LUNAR_FESTIVAL_CN;
+    field public static final java.lang.String[] LUNAR_FESTIVAL_HK_TW;
+    field public static final java.lang.String[] LUNAR_MONTH_NAME_CN;
+    field public static final java.lang.String[] SOLAR_TERM_CN;
+    field public static final java.lang.String STATUS_CHUSHI_CN = "\u521d\u5341";
+    field public static final java.lang.String STATUS_DAY_CN = "\u65e5";
+    field public static final java.lang.String STATUS_ERSHI_CN = "\u4e8c\u5341";
+    field public static final java.lang.String STATUS_FORMAT_1_CN = "yyyy\u5e74MM\u6708dd\u65e5";
+    field public static final java.lang.String STATUS_FORMAT_2_CN = "1900\u5e741\u670831\u65e5";
+    field public static final java.lang.String STATUS_LEAP_CN = "\u95f0";
+    field public static final java.lang.String STATUS_LEAP_HK_TW = "\u958f";
+    field public static final java.lang.String STATUS_MONTH_CN = "\u6708";
+    field public static final java.lang.String STATUS_SANSHI_CN = "\u4e09\u5341";
+    field public static final java.lang.String STATUS_YEAR_CN = "\u5e74";
+    field public static final java.lang.String[] ZHI_CN;
+  }
+
+  public class Lunar {
+    ctor public Lunar(java.util.Calendar);
+    method public java.lang.String animalsYear();
+    method public java.lang.String cyclical();
+    method public java.lang.String getChinaDayString(int);
+    method public boolean isBigMonth(java.lang.String);
+  }
+
+  public class LunarFestival {
+    ctor public LunarFestival();
+    method public static java.lang.String getLunarFestival(java.lang.String, android.suda.lunar.Lunar);
+  }
+
+  public class SolarHoliDay {
+    ctor public SolarHoliDay();
+    method public static java.lang.String getSolarHoliDay(int, int);
+  }
+
+  public class SolarTerm {
+    ctor public SolarTerm();
+    method public static java.lang.String getSolarTermStr(int, int, int);
+  }
+
+}
+
+package android.suda.utils {
+
+  public class Converter {
+    ctor public Converter();
+    method public static int dpToPx(android.content.Context, int);
+    method public static int pxToDp(android.content.Context, int);
+  }
+
+  public class ImageHelper {
+    ctor public ImageHelper();
+    method public static android.graphics.Bitmap getCircleBitmap(android.graphics.Bitmap);
+    method public static android.graphics.Bitmap getColoredBitmap(android.graphics.drawable.Drawable, int);
+    method public static android.graphics.Bitmap getRoundedCornerBitmap(android.graphics.Bitmap);
+    method public static android.graphics.drawable.Drawable resize(android.content.Context, android.graphics.drawable.Drawable, int);
   }
 
 }
