@@ -31474,6 +31474,7 @@ package android.suda.lunar {
     method public static java.lang.String getLeap();
     method public static java.lang.String[] getLunarFestival();
     method public static java.lang.String[] getSolarHoliday();
+    method public static java.lang.String[] getSpecday();
     field public static final java.lang.String[] ANIMALS_CN;
     field public static final java.lang.String[] ANIMALS_HK_TW;
     field public static final java.lang.String[] CHINESE_NUMBER_CN;
@@ -31486,6 +31487,9 @@ package android.suda.lunar {
     field public static final java.lang.String[] LUNAR_FESTIVAL_HK_TW;
     field public static final java.lang.String[] LUNAR_MONTH_NAME_CN;
     field public static final java.lang.String[] SOLAR_TERM_CN;
+    field public static final java.lang.String[] SPEC_DAY_CN;
+    field public static final java.lang.String[] SPEC_DAY_HK;
+    field public static final java.lang.String[] SPEC_DAY_TW;
     field public static final java.lang.String STATUS_CHUSHI_CN = "\u521d\u5341";
     field public static final java.lang.String STATUS_DAY_CN = "\u65e5";
     field public static final java.lang.String STATUS_ERSHI_CN = "\u4e8c\u5341";
@@ -31514,7 +31518,8 @@ package android.suda.lunar {
 
   public class SolarHoliDay {
     ctor public SolarHoliDay();
-    method public static java.lang.String getSolarHoliDay(int, int);
+    method public static java.lang.String getSolarHoliDay(int, int, int);
+    method public static java.lang.String getSpecialDay(int, int, int);
   }
 
   public class SolarTerm {
