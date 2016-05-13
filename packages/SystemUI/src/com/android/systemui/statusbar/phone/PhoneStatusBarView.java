@@ -151,8 +151,9 @@ public class PhoneStatusBarView extends PanelBar {
 	if (mCarrierLabelSpot == 3) {
             mCarrierLabel = (TextView) findViewById(R.id.before_icons_statusbar_carrier_text);
         }
-
-        getFontStyle(mCarrierLabelFontStyle);
+  
+	try { getFontStyle(mCarrierLabelFontStyle);}
+	catch (Exception e) {/*Catch that shit*/}
 
         if (mCarrierLabel != null) {
             if (mShowCarrierLabel == 2) {
@@ -166,25 +167,28 @@ public class PhoneStatusBarView extends PanelBar {
     }
 
     public void clearCarrierView() {
-        mCarrierLabel = (TextView) findViewById(R.id.left_statusbar_carrier_text);
-        if (!mCarrierLabel.getText().equals("")) {
-            mCarrierLabel.setVisibility(View.GONE);
-        }
-        mCarrierLabel = (TextView) findViewById(R.id.statusbar_carrier_text);
-	if (!mCarrierLabel.getText().equals("")) {
-            mCarrierLabel.setVisibility(View.GONE);
-        }
-	mCarrierLabel = (TextView) findViewById(R.id.center_statusbar_carrier_text);
-        if (!mCarrierLabel.getText().equals("")) {
-            mCarrierLabel.setVisibility(View.GONE);
-        }
-	mCarrierLabel = (TextView) findViewById(R.id.before_icons_statusbar_carrier_text);
-        if (!mCarrierLabel.getText().equals("")) {
-            mCarrierLabel.setVisibility(View.GONE);
-        }
+	try {
+	      if (mCarrierLabel !=null) {
+		    mCarrierLabel = (TextView) findViewById(R.id.left_statusbar_carrier_text);
+		    mCarrierLabel.setVisibility(View.GONE);
+	      }
+	      if (mCarrierLabel !=null) {
+		    mCarrierLabel = (TextView) findViewById(R.id.statusbar_carrier_text);
+		    mCarrierLabel.setVisibility(View.GONE);
+	      }
+	      if (mCarrierLabel !=null) {
+		    mCarrierLabel = (TextView) findViewById(R.id.center_statusbar_carrier_text);
+		    mCarrierLabel.setVisibility(View.GONE);
+	      }
+	      if (mCarrierLabel !=null) {
+		    mCarrierLabel = (TextView) findViewById(R.id.before_icons_statusbar_carrier_text);
+		    mCarrierLabel.setVisibility(View.GONE);
+	      }
+	  } catch (Exception e) {/*Catch that shit*/}
     }
 
     public void getFontStyle(int font) {
+	if (mCarrierLabel!=null) {
         switch (font) {
             case FONT_NORMAL:
             default:
@@ -287,7 +291,8 @@ public class PhoneStatusBarView extends PanelBar {
                 mCarrierLabel.setTypeface(Typeface.create("serif",
                     Typeface.BOLD_ITALIC));
                 break;
-        }
+	    }
+	} 
     }
 
     @Override

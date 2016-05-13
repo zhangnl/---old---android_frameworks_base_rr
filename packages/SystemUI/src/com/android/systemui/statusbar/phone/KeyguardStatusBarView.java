@@ -189,9 +189,11 @@ public class KeyguardStatusBarView extends RelativeLayout {
         if (mCarrierLabelSpot == 3) {
             mCarrierLabel = (TextView) findViewById(R.id.before_icons_keyguard_carrier_text);
         }
-
-        getFontStyle(mCarrierLabelFontStyle);
-
+	updateBatteryviews();
+	
+	try { getFontStyle(mCarrierLabelFontStyle);}
+	catch (Exception e) {/*Catch that shit*/}
+	
         if (mCarrierLabel != null) {
             if (mShowCarrierLabel == 1) {
                 mCarrierLabel.setVisibility(View.VISIBLE);
@@ -208,17 +210,28 @@ public class KeyguardStatusBarView extends RelativeLayout {
     }
 
     public void clearCarrierView() {
-        mCarrierLabel = (TextView) findViewById(R.id.left_keyguard_carrier_text);
-        mCarrierLabel.setVisibility(View.GONE);
-        mCarrierLabel = (TextView) findViewById(R.id.before_icons_keyguard_carrier_text);
-        mCarrierLabel.setVisibility(View.GONE);
-	mCarrierLabel = (TextView) findViewById(R.id.keyguard_carrier_text);
-        mCarrierLabel.setVisibility(View.GONE);
-        mCarrierLabel = (TextView) findViewById(R.id.before_icons_keyguard_carrier_text);
-        mCarrierLabel.setVisibility(View.GONE);
+	try {
+	      if (mCarrierLabel !=null) {
+		    mCarrierLabel = (TextView) findViewById(R.id.left_statusbar_carrier_text);
+		    mCarrierLabel.setVisibility(View.GONE);
+	      }
+	      if (mCarrierLabel !=null) {
+		    mCarrierLabel = (TextView) findViewById(R.id.statusbar_carrier_text);
+		    mCarrierLabel.setVisibility(View.GONE);
+	      }
+	      if (mCarrierLabel !=null) {
+		    mCarrierLabel = (TextView) findViewById(R.id.center_statusbar_carrier_text);
+		    mCarrierLabel.setVisibility(View.GONE);
+	      }
+	      if (mCarrierLabel !=null) {
+		    mCarrierLabel = (TextView) findViewById(R.id.before_icons_statusbar_carrier_text);
+		    mCarrierLabel.setVisibility(View.GONE);
+	      }
+	  } catch (Exception e) {/*Catch that shit*/}
     }
 
     public void getFontStyle(int font) {
+    if (mCarrierLabel!=null) {
         switch (font) {
             case FONT_NORMAL:
             default:
@@ -321,6 +334,7 @@ public class KeyguardStatusBarView extends RelativeLayout {
                 mCarrierLabel.setTypeface(Typeface.create("serif",
                     Typeface.BOLD_ITALIC));
                 break;
+	    }
         }
     }
 
@@ -505,10 +519,13 @@ public class KeyguardStatusBarView extends RelativeLayout {
                 Settings.System.BATTERY_ICON_COLOR, 0xFFFFFFFF);
     	mColorSwitch =  Settings.System.getInt(mContext.getContentResolver(),
 				 Settings.System.STATUSBAR_COLOR_SWITCH, 0) == 1;
-	if(mColorSwitch) {
-	mBatteryMeterView.setDarkIntensity(mBatteryIconColor);
-	  }   
+		if(mColorSwitch) {
+			if (mBatteryMeterView != null) {
+			mBatteryMeterView.setDarkIntensity(mBatteryIconColor); 
+			} 
+		}	
 	}
+	
     @Override
     public void onDetachedFromWindow() {
         super.onDetachedFromWindow();
