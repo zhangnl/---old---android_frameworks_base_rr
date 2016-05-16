@@ -168,7 +168,8 @@ public class StatusBarIconController implements Tunable {
                 android.R.interpolator.fast_out_slow_in);
         mDarkModeIconColorSingleTone = context.getColor(R.color.dark_mode_icon_color_single_tone);
         mLightModeIconColorSingleTone = context.getColor(R.color.light_mode_icon_color_single_tone);
-        checkcarrier(statusBar);
+
+        mCarrierLabel = (TextView) statusBar.findViewById(R.id.statusbar_carrier_text);
         mHandler = new Handler();
 
         mClockController = new ClockController(statusBar, mNotificationIcons, mHandler);
@@ -236,26 +237,6 @@ public class StatusBarIconController implements Tunable {
                 R.dimen.status_bar_icon_padding);
         //mClockController.updateFontSize();
         carrierLabelVisibility();
-    }
-    
-    public void checkcarrier(View statusBar) {
-    	int  mCarrierLabelSpot = Settings.System.getIntForUser(mContext.getContentResolver(),
-                Settings.System.STATUS_BAR_CARRIER_SPOT, 0,
-                UserHandle.USER_CURRENT);
-	clearCarrierView(statusBar);
-        if (mCarrierLabelSpot == 0) {
-            mCarrierLabel = (TextView) statusBar.findViewById(R.id.left_statusbar_carrier_text);
-        }
-        if (mCarrierLabelSpot == 1) {
-            mCarrierLabel = (TextView) statusBar.findViewById(R.id.center_statusbar_carrier_text);
-        }
-	if (mCarrierLabelSpot == 2) {
-            mCarrierLabel = (TextView) statusBar.findViewById(R.id.statusbar_carrier_text);
-        }
-	if (mCarrierLabelSpot == 3) {
-            mCarrierLabel = (TextView) statusBar.findViewById(R.id.before_icons_statusbar_carrier_text);
-        }
-    
     }
 
     public void addSystemIcon(String slot, int index, int viewIndex, StatusBarIcon icon) {
@@ -380,6 +361,7 @@ public class StatusBarIconController implements Tunable {
 
     public void carrierLabelVisibility() {
         final ContentResolver resolver = mContext.getContentResolver();
+
         mCarrierLabelMode = Settings.System.getIntForUser(resolver,
                 Settings.System.STATUS_BAR_SHOW_CARRIER, 1, UserHandle.USER_CURRENT);
 
@@ -415,27 +397,6 @@ public class StatusBarIconController implements Tunable {
                mCarrierLabel.setVisibility(View.GONE);
             }
         }
-    }
-    
-        public void clearCarrierView(View statusBar) {
-	try {
-	      if (mCarrierLabel !=null) {
-		    mCarrierLabel = (TextView) statusBar.findViewById(R.id.left_statusbar_carrier_text);
-		    mCarrierLabel.setVisibility(View.GONE);
-	      }
-	      if (mCarrierLabel !=null) {
-		    mCarrierLabel = (TextView) statusBar.findViewById(R.id.statusbar_carrier_text);
-		    mCarrierLabel.setVisibility(View.GONE);
-	      }
-	      if (mCarrierLabel !=null) {
-		    mCarrierLabel = (TextView) statusBar.findViewById(R.id.center_statusbar_carrier_text);
-		    mCarrierLabel.setVisibility(View.GONE);
-	      }
-	      if (mCarrierLabel !=null) {
-		    mCarrierLabel = (TextView) statusBar.findViewById(R.id.before_icons_statusbar_carrier_text);
-		    mCarrierLabel.setVisibility(View.GONE);
-	      }
-	  } catch (Exception e) {/*Catch that shit*/}
     }
 
     public void dump(PrintWriter pw) {
