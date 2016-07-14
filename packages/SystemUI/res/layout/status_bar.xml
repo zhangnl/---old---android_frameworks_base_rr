@@ -29,6 +29,15 @@
     android:descendantFocusability="afterDescendants"
     >
 
+    <ImageView android:id="@+id/background_image"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"     
+        android:background="@drawable/status_gradient"
+        android:scaleType="centerCrop"
+	android.visibility="gone"  
+	/>
+
     <ImageView
         android:id="@+id/notification_lights_out"
         android:layout_width="@dimen/status_bar_icon_size"
@@ -177,7 +186,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:layout_marginStart="@dimen/header_battery_margin_keyguard"
+                android:layout_marginStart="@dimen/signal_cluster_battery_padding"
                 android:textColor="@color/status_bar_battery_level_text_color"
                 android:textSize="@dimen/battery_level_text_size" />
 

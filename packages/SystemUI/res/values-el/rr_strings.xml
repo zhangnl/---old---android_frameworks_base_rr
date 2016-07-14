@@ -210,10 +210,6 @@
   <string name="quick_settings_pulse_disabled">No Visualizer</string>
   <string name="quick_settings_pulse_label">NavigationBar Visualizer</string>
   <!-- PA Pie controls -->
-  <string name="pie_date_format">cCC, ηη μμμ εεεε</string>
-  <string name="pie_hour_format_12">ωω: λλ</string>
-  <string name="pie_hour_format_24">HH:mm</string>
-  <string name="pie_am_pm">ένα</string>
   <!-- Title shown in recents popup for showing app launch in floating mode -->
   <string name="recent_float_mode_title">Λειτουργία float</string>
   <!-- App circle sidebar -->
@@ -229,5 +225,5 @@
   <string name="quick_settings_visualizer_label">AudioFX</string>
   <!-- Content description of the visualizer tile in quick settings (not shown on the screen). [CHAR LIMIT=NONE] -->
   <string name="accessibility_quick_settings_visualizer">Visualizer.</string>
-  <string name="pulse_toast_message">Visualizer Tile will not work with pulse enabled</string>
+  <string name="pulse_toast_message">Η εφαρμογή δεν δουλεύει με ενεργοποιημένο παλμο</string>
 </resources>
