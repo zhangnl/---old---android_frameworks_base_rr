@@ -125,11 +125,6 @@ public class UserManagerService extends IUserManager.Stub {
     private static final String RESTRICTIONS_FILE_PREFIX = "res_";
     private static final String XML_SUFFIX = ".xml";
 
-    private static final int ALLOWED_FLAGS_FOR_CREATE_USERS_PERMISSION =
-            UserInfo.FLAG_MANAGED_PROFILE
-            | UserInfo.FLAG_RESTRICTED
-            | UserInfo.FLAG_GUEST;
-
     private static final int MIN_USER_ID = 10;
 
     private static final int USER_VERSION = 5;
@@ -282,7 +277,7 @@ public class UserManagerService extends IUserManager.Stub {
 
     @Override
     public List<UserInfo> getUsers(boolean excludeDying) {
-        checkManageOrCreateUsersPermission("query users");
+        checkManageUsersPermission("query users");
         synchronized (mPackagesLock) {
             ArrayList<UserInfo> users = new ArrayList<UserInfo>(mUsers.size());
             for (int i = 0; i < mUsers.size(); i++) {
@@ -393,7 +388,7 @@ public class UserManagerService extends IUserManager.Stub {
 
     @Override
     public UserInfo getUserInfo(int userId) {
-        checkManageOrCreateUsersPermission("query user");
+        checkManageUsersPermission("query user");
         synchronized (mPackagesLock) {
             return getUserInfoLocked(userId);
         }
@@ -679,71 +674,6 @@ public class UserManagerService extends IUserManager.Stub {
                         uid, -1, true) != PackageManager.PERMISSION_GRANTED) {
             throw new SecurityException("You need MANAGE_USERS permission to: " + message);
         }
-    }
-
-    /**
-     * Enforces that only the system UID or root's UID or apps that have the
-     * {@link android.Manifest.permission#MANAGE_USERS MANAGE_USERS} or
-     * {@link android.Manifest.permission#CREATE_USERS CREATE_USERS}
-     * can make certain calls to the UserManager.
-     *
-     * @param message used as message if SecurityException is thrown
-     * @throws SecurityException if the caller is not system or root
-     * @see #hasManageOrCreateUsersPermission()
-     */
-    private static final void checkManageOrCreateUsersPermission(String message) {
-        if (!hasManageOrCreateUsersPermission()) {
-            throw new SecurityException(
-                    "You either need MANAGE_USERS or CREATE_USERS permission to: " + message);
-        }
-    }
-
-    /**
-     * Similar to {@link #checkManageOrCreateUsersPermission(String)} but when the caller is tries
-     * to create user/profiles other than what is allowed for
-     * {@link android.Manifest.permission#CREATE_USERS CREATE_USERS} permission, then it will only
-     * allow callers with {@link android.Manifest.permission#MANAGE_USERS MANAGE_USERS} permission.
-     */
-    private static final void checkManageOrCreateUsersPermission(int creationFlags) {
-        if ((creationFlags & ~ALLOWED_FLAGS_FOR_CREATE_USERS_PERMISSION) == 0) {
-            if (!hasManageOrCreateUsersPermission()) {
-                throw new SecurityException("You either need MANAGE_USERS or CREATE_USERS "
-                        + "permission to create an user with flags: " + creationFlags);
-            }
-        } else if (!hasManageUsersPermission()) {
-            throw new SecurityException("You need MANAGE_USERS permission to create an user "
-                    + " with flags: " + creationFlags);
-        }
-    }
-
-    /**
-     * @return whether the calling UID is system UID or root's UID or the calling app has the
-     * {@link android.Manifest.permission#MANAGE_USERS MANAGE_USERS}.
-     */
-    private static final boolean hasManageUsersPermission() {
-        final int callingUid = Binder.getCallingUid();
-        return UserHandle.isSameApp(callingUid, Process.SYSTEM_UID)
-                || callingUid == Process.ROOT_UID
-                || ActivityManager.checkComponentPermission(
-                        android.Manifest.permission.MANAGE_USERS,
-                        callingUid, -1, true) == PackageManager.PERMISSION_GRANTED;
-    }
-
-    /**
-     * @return whether the calling UID is system UID or root's UID or the calling app has the
-     * {@link android.Manifest.permission#MANAGE_USERS MANAGE_USERS} or
-     * {@link android.Manifest.permission#CREATE_USERS CREATE_USERS}.
-     */
-    private static final boolean hasManageOrCreateUsersPermission() {
-        final int callingUid = Binder.getCallingUid();
-        return UserHandle.isSameApp(callingUid, Process.SYSTEM_UID)
-                || callingUid == Process.ROOT_UID
-                || ActivityManager.checkComponentPermission(
-                        android.Manifest.permission.MANAGE_USERS,
-                        callingUid, -1, true) == PackageManager.PERMISSION_GRANTED
-                || ActivityManager.checkComponentPermission(
-                        android.Manifest.permission.CREATE_USERS,
-                        callingUid, -1, true) == PackageManager.PERMISSION_GRANTED;
     }
 
     private static void checkSystemOrRoot(String message) {
@@ -1297,7 +1227,7 @@ public class UserManagerService extends IUserManager.Stub {
 
     @Override
     public UserInfo createProfileForUser(String name, int flags, int userId) {
-        checkManageOrCreateUsersPermission(flags);
+        checkManageUsersPermission("Only the system can create users");
         if (userId != UserHandle.USER_OWNER) {
             Slog.w(LOG_TAG, "Only user owner can have profiles");
             return null;
@@ -1307,7 +1237,7 @@ public class UserManagerService extends IUserManager.Stub {
 
     @Override
     public UserInfo createUser(String name, int flags) {
-        checkManageOrCreateUsersPermission(flags);
+        checkManageUsersPermission("Only the system can create users");
         return createUserInternal(name, flags, UserHandle.USER_NULL);
     }
 
@@ -1472,7 +1402,7 @@ public class UserManagerService extends IUserManager.Stub {
      * @param userHandle the user's id
      */
     public boolean removeUser(int userHandle) {
-        checkManageOrCreateUsersPermission("Only the system can remove users");
+        checkManageUsersPermission("Only the system can remove users");
         if (getUserRestrictions(UserHandle.getCallingUserId()).getBoolean(
                 UserManager.DISALLOW_REMOVE_USER, false)) {
             Log.w(LOG_TAG, "Cannot remove user. DISALLOW_REMOVE_USER is enabled.");

@@ -210,8 +210,6 @@ import com.android.systemui.statusbar.policy.KeyguardUserSwitcher;
 import com.android.systemui.statusbar.policy.LiveLockScreenController;
 import com.android.systemui.statusbar.policy.LocationControllerImpl;
 import com.android.systemui.statusbar.policy.NetworkController;
-import com.android.systemui.statusbar.policy.MinitBattery;
-import com.android.systemui.statusbar.policy.MinitBatteryController;
 import com.android.systemui.statusbar.policy.NetworkControllerImpl;
 import com.android.systemui.statusbar.policy.NextAlarmController;
 import com.android.systemui.statusbar.policy.PreviewInflater;
@@ -384,7 +382,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     SuControllerImpl mSuController;
     FingerprintUnlockController mFingerprintUnlockController;
     LiveLockScreenController mLiveLockScreenController;
-    MinitBatteryController mMinitBatteryController;
 
     int mNaturalBarHeight = -1;
 
@@ -1754,9 +1751,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 
         // set the inital view visibility
         setAreThereNotifications();
-
-        mMinitBatteryController = new MinitBatteryController(mContext, mStatusBarView, mHeader, mKeyguardStatusBar);
-        mPackageMonitor.addListener(mMinitBatteryController);
 
         mIconController = new StatusBarIconController(
                 mContext, mStatusBarView, mKeyguardStatusBar, this);     
@@ -5310,7 +5304,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         mContext.unregisterReceiver(mDemoReceiver);
         mContext.unregisterReceiver(mDUReceiver);
         mPackageMonitor.removeListener(mNavigationController);
-        mPackageMonitor.removeListener(mMinitBatteryController);
         mPackageMonitor.unregister();
         mNavigationController.destroy();
         mAssistManager.destroy();

@@ -218,7 +218,6 @@ import android.os.UpdateLock;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.provider.Settings;
-import android.telecom.TelecomManager;
 import android.text.format.DateUtils;
 import android.text.format.Time;
 import android.util.AtomicFile;
@@ -1604,14 +1603,11 @@ public final class ActivityManagerService extends ActivityManagerNative
             } break;
             case SHOW_FINGERPRINT_ERROR_MSG: {
                 if (mShowDialogs) {
-                    String buildfingerprint = SystemProperties.get("ro.build.fingerprint");
-                    String[] splitfingerprint = buildfingerprint.split("/");
-                    String vendorid = splitfingerprint[3];
                     AlertDialog d = new BaseErrorDialog(mContext);
                     d.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ERROR);
                     d.setCancelable(false);
                     d.setTitle(mContext.getText(R.string.android_system_label));
-                    d.setMessage(mContext.getString(R.string.system_error_vendorprint, vendorid));
+                    d.setMessage(mContext.getText(R.string.system_error_manufacturer));
                     d.setButton(DialogInterface.BUTTON_POSITIVE, mContext.getText(R.string.ok),
                             obtainMessage(DISMISS_DIALOG_MSG, d));
                     d.show();
@@ -9516,10 +9512,6 @@ public final class ActivityManagerService extends ActivityManagerNative
                 mStackSupervisor.setLockTaskModeLocked(null, ActivityManager.LOCK_TASK_MODE_NONE,
                         "stopLockTask", true);
             }
-            TelecomManager tm = (TelecomManager) mContext.getSystemService(Context.TELECOM_SERVICE);
-            if (tm != null) {
-                tm.showInCallScreen(false);
-            }
         } finally {
             Binder.restoreCallingIdentity(ident);
         }
@@ -16453,21 +16445,10 @@ public final class ActivityManagerService extends ActivityManagerNative
     // Cause the target app to be launched if necessary and its backup agent
     // instantiated.  The backup agent will invoke backupAgentCreated() on the
     // activity manager to announce its creation.
-    public boolean bindBackupAgent(String packageName, int backupMode, int userId) {
-        if (DEBUG_BACKUP) Slog.v(TAG, "bindBackupAgent: app=" + packageName + " mode=" + backupMode);
+    public boolean bindBackupAgent(ApplicationInfo app, int backupMode) {
+        if (DEBUG_BACKUP) Slog.v(TAG_BACKUP,
+                "bindBackupAgent: app=" + app + " mode=" + backupMode);
         enforceCallingPermission("android.permission.CONFIRM_FULL_BACKUP", "bindBackupAgent");
-
-        IPackageManager pm = AppGlobals.getPackageManager();
-        ApplicationInfo app = null;
-        try {
-            app = pm.getApplicationInfo(packageName, 0, userId);
-        } catch (RemoteException e) {
-            // can't happen; package manager is process-local
-        }
-        if (app == null) {
-            Slog.w(TAG, "Unable to bind backup agent for " + packageName);
-            return false;
-        }
 
         synchronized(this) {
             // !!! TODO: currently no check here that we're already bound
@@ -17837,11 +17818,6 @@ public final class ActivityManagerService extends ActivityManagerNative
                 if (values.themeConfig != null) {
                     saveThemeResourceLocked(values.themeConfig,
                             !values.themeConfig.equals(mConfiguration.themeConfig));
-                }
-
-                if ((changes & ActivityInfo.CONFIG_THEME_FONT) != 0) {
-                    // Notify zygote that themes need a refresh
-                    SystemProperties.set(PROP_REFRESH_THEME, "1");
                 }
 
                 mConfigurationSeq++;

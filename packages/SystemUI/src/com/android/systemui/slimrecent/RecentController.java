@@ -118,7 +118,6 @@ public class RecentController implements RecentPanelView.OnExitListener,
     private AppSidebar mAppSidebar;
     private boolean mAppSidebarEnabled;
     private float mAppSidebarScaleFactor = AppSidebar.DEFAULT_SCALE_FACTOR;
-    private boolean mAppSidebarOpenSimultaneously;
 
     private Handler mHandler = new Handler();
 
@@ -591,16 +590,10 @@ public class RecentController implements RecentPanelView.OnExitListener,
                     Settings.System.RECENT_SHOW_RUNNING_TASKS),
                     false, this, UserHandle.USER_ALL);
             resolver.registerContentObserver(Settings.System.getUriFor(
-                    Settings.System.USE_RECENT_APP_SIDEBAR),
-                    false, this, UserHandle.USER_ALL);
-            resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.RECENT_APP_SIDEBAR_CONTENT),
                     false, this, UserHandle.USER_ALL);
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.RECENT_APP_SIDEBAR_SCALE_FACTOR),
-                    false, this, UserHandle.USER_ALL);
-            resolver.registerContentObserver(Settings.System.getUriFor(
-                    Settings.System.RECENT_APP_SIDEBAR_OPEN_SIMULTANEOUSLY),
                     false, this, UserHandle.USER_ALL);
             update();
         }
@@ -663,20 +656,12 @@ public class RecentController implements RecentPanelView.OnExitListener,
             }
 
             // App sidebar settings
-            if (Settings.System.getIntForUser(resolver, Settings.System.USE_RECENT_APP_SIDEBAR, 1,
-                    UserHandle.USER_CURRENT) == 1) {
-                String appSidebarContent = Settings.System.getStringForUser(resolver,
-                        Settings.System.RECENT_APP_SIDEBAR_CONTENT, UserHandle.USER_CURRENT);
-                mAppSidebarEnabled = appSidebarContent != null && !appSidebarContent.equals("");
-            } else {
-                mAppSidebarEnabled = false;
-            }
+            String appSidebarContent = Settings.System.getStringForUser(
+                    resolver, Settings.System.RECENT_APP_SIDEBAR_CONTENT, UserHandle.USER_CURRENT);
+            mAppSidebarEnabled = appSidebarContent != null && !appSidebarContent.equals("");
             mAppSidebarScaleFactor = Settings.System.getIntForUser(
                     resolver, Settings.System.RECENT_APP_SIDEBAR_SCALE_FACTOR, 100,
                     UserHandle.USER_CURRENT) / 100.0f;
-            mAppSidebarOpenSimultaneously = Settings.System.getIntForUser(resolver,
-                    Settings.System.RECENT_APP_SIDEBAR_OPEN_SIMULTANEOUSLY, 1,
-                    UserHandle.USER_CURRENT) == 1;
         }
     }
 
@@ -847,47 +832,23 @@ public class RecentController implements RecentPanelView.OnExitListener,
 
     // Methods for app sidebar:
     private void addSidebarView() {
-        addSidebarHandler.removeCallbacks(addSidebarRunnable);
         if (mAppSidebarEnabled) {
-            if (mAppSidebarOpenSimultaneously) {
-                addSidebarRunnable.run();
-            } else {
-                addSidebarHandler.post(addSidebarRunnable);
-            }
+            mAppSidebar = (AppSidebar) View.inflate(mContext, R.layout.recent_app_sidebar, null);
+            mAppSidebar.setSlimRecent(this);
+            mAppSidebar.setSystemUiVisibility(mVisibility);
+            mWindowManager.addView(mAppSidebar, generateLayoutParameter(true));
         }
     }
-    private Handler addSidebarHandler = new Handler();
-    private Runnable addSidebarRunnable =
-            new Runnable() {
-                @Override
-                public void run() {
-                    mAppSidebar = (AppSidebar) View.inflate(mContext, R.layout.recent_app_sidebar,
-                            null);
-                    mAppSidebar.setSlimRecent(RecentController.this);
-                    mAppSidebar.setSystemUiVisibility(mVisibility);
-                    mWindowManager.addView(mAppSidebar, generateLayoutParameter(true));
-                }
-            };
     private void removeSidebarView() {
-        addSidebarHandler.removeCallbacks(addSidebarRunnable);
         if (mAppSidebar != null) {
-            mAppSidebar.launchPendingSwipeAction();
             mWindowManager.removeView(mAppSidebar);
             mAppSidebar = null;
         }
     }
     private void removeSidebarViewImmediate() {
-        addSidebarHandler.removeCallbacks(addSidebarRunnable);
         if (mAppSidebar != null) {
             mWindowManager.removeViewImmediate(mAppSidebar);
             mAppSidebar = null;
         }
     }
-
-    public void onLaunchApplication() {
-        if (mAppSidebar != null) {
-            mAppSidebar.cancelPendingSwipeAction();
-        }
-    }
-
 }

@@ -16,18 +16,15 @@
 
 package com.android.keyguard;
 
-import android.app.ActivityManagerNative;
 import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.PowerManager;
-import android.os.RemoteException;
 import android.os.SystemClock;
 import android.os.UserHandle;
 import android.telecom.TelecomManager;
 import android.util.AttributeSet;
-import android.util.Slog;
 import android.view.View;
 import android.widget.Button;
 
@@ -48,8 +45,6 @@ public class EmergencyButton extends Button {
             .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                     | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
                     | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-
-    private static final String LOG_TAG = "EmergencyButton";
 
     KeyguardUpdateMonitorCallback mInfoCallback = new KeyguardUpdateMonitorCallback() {
 
@@ -126,11 +121,6 @@ public class EmergencyButton extends Button {
         // TODO: implement a shorter timeout once new PowerManager API is ready.
         // should be the equivalent to the old userActivity(EMERGENCY_CALL_TIMEOUT)
         mPowerManager.userActivity(SystemClock.uptimeMillis(), true);
-        try {
-            ActivityManagerNative.getDefault().stopLockTaskMode();
-        } catch (RemoteException e) {
-            Slog.w(LOG_TAG, "Failed to stop app pinning");
-        }
         if (isInCall()) {
             resumeCall();
             if (mEmergencyButtonCallback != null) {
