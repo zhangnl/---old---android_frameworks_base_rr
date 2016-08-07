@@ -101,7 +101,7 @@
   <!-- Themes QS Tile -->
   <string name="quick_settings_themes">Temas</string>
   <string name="quick_settings_themes_icon_packs">Aplicar o pacote de ícones</string>
-  <string name="quick_settings_themes_app_theme_with_label">Aplicar um tema para <xliff:g id="application">%1$s </xliff:g></string>
+  <string name="quick_settings_themes_app_theme_with_label">Aplicar um tema para <xliff:g id="application"> %1$s </xliff:g></string>
   <string name="quick_settings_themes_app_theme">Aplicar um tema à app</string>
   <string name="quick_settings_themes_system_theme">Aplicar tema</string>
   <string name="quick_settings_themes_default_theme">Predefinido</string>
@@ -204,16 +204,12 @@
   <string name="heads_up_enabled">Notificações pop-up estão ativadas</string>
   <string name="heads_up_disabled">Notificações pop-up estão desativadas</string>
   <!-- Heads up snooze toast -->
-  <string name="heads_up_snooze_message">Notificações pop-up estão adormecidas por <xliff:g id="number">%d</xliff:g> minutos.</string>
+  <string name="heads_up_snooze_message">Notificações pop-up estão adormecidas por <xliff:g id="number"> %d </xliff:g> minutos.</string>
   <!-- Pulse Tile -->
   <string name="quick_settings_pulse_enabled">Pulse Ativado</string>
   <string name="quick_settings_pulse_disabled">Nenhum Visualizador</string>
   <string name="quick_settings_pulse_label">Visualizador da Barra de Navegação</string>
   <!-- PA Pie controls -->
-  <string name="pie_date_format">CCC, dd MMM AAAA</string>
-  <string name="pie_hour_format_12">hh:mm</string>
-  <string name="pie_hour_format_24">HH:mm</string>
-  <string name="pie_am_pm">a</string>
   <!-- Title shown in recents popup for showing app launch in floating mode -->
   <string name="recent_float_mode_title">Modo flutuador</string>
   <!-- App circle sidebar -->
@@ -230,4 +226,18 @@
   <!-- Content description of the visualizer tile in quick settings (not shown on the screen). [CHAR LIMIT=NONE] -->
   <string name="accessibility_quick_settings_visualizer">Visualizador.</string>
   <string name="pulse_toast_message">Tela de visualização não funciona com o pulse ativado</string>
+  <string name="recents_custom_android_n">Limpar tudo</string>
+  <!-- Slim recents app sidebar queue app toast -->
+  <string name="toast_recents_queue_app">Lançar %s após fechar os recentes</string>
+  <string name="toast_recents_cancel_queued_app">Lançamento da app cancelada</string>
+  <!-- Content description of the halo button in the notification panel for accessibility (not shown on the screen). [CHAR LIMIT=NONE] -->
+  <string name="accessibility_halo">Create notification halo.</string>
+  <!-- HALO -->
+  <string name="halo_dismiss">Dismiss notification</string>
+  <string name="halo_hide">Hide</string>
+  <string name="halo_clear_all">Dismiss all notifications</string>
+  <string name="halo_silence">Hide &amp; silence until woken</string>
+  <string name="halo_tutorial1">This is HALO</string>
+  <string name="halo_tutorial2">Move me: double tap &amp; drag</string>
+  <string name="halo_tutorial3">Browse tasks: Horizontal drag</string>
 </resources>

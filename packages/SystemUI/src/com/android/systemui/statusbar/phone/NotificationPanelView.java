@@ -19,6 +19,7 @@ package com.android.systemui.statusbar.phone;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ArgbEvaluator;
+import android.graphics.drawable.BitmapDrawable;
 import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
 import android.animation.ValueAnimator;
@@ -27,13 +28,17 @@ import android.app.ActivityManager;
 import android.app.StatusBarManager;
 import android.content.res.Resources;
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.graphics.*;
 import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.database.ContentObserver;
+import android.os.AsyncTask;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.GradientDrawable;
 import android.graphics.PorterDuff.Mode;
 import android.graphics.Paint;
 import android.graphics.Point;
@@ -44,6 +49,7 @@ import android.os.PowerManager;
 import android.os.UserHandle;
 import android.provider.Settings;
 import android.os.RemoteException;
+import android.preference.PreferenceManager;
 import android.util.AttributeSet;
 import android.util.MathUtils;
 import android.view.Display;
@@ -57,12 +63,15 @@ import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.view.WindowManagerGlobal;
 import android.view.accessibility.AccessibilityEvent;
+import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.Interpolator;
 import android.view.animation.PathInterpolator;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
+import android.view.animation.*;
 
 import com.android.internal.logging.MetricsLogger;
 import com.android.keyguard.KeyguardStatusView;
@@ -73,7 +82,6 @@ import com.android.systemui.EventLogTags;
 import com.android.systemui.R;
 import com.android.systemui.SwipeHelper;
 import com.android.systemui.qs.QSContainer;
-import com.android.systemui.qs.QSDetailClipper;
 import com.android.systemui.qs.QSPanel;
 import com.android.systemui.statusbar.ExpandableNotificationRow;
 import com.android.systemui.statusbar.ExpandableView;
@@ -88,6 +96,7 @@ import com.android.systemui.statusbar.policy.LiveLockScreenController;
 import com.android.systemui.statusbar.stack.NotificationStackScrollLayout;
 import com.android.systemui.statusbar.stack.StackStateAnimator;
 import org.cyanogenmod.internal.util.CmLockPatternUtils;
+import com.android.systemui.statusbar.*;
 
 import cyanogenmod.providers.CMSettings;
 
@@ -117,6 +126,15 @@ public class NotificationPanelView extends PanelView implements
 
     private static final long SLIDE_PANEL_IN_ANIMATION_DURATION = 300;
 
+    private static final String KEY_USER_EXPANDED_NOTIFICATIONS_IN_KEYGUARD =
+            "user_expanded_notifications_in_keyguard";
+    private static final String KEY_USER_INTERACTED_WITH_LLS =
+            "user_interacted_with_lls";
+    private static final String KEY_USER_UNLOCKED =
+            "user_unlocked";
+    private static final String KEY_USER_RETURNED_FROM_LLS =
+            "user_returned_from_lls";
+
     public static final long DOZE_ANIMATION_DURATION = 700;
     private CmLockPatternUtils mLockPatternUtils;
 
@@ -128,7 +146,7 @@ public class NotificationPanelView extends PanelView implements
     private StatusBarHeaderView mHeader;
     private KeyguardUserSwitcher mKeyguardUserSwitcher;
     private KeyguardStatusBarView mKeyguardStatusBar;
-    private QSContainer mQsContainer;
+    private static QSContainer mQsContainer;
     private QSPanel mQsPanel;
     private KeyguardStatusView mKeyguardStatusView;
     private ObservableScrollView mScrollView;
@@ -159,8 +177,9 @@ public class NotificationPanelView extends PanelView implements
     private boolean mQsExpanded;
     private boolean mQsExpandedWhenExpandingStarted;
     private boolean mQsFullyExpanded;
-    private boolean mKeyguardShowing;
+    public static boolean mKeyguardShowing;
     private boolean mKeyguardOrShadeShowing;
+    public static boolean mHeadsUpShowing;
     private boolean mDozing;
     private boolean mDozingOnDown;
     private int mStatusBarState;
@@ -236,10 +255,9 @@ public class NotificationPanelView extends PanelView implements
     private int mPositionMinSideMargin;
     private int mLastOrientation = -1;
     private boolean mClosingWithAlphaFadeOut;
-    private boolean mHeadsUpAnimatingAway;
+    public static boolean mHeadsUpAnimatingAway;
     private boolean mLaunchingAffordance;
     private String mLastCameraLaunchSource = KeyguardBottomAreaView.CAMERA_LAUNCH_SOURCE_AFFORDANCE;
-    private QSDetailClipper mClipper;
 
     private Runnable mHeadsUpExistenceChangedRunnable = new Runnable() {
         @Override
@@ -263,6 +281,36 @@ public class NotificationPanelView extends PanelView implements
     private int mStatusBarHeaderHeight;
     private GestureDetector mDoubleTapGesture;
 
+    public static boolean mBlurredStatusBarExpandedEnabled;
+    public static NotificationPanelView mNotificationPanelView;
+
+    private static int mBlurScale;
+    private static int mBlurRadius;
+    private static BlurUtils mBlurUtils;
+    private static FrameLayout mBlurredView;
+    private static ColorFilter mColorFilter;
+    private static int mBlurDarkColorFilter;
+    private static int mBlurMixedColorFilter;
+    private static int mBlurLightColorFilter;
+    private static int mTranslucencyPercentage;
+    private static AlphaAnimation mAlphaAnimation;
+    private static boolean mTranslucentQuickSettings;
+    
+    private static Animation.AnimationListener mAnimationListener = new Animation.AnimationListener() {
+
+        @Override
+        public void onAnimationStart(Animation anim) {
+            mBlurredView.setVisibility(View.VISIBLE);
+        }
+
+        @Override
+        public void onAnimationEnd(Animation anim) {}
+
+        @Override
+        public void onAnimationRepeat(Animation anim) {}
+
+    };
+
     // Task manager
     private boolean mShowTaskManager;
     private boolean mTaskManagerShowing;
@@ -272,6 +320,20 @@ public class NotificationPanelView extends PanelView implements
     private int mQSShadeAlpha;
 
     private int mQSBackgroundColor;
+    // QS stroke
+    private int mQSStroke;
+    private int mCustomStrokeColor;
+    private int mCustomStrokeThickness;
+    private int mCustomCornerRadius;
+    private int mCustomDashWidth;
+    private int mCustomDashGap;
+
+    // RR panel logo
+    private ImageView mRRPanelLogo;
+    private int mQSPanelLogo;
+    private int mQSPanelLogoColor;
+    private int mQSPanelLogoAlpha;
+
     // Used to identify whether showUnlock() can dismiss the keyguard
     // or not.
     // TODO - add a new state to make it easier to identify keyguard vs
@@ -291,6 +353,14 @@ public class NotificationPanelView extends PanelView implements
     private ViewLinker mViewLinker;
     private final UnlockMethodCache mUnlockMethodCache;
 
+
+    // Keep track of common user interactions on the lock screen
+    private boolean mUserUnlocked;
+    private boolean mUserExpandedNotifications;
+    private boolean mUserInteractedWithLiveLockScreen;
+    private boolean mUserReturnedFromLiveLockScreen;
+
+    private boolean mScreenOnHintsEnabled;
 
     private enum SwipeLockedDirection {
         UNKNOWN,
@@ -320,6 +390,13 @@ public class NotificationPanelView extends PanelView implements
             mCanDismissKeyguard = false;
             mStatusBar.focusKeyguardExternalView();
             mLiveLockscreenController.onLiveLockScreenFocusChanged(true /* hasFocus */);
+            if (!mUserInteractedWithLiveLockScreen) {
+                mUserInteractedWithLiveLockScreen = true;
+                saveUserInteractedWithLls(true);
+            }
+            if (!mUserReturnedFromLiveLockScreen) {
+                startShowNotificationsHintAnimation();
+            }
             resetAlphaTranslation();
             // Enables the left edge gesture to allow user
             // to return to keyguard
@@ -422,6 +499,12 @@ public class NotificationPanelView extends PanelView implements
         display.getSize(point);
         mScreenHeight = point.y;
         mUnlockMethodCache = UnlockMethodCache.getInstance(context);
+
+        mScreenOnHintsEnabled = res.getBoolean(R.bool.config_showScreenOnLockScreenHints);
+        mUserUnlocked = getUserUnlocked();
+        mUserExpandedNotifications = getUserExpandedNotificationsInKeyguard();
+        mUserInteractedWithLiveLockScreen = getUserInteractedWithLls();
+        mUserReturnedFromLiveLockScreen = getUserReturnedFromLls();
     }
 
     public void setStatusBar(PhoneStatusBar bar) {
@@ -441,11 +524,10 @@ public class NotificationPanelView extends PanelView implements
         mKeyguardStatusView = (KeyguardStatusView) findViewById(R.id.keyguard_status_view);
         mQsContainer = (QSContainer) findViewById(R.id.quick_settings_container);
         mQsPanel = (QSPanel) findViewById(R.id.quick_settings_panel);
+        mRRPanelLogo = (ImageView) findViewById(R.id.rr_panel_logo);
         mTaskManagerPanel = (LinearLayout) findViewById(R.id.task_manager_panel);
-        mClipper = new QSDetailClipper(mTaskManagerPanel);
         mClockView = (TextView) findViewById(R.id.clock_view);
         mScrollView = (ObservableScrollView) findViewById(R.id.scroll_view);
-        mScrollView.setListener(this);
         mScrollView.setFocusable(false);
         mReserveNotificationSpace = findViewById(R.id.reserve_notification_space);
         mNotificationContainerParent = (NotificationsQuickSettingsContainer)
@@ -536,10 +618,110 @@ public class NotificationPanelView extends PanelView implements
                 }
             }
         });
-        setQSBackgroundAlpha();
-        setQSBackgroundColor();
-            
-       mLockPatternUtils = new CmLockPatternUtils(getContext());
+
+        setQSPanelLogo();
+        setQSStroke();
+        setQSBackgroundColor();   
+        mLockPatternUtils = new CmLockPatternUtils(getContext());
+            mNotificationPanelView = this;
+
+            mBlurUtils = new BlurUtils(mNotificationPanelView.getContext());
+
+            mAlphaAnimation = new AlphaAnimation(0.0f, 1.0f);
+            mAlphaAnimation.setDuration(75);
+            mAlphaAnimation.setAnimationListener(mAnimationListener);
+
+            mBlurredView = new FrameLayout(mNotificationPanelView.getContext());
+
+            mNotificationPanelView.addView(mBlurredView, 0, new FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+            mNotificationPanelView.requestLayout();
+
+            mBlurredView.setTag("ready_to_blur");
+
+            mBlurredView.setVisibility(View.INVISIBLE);
+
+            handleQuickSettingsBackround();
+    }
+    private static void handleQuickSettingsBackround() {
+
+        if (mQsContainer == null)
+            return;
+        if (mKeyguardShowing) {
+            mQsContainer.getBackground().setAlpha(255);
+        } else {
+            mQsContainer.getBackground().setAlpha(mTranslucentQuickSettings ? mTranslucencyPercentage : 255);
+        }
+    }
+
+
+    public static void startBlurTask() {
+
+        if (!mBlurredStatusBarExpandedEnabled)
+            return;
+        try {
+            if (mBlurredView.getTag().toString().equals("blur_applied"))
+                return;
+        } catch (Exception e){
+        }
+        if (mNotificationPanelView == null)
+            return;  
+        if (mKeyguardShowing || mHeadsUpShowing || mHeadsUpAnimatingAway)
+            return;
+       
+        BlurTask.setBlurTaskCallback(new BlurUtils.BlurTaskCallback() {
+
+            @Override
+            public void blurTaskDone(Bitmap blurredBitmap) {
+
+                if (blurredBitmap != null) {
+
+                    int[] screenDimens = BlurTask.getRealScreenDimensions();
+                    mBlurredView.getLayoutParams().width = screenDimens[0];
+                    mBlurredView.requestLayout();
+
+                    BitmapDrawable drawable = new BitmapDrawable(blurredBitmap);
+                    drawable.setColorFilter(mColorFilter);
+
+                    mBlurredView.setBackground(drawable);
+
+                    mBlurredView.setTag("blur_applied");
+
+                } else {
+
+                    mBlurredView.setBackgroundColor(mBlurLightColorFilter);
+
+                    mBlurredView.setTag("error");
+
+                }
+                mBlurredView.startAnimation(mAlphaAnimation);
+            }
+
+            @Override
+            public void dominantColor(int color) {
+
+                double lightness = DisplayUtils.getColorLightness(color);
+
+                if (lightness >= 0.0 && color <= 1.0) {
+                    if (lightness <= 0.33) {
+                        mColorFilter = new PorterDuffColorFilter(mBlurLightColorFilter, PorterDuff.Mode.MULTIPLY);
+
+                    } else if (lightness >= 0.34 && lightness <= 0.66) {
+                        mColorFilter = new PorterDuffColorFilter(mBlurMixedColorFilter, PorterDuff.Mode.MULTIPLY);
+
+                    } else if (lightness >= 0.67 && lightness <= 1.0) {
+                        mColorFilter = new PorterDuffColorFilter(mBlurDarkColorFilter, PorterDuff.Mode.MULTIPLY);
+                    }
+
+                } else {
+                    mColorFilter = new PorterDuffColorFilter(mBlurMixedColorFilter, PorterDuff.Mode.MULTIPLY);
+                }
+            }
+        });
+
+        BlurTask.setBlurEngine(BlurUtils.BlurEngine.RenderScriptBlur);
+
+        new BlurTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     public boolean isAffordanceSwipeInProgress() {
@@ -557,6 +739,95 @@ public class NotificationPanelView extends PanelView implements
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         mSettingsObserver.unobserve();
+    }
+
+    public static void recycle() {
+
+        if (mBlurredView != null &&
+                mBlurredView.getBackground() != null) {
+            if (mBlurredView.getBackground() instanceof BitmapDrawable) {
+
+                Bitmap bitmap = ((BitmapDrawable) mBlurredView.getBackground()).getBitmap();
+                if (bitmap != null) {
+                    bitmap.recycle();
+                    bitmap = null;
+                }
+            }
+            mBlurredView.setBackground(null);
+        }
+
+        mBlurredView.setTag("ready_to_blur");
+
+        mBlurredView.setVisibility(View.INVISIBLE);
+
+    }
+
+    public static class BlurTask extends AsyncTask<Void, Void, Bitmap> {
+
+        private static int[] mScreenDimens;
+        private static BlurUtils.BlurEngine mBlurEngine;
+        private static BlurUtils.BlurTaskCallback mCallback;
+
+        private Bitmap mScreenBitmap;
+
+        public static void setBlurEngine(BlurUtils.BlurEngine blurEngine) {
+            mBlurEngine = blurEngine;
+        }
+
+        public static void setBlurTaskCallback(BlurUtils.BlurTaskCallback callBack) {
+            mCallback = callBack;
+        }
+
+        public static int[] getRealScreenDimensions() {
+            return mScreenDimens;
+        }
+
+        @Override
+        protected void onPreExecute() {
+
+            Context context = mNotificationPanelView.getContext();
+            mScreenDimens = DisplayUtils.getRealScreenDimensions(context);
+            
+            //We don't want SystemUI to crash for Arithmetic Exception
+            if(mBlurScale==0){
+                mBlurScale=1;
+            }
+
+            mScreenBitmap = DisplayUtils.takeSurfaceScreenshot(context, mBlurScale);
+        }
+
+        @Override
+        protected Bitmap doInBackground(Void... arg0) {
+
+            try {
+                if (mScreenBitmap == null)
+                    return null;
+
+                mCallback.dominantColor(DisplayUtils.getDominantColorByPixelsSampling(mScreenBitmap, 20, 20));
+
+                //We don't want SystemUI to crash for Arithmetic Exception
+                if(mBlurRadius == 0){
+                    mBlurRadius=1;
+                }
+                
+                mScreenBitmap = mBlurUtils.renderScriptBlur(mScreenBitmap, mBlurRadius);
+                return mScreenBitmap;
+
+            } catch (OutOfMemoryError e) {
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap bitmap) {
+
+            if (bitmap != null) {
+                mCallback.blurTaskDone(bitmap);
+
+            } else {
+                mCallback.blurTaskDone(null);
+            }
+        }
     }
 
     @Override
@@ -1380,8 +1651,13 @@ public class NotificationPanelView extends PanelView implements
             mCanDismissKeyguard = true;
         }
 
-        if (goingToFullShade || (oldState == StatusBarState.KEYGUARD
-                && statusBarState == StatusBarState.SHADE_LOCKED)) {
+        boolean keyguardToShadeLocked = oldState == StatusBarState.KEYGUARD
+                && statusBarState == StatusBarState.SHADE_LOCKED;
+        if (goingToFullShade || keyguardToShadeLocked) {
+            if (keyguardToShadeLocked && !mUserExpandedNotifications) {
+                mUserExpandedNotifications = true;
+                saveUserExpandedNotificationsInKeyguard(true);
+            }
             animateKeyguardStatusBarOut();
             animateHeaderSlidingIn();
         } else if (oldState == StatusBarState.SHADE_LOCKED
@@ -1396,12 +1672,23 @@ public class NotificationPanelView extends PanelView implements
                 mAfforanceHelper.updatePreviews();
             }
         }
+        if (oldState != StatusBarState.SHADE && statusBarState == StatusBarState.SHADE &&
+                !mUserUnlocked) {
+            mUserUnlocked = true;
+            saveUserUnlocked(true);
+        }
         if (statusBarState == StatusBarState.KEYGUARD ||
                 statusBarState == StatusBarState.SHADE_LOCKED) {
             updateDozingVisibilities(false /* animate */);
         }
         resetVerticalPanelPosition();
         updateQsState();
+
+        try {
+            handleQuickSettingsBackround();
+            StatusBarHeaderView.handleStatusBarHeaderViewBackround();
+        } catch (Exception e){
+        }
     }
 
     private final Runnable mAnimateKeyguardStatusViewInvisibleEndRunnable = new Runnable() {
@@ -1873,28 +2160,61 @@ public class NotificationPanelView extends PanelView implements
     }
 
     public void setTaskManagerVisibility(boolean taskManagerShowing) {
-        if (mShowTaskManager && !mKeyguardShowing) {
+        if (mShowTaskManager) {
             mTaskManagerShowing = taskManagerShowing;
             cancelAnimation();
-            int x = mQsPanel.getLeft() + mQsPanel.getWidth() / 2;
-            int y = mQsPanel.getTop() / 2;
-            if (!taskManagerShowing) {
-                mQsPanel.setVisibility(View.VISIBLE);
+            boolean expandVisually = mQsExpanded || mStackScrollerOverscrolling;
+            mQsPanel.setVisibility(expandVisually && !taskManagerShowing
+                    ? View.VISIBLE : View.GONE);
+            mTaskManagerPanel.setVisibility(expandVisually && taskManagerShowing
+                    && !mKeyguardShowing ? View.VISIBLE : View.GONE);
+	if(!mKeyguardShowing) {
+           	 if (mTaskManagerShowing) {
+               	 mTaskManagerPanel.startAnimation(getAnimation(true));
+               	 mQsPanel.startAnimation(getAnimation(false));
+            	 } else {
+                 mQsPanel.startAnimation(getAnimation(true));
+                 mTaskManagerPanel.startAnimation(getAnimation(false));
+            	 }
             }
-            mClipper.animateCircularClip(x, y, taskManagerShowing, mHideQsPanelWhenDone);
+            updateQsState();
         }
     }
 
-   private final AnimatorListenerAdapter mHideQsPanelWhenDone = new AnimatorListenerAdapter() {
-        public void onAnimationEnd(Animator animation) {
-            if (mTaskManagerShowing) {
-			mTaskManagerPanel.setVisibility(View.VISIBLE);
-			mQsPanel.setVisibility(View.GONE);
-            }
-        };
-    };
+    private Animation getAnimation(boolean isIn) {
+        ContentResolver resolver = mContext.getContentResolver();
+        int animationResId = 0;
+        final int style = Settings.System.getInt(resolver,
+                Settings.System.QS_TASK_ANIMATION, 8);
+        if (style == 0) {
+            animationResId = isIn ? R.anim.push_down_in : R.anim.push_down_out;
+        } else if (style == 1) {
+            animationResId = isIn ? R.anim.last_app_in : R.anim.last_app_out;
+        } else if (style == 2) {
+            animationResId = isIn ? R.anim.push_left_in : R.anim.push_right_out;
+        } else if (style == 3) {
+            animationResId = isIn ? R.anim.push_right_in : R.anim.push_left_out;
+        } else if (style == 4) {
+            animationResId = isIn ? R.anim.rotate : R.anim.push_down_out;
+        } else if (style == 5) {
+            animationResId = isIn ? R.anim.turn_in : R.anim.turn_out;
+        } else if (style == 6) {
+            animationResId = isIn ? R.anim.push_up_in : R.anim.push_up_out;
+        } else if (style == 7) {
+            animationResId = isIn ? R.anim.recent_enter : R.anim.recent_exit;
+        } else if (style == 8) {
+            animationResId = isIn ? R.anim.fade_in : R.anim.fade_out;
+        } else if (style == 9) {
+            animationResId = isIn ? R.anim.last_app_in : R.anim.last_app_out;
+        } else if (style == 10) {
+            animationResId = isIn ? R.anim.search_bar_enter : R.anim.search_bar_exit;
+        } else if (style == 11) {
+            animationResId = isIn ? R.anim.toko_toast_enter : R.anim.toko_toast_exit;
+        }
+        return AnimationUtils.loadAnimation(mContext, animationResId);
+    }
 
-    private void cancelAnimation() {
+  private void cancelAnimation() {
         if (mQsExpansionAnimator != null) {
             mQsExpansionAnimator.cancel();
         }
@@ -2450,6 +2770,7 @@ public class NotificationPanelView extends PanelView implements
         }
         mHintAnimationRunning = true;
         mKeyguardBottomArea.expand(true);
+        mKeyguardBottomArea.getIndicationView().animate().cancel();
         mAfforanceHelper.startHintAnimation(rightIcon, new Runnable() {
             @Override
             public void run() {
@@ -2653,6 +2974,11 @@ public class NotificationPanelView extends PanelView implements
 
     public void onScreenTurningOn() {
         mKeyguardStatusView.refreshTime();
+        if (shouldShowScreenOnHints()) {
+            startScreenOnHintAnimation(mLiveLockscreenController.isLiveLockScreenInteractive() &&
+                            !mUserInteractedWithLiveLockScreen,
+                    !mUserUnlocked, !mUserExpandedNotifications);
+        }
     }
 
     @Override
@@ -2715,9 +3041,11 @@ public class NotificationPanelView extends PanelView implements
     @Override
     public void onHeadsUpPinnedModeChanged(final boolean inPinnedMode) {
         if (inPinnedMode) {
+            mHeadsUpShowing = true;
             mHeadsUpExistenceChangedRunnable.run();
             updateNotificationTranslucency();
         } else {
+            mHeadsUpShowing = false;
             mHeadsUpAnimatingAway = true;
             mNotificationStackScroller.runAfterAnimationFinished(
                     mHeadsUpExistenceChangedRunnable);
@@ -2839,7 +3167,47 @@ public class NotificationPanelView extends PanelView implements
                     false, this, UserHandle.USER_ALL);
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.QS_TRANSPARENT_SHADE),
+                     false, this, UserHandle.USER_ALL);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.QS_STROKE),
                     false, this, UserHandle.USER_ALL);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.QS_STROKE_COLOR),
+                    false, this, UserHandle.USER_ALL);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.QS_STROKE_THICKNESS),
+                    false, this, UserHandle.USER_ALL);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.QS_CORNER_RADIUS),
+                    false, this, UserHandle.USER_ALL);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.QS_STROKE_DASH_WIDTH),
+                    false, this, UserHandle.USER_ALL);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.QS_STROKE_DASH_GAP),
+                    false, this, UserHandle.USER_ALL);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.QS_PANEL_LOGO),
+                    false, this, UserHandle.USER_ALL);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.QS_PANEL_LOGO_COLOR),
+                    false, this, UserHandle.USER_ALL);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.QS_PANEL_LOGO_ALPHA),
+                    false, this, UserHandle.USER_ALL);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.QS_BACKGROUND_COLOR),
+                    false, this, UserHandle.USER_ALL);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.BLUR_SCALE_PREFERENCE_KEY), false, this);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.BLUR_RADIUS_PREFERENCE_KEY), false, this);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.TRANSLUCENT_QUICK_SETTINGS_PREFERENCE_KEY), false, this);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.STATUS_BAR_EXPANDED_ENABLED_PREFERENCE_KEY), false, this);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.TRANSLUCENT_QUICK_SETTINGS_PRECENTAGE_PREFERENCE_KEY), false, this);
             update();
         }
 
@@ -2875,25 +3243,89 @@ public class NotificationPanelView extends PanelView implements
                     resolver, CMSettings.Secure.LIVE_LOCK_SCREEN_ENABLED, 0) == 1;
             mQSShadeAlpha = Settings.System.getInt(
                     resolver, Settings.System.QS_TRANSPARENT_SHADE, 255);
-            setQSBackgroundAlpha();
             mQsSmartPullDown = Settings.System.getIntForUser(
                     resolver, Settings.System.QS_SMART_PULLDOWN, 0,
                     UserHandle.USER_CURRENT);
+            mQSStroke = Settings.System.getInt(mContext.getContentResolver(),
+                        Settings.System.QS_STROKE, 0);
+            mCustomStrokeColor = Settings.System.getInt(mContext.getContentResolver(),
+                        Settings.System.QS_STROKE_COLOR, mContext.getResources().getColor(R.color.system_accent_color));
+            mCustomStrokeThickness = Settings.System.getInt(mContext.getContentResolver(),
+                        Settings.System.QS_STROKE_THICKNESS, 4);
+            mCustomCornerRadius = Settings.System.getInt(mContext.getContentResolver(),
+                        Settings.System.QS_CORNER_RADIUS, 0);
+            mCustomDashWidth = Settings.System.getInt(mContext.getContentResolver(),
+                        Settings.System.QS_STROKE_DASH_WIDTH, 0);
+            mCustomDashGap = Settings.System.getInt(mContext.getContentResolver(),
+                        Settings.System.QS_STROKE_DASH_GAP, 10);
+            mQSPanelLogo = Settings.System.getInt(mContext.getContentResolver(),
+                        Settings.System.QS_PANEL_LOGO, 0);
+            mQSPanelLogoColor = Settings.System.getInt(mContext.getContentResolver(),
+                        Settings.System.QS_PANEL_LOGO_COLOR, mContext.getResources().getColor(R.color.system_accent_color));
+            mQSPanelLogoAlpha = Settings.System.getInt(mContext.getContentResolver(),
+                        Settings.System.QS_PANEL_LOGO_ALPHA, 51);
+            mQSBackgroundColor = Settings.System.getInt( mContext.getContentResolver(), 
+			Settings.System.QS_BACKGROUND_COLOR, 0xff263238);
+            mBlurScale = Settings.System.getInt(mContext.getContentResolver(),
+                    Settings.System.BLUR_SCALE_PREFERENCE_KEY, 10);
+            mBlurRadius = Settings.System.getInt(mContext.getContentResolver(),
+                    Settings.System.BLUR_RADIUS_PREFERENCE_KEY, 5);
+            mTranslucentQuickSettings =  Settings.System.getIntForUser(resolver,
+                    Settings.System.TRANSLUCENT_QUICK_SETTINGS_PREFERENCE_KEY, 0, UserHandle.USER_CURRENT) == 1;
+            mBlurredStatusBarExpandedEnabled = Settings.System.getIntForUser(resolver,
+                    Settings.System.STATUS_BAR_EXPANDED_ENABLED_PREFERENCE_KEY, 0, UserHandle.USER_CURRENT) == 1;
+            mTranslucencyPercentage = Settings.System.getInt(mContext.getContentResolver(),
+                    Settings.System.TRANSLUCENT_QUICK_SETTINGS_PRECENTAGE_PREFERENCE_KEY, 60);
+            setQSPanelLogo();
+            setQSStroke();
+            setQSBackgroundColor();
+            mBlurDarkColorFilter = Color.LTGRAY;
+            mBlurMixedColorFilter = Color.GRAY;
+            mBlurLightColorFilter = Color.DKGRAY;
+            mTranslucencyPercentage = 255 - ((mTranslucencyPercentage * 255) / 100);
+	    handleQuickSettingsBackround();
         }
     }
 
-    private void setQSBackgroundAlpha() {
-        if (Settings.System.getInt(mContext.getContentResolver(),
-                    Settings.System.QS_TRANSPARENT_SHADE, 255) != 255) {
-            if (mQsContainer != null) {
-                mQsContainer.getBackground().setAlpha(mQSShadeAlpha);
+    private void setQSStroke() {
+        final GradientDrawable qSGd = new GradientDrawable();
+        if (mQsContainer != null) {
+            if (mQSStroke == 0) {
+                /*qSGd.setColor(mContext.getResources().getColor(R.color.system_primary_color));
+                qSGd.setStroke(0, mContext.getResources().getColor(R.color.system_accent_color));
+                qSGd.setCornerRadius(mCustomCornerRadius);
+                mQsContainer.setBackground(qSGd);*/
+                // Don't do anything when disabled, it fucks up themes that use drawable instead of color
+            } else if (mQSStroke == 1) { // use accent color for border
+                qSGd.setColor(mContext.getResources().getColor(R.color.system_primary_color));
+                qSGd.setStroke(mCustomStrokeThickness, mContext.getResources().getColor(R.color.system_accent_color),
+                        mCustomDashWidth, mCustomDashGap);
+            } else if (mQSStroke == 2) { // use custom border color
+                qSGd.setColor(mContext.getResources().getColor(R.color.system_primary_color));
+                qSGd.setStroke(mCustomStrokeThickness, mCustomStrokeColor, mCustomDashWidth, mCustomDashGap);
             }
-            if (mQsPanel != null) {
-                mQsPanel.setQSShadeAlphaValue(mQSShadeAlpha);
+
+            if (mQSStroke != 0) {
+                qSGd.setCornerRadius(mCustomCornerRadius);
+                mQsContainer.setBackground(qSGd);
             }
         }
     }
-        
+
+    private void setQSPanelLogo() {
+        if (mQSPanelLogo == 0) {
+            mRRPanelLogo.setVisibility(View.GONE);
+        } else if (mQSPanelLogo == 1) {
+            mRRPanelLogo.setImageAlpha(mQSPanelLogoAlpha);
+            mRRPanelLogo.setColorFilter(mContext.getResources().getColor(R.color.system_accent_color));
+            mRRPanelLogo.setVisibility(View.VISIBLE);
+        } else if (mQSPanelLogo == 2) {
+            mRRPanelLogo.setImageAlpha(mQSPanelLogoAlpha);
+            mRRPanelLogo.setColorFilter(mQSPanelLogoColor);
+            mRRPanelLogo.setVisibility(View.VISIBLE);
+        }
+    }
+
     @Override
     public boolean hasOverlappingRendering() {
         return !mDozing;
@@ -2972,8 +3404,6 @@ public class NotificationPanelView extends PanelView implements
         mQsColorSwitch = Settings.System.getIntForUser(mContext.getContentResolver(),
                 Settings.System.QS_COLOR_SWITCH, 0,
                 UserHandle.USER_CURRENT) == 1;
-        int mQSBackgroundColor = Settings.System.getInt( mContext.getContentResolver(), 
-			Settings.System.QS_BACKGROUND_COLOR, 0xff263238);
 	if (mQsColorSwitch) {
         	if (mQsContainer != null) {
                		 mQsContainer.getBackground().setColorFilter(
@@ -3063,5 +3493,57 @@ public class NotificationPanelView extends PanelView implements
         animator.addUpdateListener(mSlideInAnimationListener);
         animator.addListener(mSlideInAnimationListener);
         animator.start();
+
+        if (!mUserReturnedFromLiveLockScreen) {
+            mUserReturnedFromLiveLockScreen = true;
+            saveUserReturnedFromLls(true);
+        }
+    }
+
+    private void saveBooleanSharedPreference(String key, boolean value) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+        prefs.edit().putBoolean(key, value).apply();
+    }
+
+    private boolean getSharedPreferenceBoolean(String key, boolean defValue) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+        return prefs.getBoolean(key, defValue);
+    }
+
+    private void saveUserExpandedNotificationsInKeyguard(boolean expanded) {
+        saveBooleanSharedPreference(KEY_USER_EXPANDED_NOTIFICATIONS_IN_KEYGUARD, expanded);
+    }
+
+    private boolean getUserExpandedNotificationsInKeyguard() {
+        return getSharedPreferenceBoolean(KEY_USER_EXPANDED_NOTIFICATIONS_IN_KEYGUARD, false);
+    }
+
+    private void saveUserInteractedWithLls(boolean interacted) {
+        saveBooleanSharedPreference(KEY_USER_INTERACTED_WITH_LLS, interacted);
+    }
+
+    private boolean getUserInteractedWithLls() {
+        return getSharedPreferenceBoolean(KEY_USER_INTERACTED_WITH_LLS, false);
+    }
+
+    private void saveUserUnlocked(boolean unlocked) {
+        saveBooleanSharedPreference(KEY_USER_UNLOCKED, unlocked);
+    }
+
+    private boolean getUserUnlocked() {
+        return getSharedPreferenceBoolean(KEY_USER_UNLOCKED, false);
+    }
+
+    private void saveUserReturnedFromLls(boolean revealed) {
+        saveBooleanSharedPreference(KEY_USER_RETURNED_FROM_LLS, revealed);
+    }
+
+    private boolean getUserReturnedFromLls() {
+        return getSharedPreferenceBoolean(KEY_USER_RETURNED_FROM_LLS, false);
+    }
+
+    private boolean shouldShowScreenOnHints() {
+        return mScreenOnHintsEnabled && mStatusBar.isDeviceProvisioned() &&
+                mStatusBarState == StatusBarState.KEYGUARD;
     }
 }

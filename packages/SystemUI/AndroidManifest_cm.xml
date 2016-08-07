@@ -51,8 +51,9 @@
     <uses-permission android:name="cyanogenmod.permission.MANAGE_LIVEDISPLAY" />
      <!-- Weather Provider -->
     <uses-permission android:name="cyanogenmod.permission.READ_WEATHER" />
-    <!-- NFC Tile -->
-    <uses-permission android:name="android.permission.NFC" />
+
+    <!-- Theme manager -->
+    <uses-permission android:name="cyanogenmod.permission.ACCESS_THEME_MANAGER" />
 
     <!-- NFC Tile -->
     <uses-permission android:name="android.permission.NFC" />

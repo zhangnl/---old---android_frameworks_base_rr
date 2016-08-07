@@ -1,4 +1,7 @@
 /*
+ * Copyright (c) 2013-2016, The Linux Foundation. All rights reserved.
+ * Not a Contribution.
+ *
  * Copyright (C) 2006 The Android Open Source Project
  * This code has been modified.  Portions copyright (C) 2010, T-Mobile USA, Inc.
  *
@@ -251,6 +254,7 @@ import com.android.server.LocalServices;
 import com.android.server.policy.PhoneWindowManager;
 import com.android.server.ServiceThread;
 import com.android.server.SystemConfig;
+import com.android.server.SystemConfig.AppLink;
 import com.android.server.Watchdog;
 import com.android.server.pm.PermissionsState.PermissionState;
 import com.android.server.pm.Settings.DatabaseVersion;
@@ -336,6 +340,7 @@ public class PackageManagerService extends IPackageManager.Stub {
     private static final boolean DEBUG_PACKAGE_SCANNING = false;
     private static final boolean DEBUG_VERIFY = false;
     private static final boolean DEBUG_DEXOPT = false;
+    private static final boolean DEBUG_FILTERS = false;
     private static final boolean DEBUG_ABI_SELECTION = false;
     private static final boolean DEBUG_PREBUNDLED_SCAN = false;
     private static final boolean DEBUG_PROTECTED = false;
@@ -619,7 +624,7 @@ public class PackageManagerService extends IPackageManager.Stub {
     final ArraySet<String> mTransferedPackages = new ArraySet<String>();
 
     // Broadcast actions that are only available to the system.
-    final ArraySet<String> mProtectedBroadcasts = new ArraySet<String>();
+    final ArrayMap<String, String> mProtectedBroadcasts = new ArrayMap<>();
 
     /** List of packages waiting for verification. */
     final SparseArray<PackageVerificationState> mPendingVerification
@@ -1984,9 +1989,9 @@ public class PackageManagerService extends IPackageManager.Stub {
         mAvailableFeatures = systemConfig.getAvailableFeatures();
         mSignatureAllowances = systemConfig.getSignatureAllowances();
 
-        synchronized (mInstallLock) {
+//        synchronized (mInstallLock) {
         // writer
-        synchronized (mPackages) {
+//        synchronized (mPackages) {
             mHandlerThread = new ServiceThread(TAG,
                     Process.THREAD_PRIORITY_BACKGROUND, true /*allowIo*/);
             mHandlerThread.start();
@@ -2510,8 +2515,8 @@ public class PackageManagerService extends IPackageManager.Stub {
             mIntentFilterVerifier = new IntentVerifierProxy(mContext,
                     mIntentFilterVerifierComponent);
 
-        } // synchronized (mPackages)
-        } // synchronized (mInstallLock)
+        //} // synchronized (mPackages)
+        //} // synchronized (mInstallLock)
 
         // Now after opening every single application zip, make sure they
         // are all flushed.  Not really needed, but keeps things nice and
@@ -2648,10 +2653,11 @@ public class PackageManagerService extends IPackageManager.Stub {
         }
 
         SystemConfig systemConfig = SystemConfig.getInstance();
-        ArraySet<String> packages = systemConfig.getLinkedApps();
+        ArraySet<AppLink> links = systemConfig.getLinkedApps();
         ArraySet<String> domains = new ArraySet<String>();
 
-        for (String packageName : packages) {
+        for (AppLink link : links) {
+            String packageName = link.pkgname;
             PackageParser.Package pkg = mPackages.get(packageName);
             if (pkg != null) {
                 if (!pkg.isSystemApp()) {
@@ -2676,11 +2682,11 @@ public class PackageManagerService extends IPackageManager.Stub {
                     // state w.r.t. the formal app-linkage "no verification attempted" state;
                     // and then 'always' in the per-user state actually used for intent resolution.
                     final IntentFilterVerificationInfo ivi;
-                    ivi = mSettings.createIntentFilterVerificationIfNeededLPw(packageName,
-                            new ArrayList<String>(domains));
+                    ivi = mSettings.createIntentFilterVerificationIfNeededLPw(
+                            packageName, new ArrayList<String>(domains));
                     ivi.setStatus(INTENT_FILTER_DOMAIN_VERIFICATION_STATUS_UNDEFINED);
-                    mSettings.updateIntentFilterVerificationStatusLPw(packageName,
-                            INTENT_FILTER_DOMAIN_VERIFICATION_STATUS_ALWAYS, userId);
+                    mSettings.updateIntentFilterVerificationStatusLPw(
+                            packageName, link.state, userId);
                 } else {
                     Slog.w(TAG, "Sysconfig <app-link> package '" + packageName
                             + "' does not handle web links");
@@ -4050,7 +4056,19 @@ public class PackageManagerService extends IPackageManager.Stub {
     @Override
     public boolean isProtectedBroadcast(String actionName) {
         synchronized (mPackages) {
-            return mProtectedBroadcasts.contains(actionName);
+            return mProtectedBroadcasts.containsKey(actionName);
+        }
+    }
+
+    @Override
+    public boolean isProtectedBroadcastAllowed(String actionName, int callingUid) {
+        synchronized (mPackages) {
+            if (mProtectedBroadcasts.containsKey(actionName)) {
+               final int result = checkUidPermission(mProtectedBroadcasts.get(actionName),
+                        callingUid);
+                return result == PackageManager.PERMISSION_GRANTED;
+            }
+            return false;
         }
     }
 
@@ -4724,7 +4742,7 @@ public class PackageManagerService extends IPackageManager.Stub {
 
     private boolean shouldIncludeResolveActivity(Intent intent) {
         // Don't call into AppSuggestManager before it comes up later in the SystemServer init!
-        if (!mSystemReady) {
+        if (!mSystemReady || mOnlyCore) {
             return false;
         }
         synchronized(mPackages) {
@@ -5824,7 +5842,7 @@ public class PackageManagerService extends IPackageManager.Stub {
     }
 
     private void scanDirLI(File dir, int parseFlags, int scanFlags, long currentTime,
-            UserHandle user) {
+            final UserHandle user) {
         final File[] files = dir.listFiles();
         if (ArrayUtils.isEmpty(files)) {
             Log.d(TAG, "No files in app dir " + dir);
@@ -5836,8 +5854,8 @@ public class PackageManagerService extends IPackageManager.Stub {
                     + " flags=0x" + Integer.toHexString(parseFlags));
         }
 
-        int prebundledUserId = user == null ? UserHandle.USER_OWNER : user.getIdentifier();
-        boolean isPrebundled = (parseFlags & PackageParser.PARSE_IS_PREBUNDLED_DIR) != 0;
+        final int prebundledUserId = user == null ? UserHandle.USER_OWNER : user.getIdentifier();
+        final boolean isPrebundled = (parseFlags & PackageParser.PARSE_IS_PREBUNDLED_DIR) != 0;
         if (isPrebundled) {
             synchronized (mPackages) {
                 if (DEBUG_PREBUNDLED_SCAN) Log.d(TAG, "Reading prebundled packages for user "
@@ -5846,6 +5864,13 @@ public class PackageManagerService extends IPackageManager.Stub {
             }
         }
 
+        Log.d(TAG, "start scanDirLI:"+dir);
+        // use multi thread to speed up scanning
+        int iMultitaskNum = SystemProperties.getInt("persist.pm.multitask", 6);
+        Log.d(TAG, "max thread:" + iMultitaskNum);
+        final MultiTaskDealer dealer = (iMultitaskNum > 1) ? MultiTaskDealer.startDealer(
+                MultiTaskDealer.PACKAGEMANAGER_SCANER, iMultitaskNum) : null;
+
         for (File file : files) {
             final boolean isPackage = (isApkFile(file) || file.isDirectory())
                     && !PackageInstallerService.isStageName(file.getName());
@@ -5853,46 +5878,64 @@ public class PackageManagerService extends IPackageManager.Stub {
                 // Ignore entries which are not packages
                 continue;
             }
-            try {
-                scanPackageLI(file, parseFlags | PackageParser.PARSE_MUST_BE_APK,
-                        scanFlags, currentTime, user);
-                if (isPrebundled) {
-                    final PackageParser.Package pkg;
+
+            final File ref_file = file;
+            final int ref_parseFlags = parseFlags;
+            final int ref_scanFlags = scanFlags;
+            final long ref_currentTime = currentTime;
+
+            Runnable scanTask = new Runnable() {
+                public void run() {
+
                     try {
-                        pkg = new PackageParser().parsePackage(file, parseFlags);
-                    } catch (PackageParserException e) {
-                        throw PackageManagerException.from(e);
-                    }
-                    synchronized (mPackages) {
-                        if (DEBUG_PREBUNDLED_SCAN) Log.d(TAG,
-                                "Marking prebundled package " + pkg.packageName +
-                                        " for user " + prebundledUserId);
-                        mSettings.markPrebundledPackageInstalledLPr(prebundledUserId,
-                                pkg.packageName);
-                        // do this for every other user
-                        for (UserInfo userInfo : sUserManager.getUsers(true)) {
-                            if (userInfo.id == prebundledUserId) continue;
+                        scanPackageLI(ref_file, ref_parseFlags | PackageParser.PARSE_MUST_BE_APK,
+                                ref_scanFlags, ref_currentTime, user);
+                        if (isPrebundled) {
+                            final PackageParser.Package pkg;
+                            try {
+                                pkg = new PackageParser().parsePackage(ref_file, ref_parseFlags);
+                            } catch (PackageParserException e) {
+                                throw PackageManagerException.from(e);
+                            }
                             if (DEBUG_PREBUNDLED_SCAN) Log.d(TAG,
-                                    "Marking for secondary user " + userInfo.id);
-                            mSettings.markPrebundledPackageInstalledLPr(userInfo.id,
+                                    "Marking prebundled package " + pkg.packageName +
+                                            " for user " + prebundledUserId);
+                            mSettings.markPrebundledPackageInstalledLPr(prebundledUserId,
                                     pkg.packageName);
+                            // do this for every other user
+                            for (UserInfo userInfo : sUserManager.getUsers(true)) {
+                                if (userInfo.id == prebundledUserId) continue;
+                                if (DEBUG_PREBUNDLED_SCAN) Log.d(TAG,
+                                        "Marking for secondary user " + userInfo.id);
+                                mSettings.markPrebundledPackageInstalledLPr(userInfo.id,
+                                        pkg.packageName);
+                            }
+                        }
+                    } catch (PackageManagerException e) {
+                        Slog.w(TAG, "Failed to parse " + ref_file + ": " + e.getMessage());
+
+                        // Delete invalid userdata apps
+                        if ((ref_parseFlags & PackageParser.PARSE_IS_SYSTEM) == 0 &&
+                                e.error == PackageManager.INSTALL_FAILED_INVALID_APK) {
+                            logCriticalInfo(Log.WARN, "Deleting invalid package at " + ref_file);
+                            if (ref_file.isDirectory()) {
+                                mInstaller.rmPackageDir(ref_file.getAbsolutePath());
+                            } else {
+                                ref_file.delete();
+                            }
                         }
                     }
                 }
-            } catch (PackageManagerException e) {
-                Slog.w(TAG, "Failed to parse " + file + ": " + e.getMessage());
+            };
 
-                // Delete invalid userdata apps
-                if ((parseFlags & PackageParser.PARSE_IS_SYSTEM) == 0 &&
-                        e.error == PackageManager.INSTALL_FAILED_INVALID_APK) {
-                    logCriticalInfo(Log.WARN, "Deleting invalid package at " + file);
-                    if (file.isDirectory()) {
-                        mInstaller.rmPackageDir(file.getAbsolutePath());
-                    } else {
-                        file.delete();
-                    }
-                }
-            }
+            if (dealer != null)
+                dealer.addTask(scanTask);
+            else
+                scanTask.run();
+        }
+
+        if (dealer != null) {
+            dealer.waitAll();
         }
 
         if (isPrebundled) {
@@ -5902,6 +5945,8 @@ public class PackageManagerService extends IPackageManager.Stub {
                 mSettings.writePrebundledPackagesLPr(prebundledUserId);
             }
         }
+
+        Log.d(TAG, "end scanDirLI:"+dir);
     }
 
     private static File getSettingsProblemFile() {
@@ -5915,7 +5960,7 @@ public class PackageManagerService extends IPackageManager.Stub {
         logCriticalInfo(priority, msg);
     }
 
-    static void logCriticalInfo(int priority, String msg) {
+    static synchronized void logCriticalInfo(int priority, String msg) {
         Slog.println(priority, TAG, msg);
         EventLogTags.writePmCriticalInfo(msg);
         try {
@@ -7497,6 +7542,25 @@ public class PackageManagerService extends IPackageManager.Stub {
         KeySetManagerService ksms = mSettings.mKeySetManagerService;
         ksms.assertScannedPackageValid(pkg);
 
+        // Get the current theme config. We do this outside the lock
+        // since ActivityManager might be waiting on us already
+        // and a deadlock would result.
+        final boolean isBootScan = (scanFlags & SCAN_BOOTING) != 0;
+        ThemeConfig config = mBootThemeConfig;
+        if (!isBootScan) {
+            final IActivityManager am = ActivityManagerNative.getDefault();
+            try {
+                if (am != null) {
+                    config = am.getConfiguration().themeConfig;
+                } else {
+                    Log.w(TAG, "ActivityManager getDefault() " +
+                            "returned null, cannot compile app's theme");
+                }
+            } catch(RemoteException e) {
+                Log.w(TAG, "Failed to get the theme config from ActivityManager");
+            }
+        }
+
         // writer
         synchronized (mPackages) {
             // We don't expect installation to fail beyond this point
@@ -7838,13 +7902,13 @@ public class PackageManagerService extends IPackageManager.Stub {
             if (pkg.protectedBroadcasts != null) {
                 N = pkg.protectedBroadcasts.size();
                 for (i=0; i<N; i++) {
-                    mProtectedBroadcasts.add(pkg.protectedBroadcasts.get(i));
+                    mProtectedBroadcasts.put(pkg.protectedBroadcasts.keyAt(i),
+                            pkg.protectedBroadcasts.valueAt(i));
                 }
             }
 
             pkgSetting.setTimeStamp(scanFileTime);
 
-            final boolean isBootScan = (scanFlags & SCAN_BOOTING) != 0;
             // Generate resources & idmaps if pkg is NOT a theme
             // We must compile resources here because during the initial boot process we may get
             // here before a default theme has had a chance to compile its resources
@@ -7852,21 +7916,6 @@ public class PackageManagerService extends IPackageManager.Stub {
             // in background)
             if (pkg.mOverlayTargets.isEmpty() && mOverlays.containsKey(pkg.packageName)) {
                 ArrayMap<String, PackageParser.Package> themes = mOverlays.get(pkg.packageName);
-
-                final IActivityManager am = ActivityManagerNative.getDefault();
-                ThemeConfig themeConfig = null;
-                try {
-                    if (am != null) {
-                        themeConfig = am.getConfiguration().themeConfig;
-                    } else {
-                        Log.e(TAG, "ActivityManager getDefault() " +
-                                "returned null, cannot compile app's theme");
-                    }
-                } catch(RemoteException e) {
-                    Log.e(TAG, "Failed to get the theme config ", e);
-                }
-
-                ThemeConfig config = isBootScan ? mBootThemeConfig : themeConfig;
 
                 if (config != null) {
                     for(PackageParser.Package themePkg : themes.values()) {
@@ -9445,12 +9494,15 @@ public class PackageManagerService extends IPackageManager.Stub {
             mFlags = flags;
             List<ResolveInfo> list = super.queryIntent(intent, resolvedType,
                     (flags & PackageManager.MATCH_DEFAULT_ONLY) != 0, userId);
-            // Remove protected Application components
+            // Remove protected Application components if they're explicitly queried for.
+            // Implicit intent queries will be gated when the returned component is acted upon.
             int callingUid = Binder.getCallingUid();
             String[] pkgs = getPackagesForUid(callingUid);
             List<String> packages = (pkgs != null) ? Arrays.asList(pkgs) : Collections.EMPTY_LIST;
-            if (callingUid != Process.SYSTEM_UID &&
-                    (getFlagsForUid(callingUid) & ApplicationInfo.FLAG_SYSTEM) == 0) {
+            final boolean isNotSystem = callingUid != Process.SYSTEM_UID &&
+                    (getFlagsForUid(callingUid) & ApplicationInfo.FLAG_SYSTEM) == 0;
+
+            if (isNotSystem && intent.getComponent() != null) {
                Iterator<ResolveInfo> itr = list.iterator();
                 while (itr.hasNext()) {
                     ActivityInfo activityInfo = itr.next().activityInfo;
@@ -9488,6 +9540,255 @@ public class PackageManagerService extends IPackageManager.Stub {
             return super.queryIntentFromList(intent, resolvedType, defaultOnly, listCut, userId);
         }
 
+        /**
+         * Finds a privileged activity that matches the specified activity names.
+         */
+        private PackageParser.Activity findMatchingActivity(
+                List<PackageParser.Activity> activityList, ActivityInfo activityInfo) {
+            for (PackageParser.Activity sysActivity : activityList) {
+                if (sysActivity.info.name.equals(activityInfo.name)) {
+                    return sysActivity;
+                }
+                if (sysActivity.info.name.equals(activityInfo.targetActivity)) {
+                    return sysActivity;
+                }
+                if (sysActivity.info.targetActivity != null) {
+                    if (sysActivity.info.targetActivity.equals(activityInfo.name)) {
+                        return sysActivity;
+                    }
+                    if (sysActivity.info.targetActivity.equals(activityInfo.targetActivity)) {
+                        return sysActivity;
+                    }
+                }
+            }
+            return null;
+        }
+
+        public class IterGenerator<E> {
+            public Iterator<E> generate(ActivityIntentInfo info) {
+                return null;
+            }
+        }
+
+        public class ActionIterGenerator extends IterGenerator<String> {
+            @Override
+            public Iterator<String> generate(ActivityIntentInfo info) {
+                return info.actionsIterator();
+            }
+        }
+
+        public class CategoriesIterGenerator extends IterGenerator<String> {
+            @Override
+            public Iterator<String> generate(ActivityIntentInfo info) {
+                return info.categoriesIterator();
+            }
+        }
+
+        public class SchemesIterGenerator extends IterGenerator<String> {
+            @Override
+            public Iterator<String> generate(ActivityIntentInfo info) {
+                return info.schemesIterator();
+            }
+        }
+
+        public class AuthoritiesIterGenerator extends IterGenerator<IntentFilter.AuthorityEntry> {
+            @Override
+            public Iterator<IntentFilter.AuthorityEntry> generate(ActivityIntentInfo info) {
+                return info.authoritiesIterator();
+            }
+        }
+
+        /**
+         * <em>WARNING</em> for performance reasons, the passed in intentList WILL BE
+         * MODIFIED. Do not pass in a list that should not be changed.
+         */
+        private <T> void getIntentListSubset(List<ActivityIntentInfo> intentList,
+                IterGenerator<T> generator, Iterator<T> searchIterator) {
+            // loop through the set of actions; every one must be found in the intent filter
+            while (searchIterator.hasNext()) {
+                // we must have at least one filter in the list to consider a match
+                if (intentList.size() == 0) {
+                    break;
+                }
+
+                final T searchAction = searchIterator.next();
+
+                // loop through the set of intent filters
+                final Iterator<ActivityIntentInfo> intentIter = intentList.iterator();
+                while (intentIter.hasNext()) {
+                    final ActivityIntentInfo intentInfo = intentIter.next();
+                    boolean selectionFound = false;
+
+                    // loop through the intent filter's selection criteria; at least one
+                    // of them must match the searched criteria
+                    final Iterator<T> intentSelectionIter = generator.generate(intentInfo);
+                    while (intentSelectionIter != null && intentSelectionIter.hasNext()) {
+                        final T intentSelection = intentSelectionIter.next();
+                        if (intentSelection != null && intentSelection.equals(searchAction)) {
+                            selectionFound = true;
+                            break;
+                        }
+                    }
+
+                    // the selection criteria wasn't found in this filter's set; this filter
+                    // is not a potential match
+                    if (!selectionFound) {
+                        intentIter.remove();
+                    }
+                }
+            }
+        }
+
+        /**
+         * Adjusts the priority of the given intent filter according to policy.
+         * <p>
+         * <ul>
+         * <li>The priority for unbundled updates to system applications is capped to the
+         *      priority defined on the system partition</li>
+         * </ul>
+         */
+        private void adjustPriority(
+                List<PackageParser.Activity> systemActivities, ActivityIntentInfo intent) {
+            // nothing to do; priority is fine as-is
+            if (intent.getPriority() <= 0) {
+                return;
+            }
+
+            final ActivityInfo activityInfo = intent.activity.info;
+            final ApplicationInfo applicationInfo = activityInfo.applicationInfo;
+
+            final boolean systemApp = applicationInfo.isSystemApp();
+            if (!systemApp) {
+                // non-system applications can never define a priority >0
+                Slog.w(TAG, "Non-system app; cap priority to 0;"
+                        + " package: " + applicationInfo.packageName
+                        + " activity: " + intent.activity.className
+                        + " origPrio: " + intent.getPriority());
+                intent.setPriority(0);
+                return;
+            }
+
+            if (systemActivities == null) {
+                // the system package is not disabled; we're parsing the system partition
+                // apps on the system image get whatever priority they request
+                return;
+            }
+
+            // system app unbundled update ... try to find the same activity
+            final PackageParser.Activity foundActivity =
+                    findMatchingActivity(systemActivities, activityInfo);
+            if (foundActivity == null) {
+                // this is a new activity; it cannot obtain >0 priority
+                if (DEBUG_FILTERS) {
+                    Slog.i(TAG, "New activity; cap priority to 0;"
+                            + " package: " + applicationInfo.packageName
+                            + " activity: " + intent.activity.className
+                            + " origPrio: " + intent.getPriority());
+                }
+                intent.setPriority(0);
+                return;
+            }
+
+            // found activity, now check for filter equivalence
+
+            // a shallow copy is enough; we modify the list, not its contents
+            final List<ActivityIntentInfo> intentListCopy =
+                    new ArrayList<>(foundActivity.intents);
+            final List<ActivityIntentInfo> foundFilters = findFilters(intent);
+
+            // find matching action subsets
+            final Iterator<String> actionsIterator = intent.actionsIterator();
+            if (actionsIterator != null) {
+                getIntentListSubset(
+                        intentListCopy, new ActionIterGenerator(), actionsIterator);
+                if (intentListCopy.size() == 0) {
+                    // no more intents to match; we're not equivalent
+                    if (DEBUG_FILTERS) {
+                        Slog.i(TAG, "Mismatched action; cap priority to 0;"
+                                + " package: " + applicationInfo.packageName
+                                + " activity: " + intent.activity.className
+                                + " origPrio: " + intent.getPriority());
+                    }
+                    intent.setPriority(0);
+                    return;
+                }
+            }
+
+            // find matching category subsets
+            final Iterator<String> categoriesIterator = intent.categoriesIterator();
+            if (categoriesIterator != null) {
+                getIntentListSubset(intentListCopy, new CategoriesIterGenerator(),
+                        categoriesIterator);
+                if (intentListCopy.size() == 0) {
+                    // no more intents to match; we're not equivalent
+                    if (DEBUG_FILTERS) {
+                        Slog.i(TAG, "Mismatched category; cap priority to 0;"
+                                + " package: " + applicationInfo.packageName
+                                + " activity: " + intent.activity.className
+                                + " origPrio: " + intent.getPriority());
+                    }
+                    intent.setPriority(0);
+                    return;
+                }
+            }
+
+            // find matching schemes subsets
+            final Iterator<String> schemesIterator = intent.schemesIterator();
+            if (schemesIterator != null) {
+                getIntentListSubset(intentListCopy, new SchemesIterGenerator(),
+                        schemesIterator);
+                if (intentListCopy.size() == 0) {
+                    // no more intents to match; we're not equivalent
+                    if (DEBUG_FILTERS) {
+                        Slog.i(TAG, "Mismatched scheme; cap priority to 0;"
+                                + " package: " + applicationInfo.packageName
+                                + " activity: " + intent.activity.className
+                                + " origPrio: " + intent.getPriority());
+                    }
+                    intent.setPriority(0);
+                    return;
+                }
+            }
+
+            // find matching authorities subsets
+            final Iterator<IntentFilter.AuthorityEntry>
+                    authoritiesIterator = intent.authoritiesIterator();
+            if (authoritiesIterator != null) {
+                getIntentListSubset(intentListCopy,
+                        new AuthoritiesIterGenerator(),
+                        authoritiesIterator);
+                if (intentListCopy.size() == 0) {
+                    // no more intents to match; we're not equivalent
+                    if (DEBUG_FILTERS) {
+                        Slog.i(TAG, "Mismatched authority; cap priority to 0;"
+                                + " package: " + applicationInfo.packageName
+                                + " activity: " + intent.activity.className
+                                + " origPrio: " + intent.getPriority());
+                    }
+                    intent.setPriority(0);
+                    return;
+                }
+            }
+
+            // we found matching filter(s); app gets the max priority of all intents
+            int cappedPriority = 0;
+            for (int i = intentListCopy.size() - 1; i >= 0; --i) {
+                cappedPriority = Math.max(cappedPriority, intentListCopy.get(i).getPriority());
+            }
+            if (intent.getPriority() > cappedPriority) {
+                if (DEBUG_FILTERS) {
+                    Slog.i(TAG, "Found matching filter(s);"
+                            + " cap priority to " + cappedPriority + ";"
+                            + " package: " + applicationInfo.packageName
+                            + " activity: " + intent.activity.className
+                            + " origPrio: " + intent.getPriority());
+                }
+                intent.setPriority(cappedPriority);
+                return;
+            }
+            // all this for nothing; the requested priority was <= what was on the system
+        }
+
         public final void addActivity(PackageParser.Activity a, String type) {
             final boolean systemApp = a.info.applicationInfo.isSystemApp();
             mActivities.put(a.getComponentName(), a);
@@ -9500,10 +9801,12 @@ public class PackageManagerService extends IPackageManager.Stub {
             final int NI = a.intents.size();
             for (int j=0; j<NI; j++) {
                 PackageParser.ActivityIntentInfo intent = a.intents.get(j);
-                if (!systemApp && intent.getPriority() > 0 && "activity".equals(type)) {
-                    intent.setPriority(0);
-                    Log.w(TAG, "Package " + a.info.applicationInfo.packageName + " has activity "
-                            + a.className + " with priority > 0, forcing to 0");
+                if ("activity".equals(type)) {
+                    final PackageSetting ps =
+                            mSettings.getDisabledSystemPkgLPr(intent.activity.info.packageName);
+                    final List<PackageParser.Activity> systemActivities =
+                            ps != null && ps.pkg != null ? ps.pkg.activities : null;
+                    adjustPriority(systemActivities, intent);
                 }
                 if (DEBUG_SHOW_INFO) {
                     Log.v(TAG, "    IntentFilter:");
@@ -9656,18 +9959,6 @@ public class PackageManagerService extends IPackageManager.Stub {
             }
             out.println();
         }
-
-//        List<ResolveInfo> filterEnabled(List<ResolveInfo> resolveInfoList) {
-//            final Iterator<ResolveInfo> i = resolveInfoList.iterator();
-//            final List<ResolveInfo> retList = Lists.newArrayList();
-//            while (i.hasNext()) {
-//                final ResolveInfo resolveInfo = i.next();
-//                if (isEnabledLP(resolveInfo.activityInfo)) {
-//                    retList.add(resolveInfo);
-//                }
-//            }
-//            return retList;
-//        }
 
         // Keys are String (activity class name), values are Activity.
         private final ArrayMap<ComponentName, PackageParser.Activity> mActivities
@@ -11728,8 +12019,6 @@ public class PackageManagerService extends IPackageManager.Stub {
          * Called after the source arguments are copied. This is used mostly for
          * MoveParams when it needs to read the source file to put it in the
          * destination.
-         *
-         * @return
          */
         int doPostCopy(int uid) {
             return PackageManager.INSTALL_SUCCEEDED;
@@ -17301,7 +17590,8 @@ public class PackageManagerService extends IPackageManager.Stub {
         //If this component is launched from the system or a uid of a protected component, allow it.
         boolean fromProtectedComponentUid = false;
         for (String protectedComponentManager : protectedComponentManagers) {
-            if (callingUid == getPackageUid(protectedComponentManager, userId)) {
+            int packageUid = getPackageUid(protectedComponentManager, userId);
+            if (packageUid != -1 && callingUid == packageUid) {
                 fromProtectedComponentUid = true;
             }
         }

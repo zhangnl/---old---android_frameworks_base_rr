@@ -21,23 +21,23 @@
   <!-- Button to soft reboot the device, within the Reboot Options dialog -->
   <string name="reboot_systemui">重新啟動「系統 UI」</string>
   <!-- AOKP custom system animations -->
-  <string name="animation_fade">淡出</string>
+  <string name="animation_fade">淡化</string>
   <string name="animation_slide_right">從右側滑入</string>
   <string name="animation_slide_left">從左側滑入</string>
   <string name="animation_slide_right_no_fade">從右側滑入 (無淡化效果)</string>
   <string name="animation_slide_left_no_fade">從左側滑入 (無淡化效果)</string>
   <string name="animation_slide_up">從底部滑入</string>
   <string name="animation_slide_down">從頂部滑入</string>
-  <string name="animation_default">預設值</string>
+  <string name="animation_default">預設</string>
   <string name="animation_translucent">半透明</string>
   <string name="animation_grow_shrink">縮放 (頂部)</string>
-  <string name="animation_grow_shrink_center">縮放(中間)</string>
-  <string name="animation_grow_shrink_bottom">縮放(底部)</string>
+  <string name="animation_grow_shrink_center">縮放 (中央)</string>
+  <string name="animation_grow_shrink_bottom">縮放 (底部)</string>
   <string name="animation_grow_shrink_left">縮放 (左測)</string>
   <string name="animation_grow_shrink_right">縮放 (右側)</string>
   <string name="action_null">空白</string>
   <!-- Slimseekbar -->
-  <string name="default_string">預設值</string>
+  <string name="default_string">預設</string>
   <!-- label for item that takes On-The-Go in the phone options dialog -->
   <string name="global_action_onthego">On-The-Go 模式</string>
   <!-- Powermenu Torch -->
@@ -48,4 +48,9 @@
   <string name="floating_window_snap_left">貼齊左測</string>
   <string name="floating_window_snap_right">貼齊右測</string>
   <string name="floating_window_minimize">最小化</string>
+  <!-- ADB enabled, but not connected notification & custom tile title -->
+  <string name="adb_not_connected_notification_title">ADB inactive</string>
+  <string name="adb_active_custom_tile_not_connected">inactive</string>
+  <!-- Vendor mismatched fingerprint warning [CHAR LIMIT=NONE] -->
+  <string name="system_error_vendorprint">Your vendor image does not match the system. Please flash the <xliff:g id="string">%s</xliff:g> vendor image for your device</string>
 </resources>

@@ -74,7 +74,7 @@
   <string name="quick_settings_tile_reset_to_default">Standaardindeling herstellen</string>
   <string name="quick_settings_title_header">Koptekst</string>
   <string name="quick_settings_title_tiles">Tegels</string>
-  <string name="quick_settings_title_show_weather">Weer weergeven</string>
+  <string name="quick_settings_title_show_weather">Weer tonen</string>
   <string name="quick_settings_title_show_brightness_slider">Schuifregelaar helderheid</string>
   <string name="quick_settings_title_enlarge_first_row">Eerst rij vergroten</string>
   <!-- Screen pinning dialog description (for devices without navbar) -->
@@ -228,4 +228,9 @@
   <!-- Path data for portrait battery -->
   <!-- Path data for landscape battery -->
   <!-- Path data for circle battery -->
+  <!-- Weather string format in keyguard -->
+  <string name="keyguard_status_view_weather_format"><xliff:g id="temp">%1$s</xliff:g> <xliff:g id="condition">%2$s</xliff:g></string>
+  <string name="expand_hint">Veeg omlaag om uit te vouwen</string>
+  <string name="swipe_left_hint">Veeg naar links voor <xliff:g id="app_name">%1$s</xliff:g></string>
+  <string name="swipe_right_hint">Veeg naar rechts voor meldingen</string>
 </resources>

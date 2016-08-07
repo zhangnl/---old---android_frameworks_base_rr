@@ -87,14 +87,14 @@
   <!-- Configurations Tile -->
   <string name="quick_settings_rrtools">Kişiselleştirme</string>
   <!-- Content description of the heads up tile in quick settings when off (not shown on the screen). [CHAR LIMIT=NONE] -->
-  <string name="accessibility_quick_settings_heads_up_off">Heads up kapalı.</string>
+  <string name="accessibility_quick_settings_heads_up_off">Bildirim pencereleri kapalı.</string>
   <!-- Content description of the heads up tile in quick settings when on (not shown on the screen). [CHAR LIMIT=NONE] -->
-  <string name="accessibility_quick_settings_heads_up_on">Heads up açık.</string>
+  <string name="accessibility_quick_settings_heads_up_on">Bildirim pencereleri açık.</string>
   <!-- Announcement made when heads up changes to off (not shown on the screen). [CHAR LIMIT=NONE] -->
-  <string name="accessibility_quick_settings_heads_up_changed_off">Heads up kapatıldı.</string>
+  <string name="accessibility_quick_settings_heads_up_changed_off">Bildirim pencereleri kapatıldı.</string>
   <!-- Announcement made when heads up changes to on (not shown on the screen). [CHAR LIMIT=NONE] -->
-  <string name="accessibility_quick_settings_heads_up_changed_on">Heads up açıldı.</string>
-  <string name="quick_settings_heads_up_label">Heads up</string>
+  <string name="accessibility_quick_settings_heads_up_changed_on">Bildirim pencereleri açıldı.</string>
+  <string name="quick_settings_heads_up_label">Bildirim pencereleri</string>
   <string name="qs_lte_label">LTE</string>
   <string name="lte_on">LTE AÇIK </string>
   <string name="lte_off">LTE KAPALI</string>
@@ -201,19 +201,15 @@
   <!-- Tuner -->
   <string name="systemui_tuner_qs_title">Hızlı Ayarlar Kareleri</string>
   <!-- Heads up toast -->
-  <string name="heads_up_enabled">Heads up bildirimler etkinleştirildi</string>
-  <string name="heads_up_disabled">Heads up bildirimler devre dışı bırakıldı</string>
+  <string name="heads_up_enabled">Bildirim pencereleri etkinleştirildi</string>
+  <string name="heads_up_disabled">Bildirim pencereleri devre dışı bırakıldı</string>
   <!-- Heads up snooze toast -->
-  <string name="heads_up_snooze_message">Heads up bildirimleri <xliff:g id="number">%d</xliff:g> dakikalığına devre dışı.</string>
+  <string name="heads_up_snooze_message">Bildirim pencereleri <xliff:g id="number">%d</xliff:g> dakikalığına devre dışı.</string>
   <!-- Pulse Tile -->
   <string name="quick_settings_pulse_enabled">Pulse Etkin</string>
   <string name="quick_settings_pulse_disabled">Görselleştirme yok</string>
   <string name="quick_settings_pulse_label">Gezinti Çubuğu Görselleştirme</string>
   <!-- PA Pie controls -->
-  <string name="pie_date_format">ccc, gg AAA yyyy</string>
-  <string name="pie_hour_format_12">ss:dd</string>
-  <string name="pie_hour_format_24">SS:dd</string>
-  <string name="pie_am_pm">a</string>
   <!-- Title shown in recents popup for showing app launch in floating mode -->
   <string name="recent_float_mode_title">Yüzme Modu</string>
   <!-- App circle sidebar -->
@@ -230,4 +226,18 @@
   <!-- Content description of the visualizer tile in quick settings (not shown on the screen). [CHAR LIMIT=NONE] -->
   <string name="accessibility_quick_settings_visualizer">Gösrselleştirme.</string>
   <string name="pulse_toast_message">Görselleştirme Karesi Pulse ile etkin çalışmaz</string>
+  <string name="recents_custom_android_n">TÜMÜNÜ TEMİZLE</string>
+  <!-- Slim recents app sidebar queue app toast -->
+  <string name="toast_recents_queue_app">Son kullanılanları kapattıktan sonra %s başlat</string>
+  <string name="toast_recents_cancel_queued_app">Uygulama başlatma iptal edildi</string>
+  <!-- Content description of the halo button in the notification panel for accessibility (not shown on the screen). [CHAR LIMIT=NONE] -->
+  <string name="accessibility_halo">Create notification halo.</string>
+  <!-- HALO -->
+  <string name="halo_dismiss">Dismiss notification</string>
+  <string name="halo_hide">Hide</string>
+  <string name="halo_clear_all">Dismiss all notifications</string>
+  <string name="halo_silence">Hide &amp; silence until woken</string>
+  <string name="halo_tutorial1">This is HALO</string>
+  <string name="halo_tutorial2">Move me: double tap &amp; drag</string>
+  <string name="halo_tutorial3">Browse tasks: Horizontal drag</string>
 </resources>

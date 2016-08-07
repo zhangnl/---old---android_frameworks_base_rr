@@ -62,13 +62,24 @@
         android:src="@drawable/ic_settings"
         android:contentDescription="@string/accessibility_desc_settings" />
 
+    <com.android.keyguard.AlphaOptimizedImageButton android:id="@+id/halo_button"
+        android:src="@drawable/ic_notify_halo"
+        android:contentDescription="@string/accessibility_halo"
+        android:layout_width="40dp"
+        android:layout_height="@dimen/status_bar_header_height"
+        android:layout_toStartOf="@id/settings_button"
+        style="@android:style/Widget.Material.Button.Borderless"
+	android:layout_marginStart="7dp"
+        android:background="@drawable/ripple_drawable"
+	android:visibility="gone" />
+
     <com.android.keyguard.AlphaOptimizedImageButton android:id="@+id/heads_up_button"
         style="@android:style/Widget.Material.Button.Borderless"
-        android:layout_toStartOf="@id/settings_button"
+        android:layout_toStartOf="@id/halo_button"
         android:layout_width="48dp"
         android:layout_height="@dimen/status_bar_header_height"
         android:background="@drawable/ripple_drawable"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="7dp"
         android:visibility="gone"/>
 
     <com.android.keyguard.AlphaOptimizedImageButton android:id="@+id/task_manager_button"
@@ -77,7 +88,7 @@
         android:layout_width="48dp"
         android:layout_height="@dimen/status_bar_header_height"
         android:background="@drawable/ripple_drawable"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="7dp"
         android:src="@drawable/ic_tasklist_switch_normal"
         android:visibility="gone"/>
 
@@ -86,9 +97,9 @@
         android:layout_height="@dimen/status_bar_header_height"
         android:layout_toStartOf="@id/multi_user_switch"
         android:layout_alignWithParentIfMissing="true"
-        android:layout_marginStart="16dp"
+        android:layout_marginStart="10dp"
         android:background="@drawable/ripple_drawable"
-        android:paddingEnd="4dp" >
+        android:paddingEnd="2dp" >
         <FrameLayout android:id="@+id/system_icons_container"
             android:layout_width="wrap_content"
             android:layout_height="@dimen/status_bar_height"

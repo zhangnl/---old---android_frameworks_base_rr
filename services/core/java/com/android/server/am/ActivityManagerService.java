@@ -218,6 +218,7 @@ import android.os.UpdateLock;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.provider.Settings;
+import android.telecom.TelecomManager;
 import android.text.format.DateUtils;
 import android.text.format.Time;
 import android.util.AtomicFile;
@@ -1603,11 +1604,14 @@ public final class ActivityManagerService extends ActivityManagerNative
             } break;
             case SHOW_FINGERPRINT_ERROR_MSG: {
                 if (mShowDialogs) {
+                    String buildfingerprint = SystemProperties.get("ro.build.fingerprint");
+                    String[] splitfingerprint = buildfingerprint.split("/");
+                    String vendorid = splitfingerprint[3];
                     AlertDialog d = new BaseErrorDialog(mContext);
                     d.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ERROR);
                     d.setCancelable(false);
                     d.setTitle(mContext.getText(R.string.android_system_label));
-                    d.setMessage(mContext.getText(R.string.system_error_manufacturer));
+                    d.setMessage(mContext.getString(R.string.system_error_vendorprint, vendorid));
                     d.setButton(DialogInterface.BUTTON_POSITIVE, mContext.getText(R.string.ok),
                             obtainMessage(DISMISS_DIALOG_MSG, d));
                     d.show();
@@ -9068,6 +9072,27 @@ public final class ActivityManagerService extends ActivityManagerNative
         }
     }
 
+    private void cleanupProtectedComponentTasksLocked() {
+        for (int i = mRecentTasks.size() - 1; i >= 0; i--) {
+            TaskRecord tr = mRecentTasks.get(i);
+
+            for (int j = tr.mActivities.size() - 1; j >= 0; j--) {
+                ActivityRecord r = tr.mActivities.get(j);
+                ComponentName cn = r.realActivity;
+
+                try {
+                    boolean isProtected = AppGlobals.getPackageManager()
+                        .isComponentProtected(null, -1, cn, getCurrentUserIdLocked());
+                    if (isProtected) {
+                        removeTaskByIdLocked(tr.taskId, false);
+                    }
+                } catch (RemoteException re) {
+
+                }
+            }
+        }
+    }
+
     /**
      * Removes the task with the specified task id.
      *
@@ -9490,6 +9515,10 @@ public final class ActivityManagerService extends ActivityManagerNative
             synchronized (this) {
                 mStackSupervisor.setLockTaskModeLocked(null, ActivityManager.LOCK_TASK_MODE_NONE,
                         "stopLockTask", true);
+            }
+            TelecomManager tm = (TelecomManager) mContext.getSystemService(Context.TELECOM_SERVICE);
+            if (tm != null) {
+                tm.showInCallScreen(false);
             }
         } finally {
             Binder.restoreCallingIdentity(ident);
@@ -12084,6 +12113,7 @@ public final class ActivityManagerService extends ActivityManagerNative
 
             mRecentTasks.clear();
             mRecentTasks.addAll(mTaskPersister.restoreTasksLocked());
+            cleanupProtectedComponentTasksLocked();
             mRecentTasks.cleanupLocked(UserHandle.USER_ALL);
             mTaskPersister.startPersisting();
 
@@ -16423,10 +16453,21 @@ public final class ActivityManagerService extends ActivityManagerNative
     // Cause the target app to be launched if necessary and its backup agent
     // instantiated.  The backup agent will invoke backupAgentCreated() on the
     // activity manager to announce its creation.
-    public boolean bindBackupAgent(ApplicationInfo app, int backupMode) {
-        if (DEBUG_BACKUP) Slog.v(TAG_BACKUP,
-                "bindBackupAgent: app=" + app + " mode=" + backupMode);
+    public boolean bindBackupAgent(String packageName, int backupMode, int userId) {
+        if (DEBUG_BACKUP) Slog.v(TAG, "bindBackupAgent: app=" + packageName + " mode=" + backupMode);
         enforceCallingPermission("android.permission.CONFIRM_FULL_BACKUP", "bindBackupAgent");
+
+        IPackageManager pm = AppGlobals.getPackageManager();
+        ApplicationInfo app = null;
+        try {
+            app = pm.getApplicationInfo(packageName, 0, userId);
+        } catch (RemoteException e) {
+            // can't happen; package manager is process-local
+        }
+        if (app == null) {
+            Slog.w(TAG, "Unable to bind backup agent for " + packageName);
+            return false;
+        }
 
         synchronized(this) {
             // !!! TODO: currently no check here that we're already bound
@@ -16952,7 +16993,8 @@ public final class ActivityManagerService extends ActivityManagerNative
         } else if (callerApp == null || !callerApp.persistent) {
             try {
                 if (AppGlobals.getPackageManager().isProtectedBroadcast(
-                        intent.getAction())) {
+                        intent.getAction()) && !AppGlobals.getPackageManager()
+                        .isProtectedBroadcastAllowed(intent.getAction(), callingUid)) {
                     String msg = "Permission Denial: not allowed to send broadcast "
                             + intent.getAction() + " from pid="
                             + callingPid + ", uid=" + callingUid;
@@ -17122,6 +17164,14 @@ public final class ActivityManagerService extends ActivityManagerNative
                 case Proxy.PROXY_CHANGE_ACTION:
                     ProxyInfo proxy = intent.getParcelableExtra(Proxy.EXTRA_PROXY_INFO);
                     mHandler.sendMessage(mHandler.obtainMessage(UPDATE_HTTP_PROXY_MSG, proxy));
+                    break;
+                case cyanogenmod.content.Intent.ACTION_PROTECTED_CHANGED:
+                    final boolean state =
+                            intent.getBooleanExtra(
+                                    cyanogenmod.content.Intent.EXTRA_PROTECTED_STATE, false);
+                    if (state == PackageManager.COMPONENT_PROTECTED_STATUS) {
+                        cleanupProtectedComponentTasksLocked();
+                    }
                     break;
             }
         }
@@ -17787,6 +17837,11 @@ public final class ActivityManagerService extends ActivityManagerNative
                 if (values.themeConfig != null) {
                     saveThemeResourceLocked(values.themeConfig,
                             !values.themeConfig.equals(mConfiguration.themeConfig));
+                }
+
+                if ((changes & ActivityInfo.CONFIG_THEME_FONT) != 0) {
+                    // Notify zygote that themes need a refresh
+                    SystemProperties.set(PROP_REFRESH_THEME, "1");
                 }
 
                 mConfigurationSeq++;
