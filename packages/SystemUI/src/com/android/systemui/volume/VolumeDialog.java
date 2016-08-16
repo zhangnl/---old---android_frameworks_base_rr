@@ -38,6 +38,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.GradientDrawable.Orientation;
+import android.graphics.PorterDuff.Mode;
 import android.media.AudioManager;
 import android.media.AudioSystem;
 import android.os.Debug;
@@ -229,7 +230,8 @@ public class VolumeDialog {
         mZenFooter.init(zenModeController);
 
         mAccessibility.init();
-
+	
+	updateExpandButtonColor();
         controller.addCallback(mControllerCallbackH, mHandler);
         controller.getState();
     }
@@ -273,6 +275,17 @@ public class VolumeDialog {
         if (mSilentMode == silentMode) return;
         mSilentMode = silentMode;
         mHandler.sendEmptyMessage(H.RECHECK_ALL);
+    }
+
+    private void updateExpandButtonColor() {
+        final int mExpandButtonColor = VolumeDialogColorHelper.getExpandButtonColor(mContext);
+	boolean mDialogSwitch = Settings.System.getInt(mContext.getContentResolver(),
+               Settings.System.VOLUME_DIALOG_COLOR_SWITCH, 0) == 1 ;
+	if (mDialogSwitch) {
+        	if (mExpandButton != null) {
+           	    mExpandButton.setColorFilter(mExpandButtonColor, Mode.MULTIPLY);
+       		   }
+	}
     }
 
     private void addRow(int stream, int iconRes, int iconMuteRes, boolean important) {
@@ -593,6 +606,7 @@ public class VolumeDialog {
         updateFooterH();
         updateExpandButtonH();
         setVolumeStroke();
+	updateExpandButtonColor();
 	updateBgGradientOrientation();
         setVolumeAlpha();
         if (!mShowing) {
@@ -797,15 +811,27 @@ public class VolumeDialog {
     }
 
     private void updateVolumeRowSliderTintH(VolumeRow row, boolean isActive) {
+        final ColorStateList sliderIconColor = VolumeDialogColorHelper.getSliderIconColorList(mContext);
+        final ColorStateList sliderColor = VolumeDialogColorHelper.getSliderColorList(mContext);
+        final ColorStateList sliderInactiveColor = VolumeDialogColorHelper.getSliderInactiveColorList(mContext);
+	boolean mDialogSwitch = Settings.System.getInt(mContext.getContentResolver(),
+               Settings.System.VOLUME_DIALOG_COLOR_SWITCH, 0) == 1 ;
         if (isActive && mExpanded) {
             row.slider.requestFocus();
         }
         final ColorStateList tint = isActive && row.slider.isEnabled() ? mActiveSliderTint
                 : mInactiveSliderTint;
+	if (mDialogSwitch) {
+        row.cachedSliderTint = sliderColor;
+        row.slider.setProgressTintList(sliderColor);
+        row.slider.setProgressBackgroundTintList(sliderInactiveColor);
+        row.slider.setThumbTintList(sliderIconColor);
+	} else {
         if (tint == row.cachedSliderTint) return;
         row.cachedSliderTint = tint;
         row.slider.setProgressTintList(tint);
         row.slider.setThumbTintList(tint);
+	}
     }
 
     private void updateVolumeRowSliderH(VolumeRow row, boolean enable, int vlevel, boolean maxChanged) {
