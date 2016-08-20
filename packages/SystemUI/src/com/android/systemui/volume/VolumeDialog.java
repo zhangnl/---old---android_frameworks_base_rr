@@ -232,6 +232,7 @@ public class VolumeDialog {
         mAccessibility.init();
 	
 	updateExpandButtonColor();
+	setVolumeAlpha();
         controller.addCallback(mControllerCallbackH, mHandler);
         controller.getState();
     }
@@ -278,14 +279,14 @@ public class VolumeDialog {
     }
 
     private void updateExpandButtonColor() {
-        final int mExpandButtonColor = VolumeDialogColorHelper.getExpandButtonColor(mContext);
 	boolean mDialogSwitch = Settings.System.getInt(mContext.getContentResolver(),
                Settings.System.VOLUME_DIALOG_COLOR_SWITCH, 0) == 1 ;
+        final int mExpandButtonColor = VolumeDialogColorHelper.getExpandButtonColor(mContext);
 	if (mDialogSwitch) {
         	if (mExpandButton != null) {
            	    mExpandButton.setColorFilter(mExpandButtonColor, Mode.MULTIPLY);
        		   }
-	}
+	  }
     }
 
     private void addRow(int stream, int iconRes, int iconMuteRes, boolean important) {
@@ -426,8 +427,14 @@ public class VolumeDialog {
                 return false;
             }
         });
+	boolean mDialogSwitch = Settings.System.getInt(mContext.getContentResolver(),
+               Settings.System.VOLUME_DIALOG_COLOR_SWITCH, 0) == 1 ;
+	final ColorStateList iconColor = VolumeDialogColorHelper.getIconColorList(mContext);
         row.icon = (ImageButton) row.view.findViewById(R.id.volume_row_icon);
         row.icon.setImageResource(iconRes);
+	if(mDialogSwitch) {
+	row.icon.setImageTintList(iconColor);
+	}
         row.icon.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -1219,17 +1226,14 @@ public class VolumeDialog {
     private void setVolumeAlpha() {
         mVolumeDialogAlpha = Settings.System.getInt(mContext.getContentResolver(),
                     Settings.System.TRANSPARENT_VOLUME_DIALOG, 255);
-        if (Settings.System.getInt(mContext.getContentResolver(),
-                    Settings.System.TRANSPARENT_VOLUME_DIALOG, 255) != 255) {
             if (mDialogView != null) {
                 mDialogView.getBackground().setAlpha(mVolumeDialogAlpha);
             }
-        }
     }
 
      public void setVolumeStroke() {
         mVolumeDialogStroke = Settings.System.getInt(mContext.getContentResolver(),
-                    Settings.System.VOLUME_DIALOG_STROKE, 1);
+                    Settings.System.VOLUME_DIALOG_STROKE, 0);
         mCustomStrokeColor = Settings.System.getInt(mContext.getContentResolver(),
                     Settings.System.VOLUME_DIALOG_STROKE_COLOR, mContext.getResources().getColor(R.color.system_accent_color));
         mCustomStrokeThickness = Settings.System.getInt(mContext.getContentResolver(),
