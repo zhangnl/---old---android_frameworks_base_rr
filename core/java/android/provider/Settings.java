@@ -6217,6 +6217,14 @@ public final class Settings {
         public static final String QS_STROKE_DASH_GAP = "qs_stroke_dash_gap";
 
         /**
+         * Quick settings RR logo style
+         *
+         * @hide
+         */
+        public static final String QS_PANEL_LOGO_STYLE = "qs_panel_logo_style";
+
+
+        /**
          * Quick settings RR logo
          *
          * @hide
@@ -6269,6 +6277,12 @@ public final class Settings {
          * @hide
          */
         public static final String BLUETOOTH_SHOW_BATTERY = "bluetooth_show_battery";
+
+        /**
+         * Hide Zen icon in statusbar
+         * @hide
+         */
+        public static final String SHOW_ZEN_ICON = "show_zen_icon";
 
 
         /**
@@ -9196,6 +9210,12 @@ public final class Settings {
          * @hide
          */
         public static final String HALO_FLOAT_NOTIFICATIONS = "halo_float_notifications";
+
+	/**
+         * Components that the Themes qstile modifies
+         * @hide
+         */
+        public static final String THEMES_TILE_COMPONENTS = "themes_tile_components";
 
         /**
          * This are the settings to be backed up.
