@@ -183,6 +183,8 @@ import com.android.systemui.recents.events.activity.AppTransitionFinishedEvent;
 import com.android.systemui.recents.events.activity.UndockingTaskEvent;
 import com.android.systemui.recents.RecentsActivity;
 import com.android.systemui.settings.BrightnessController;
+import com.android.systemui.slimrecent.RecentController;
+import com.android.systemui.slimrecent.SlimScreenPinningRequest;
 import com.android.systemui.stackdivider.Divider;
 import com.android.systemui.stackdivider.WindowManagerProxy;
 import com.android.systemui.statusbar.ActivatableNotificationView;
@@ -596,6 +598,10 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     private NavigationController mNavigationController;
     private DUPackageMonitor mPackageMonitor;
 
+    private RecentController mSlimRecents;
+
+    private SlimScreenPinningRequest mSlimScreenPinningRequest;
+
     private View.OnTouchListener mUserAutoHideListener = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View v, MotionEvent event) {
@@ -790,14 +796,19 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             resolver.registerContentObserver(Settings.System.getUriFor(
                  Settings.System.ENABLE_TASK_MANAGER),
                  false, this, UserHandle.USER_ALL);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.USE_SLIM_RECENTS), false, this,
+                    UserHandle.USER_ALL);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.RECENT_CARD_BG_COLOR), false, this,
+                    UserHandle.USER_ALL);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.RECENT_CARD_TEXT_COLOR), false, this,
+                    UserHandle.USER_ALL);
+           resolver.registerContentObserver(Settings.System.getUriFor(
+                  Settings.System.QS_QUICKBAR_SCROLL_ENABLED),
+                  false, this, UserHandle.USER_ALL);
             update();
-        }
-        
-        @Override
-        protected void unobserve() {
-            super.unobserve();
-            ContentResolver resolver = mContext.getContentResolver();
-            resolver.unregisterContentObserver(this);
         }
 
 	@Override
@@ -883,6 +894,14 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                                         0, UserHandle.USER_CURRENT) == 1;
                     RecentsActivity.startBlurTask();
                     updatePreferences(mContext);
+            } else if (uri.equals(Settings.System.getUriFor(
+                    Settings.System.USE_SLIM_RECENTS))) {
+                updateRecents();
+            } else if (uri.equals(Settings.System.getUriFor(
+                    Settings.System.RECENT_CARD_BG_COLOR))
+                    || uri.equals(Settings.System.getUriFor(
+                    Settings.System.RECENT_CARD_TEXT_COLOR))) {
+                rebuildRecentsScreen();
             }
            update();
         }
@@ -1007,6 +1026,10 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                     Settings.System.BLUR_MIXED_COLOR_PREFERENCE_KEY, Color.GRAY);
             mBlurLightColorFilter = Settings.System.getInt(mContext.getContentResolver(), 
                     Settings.System.BLUR_LIGHT_COLOR_PREFERENCE_KEY, Color.DKGRAY);
+
+            // update recents
+            updateRecents();
+            rebuildRecentsScreen();
                     
             RecentsActivity.updateBlurColors(mBlurDarkColorFilter,mBlurMixedColorFilter,mBlurLightColorFilter);
             RecentsActivity.updateRadiusScale(mScaleRecents,mRadiusRecents);
@@ -1417,6 +1440,8 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         SettingsObserver observer = new SettingsObserver(mHandler);
         observer.observe();
 
+        updateRecents();
+
         // Lastly, call to the icon policy to install/update all the icons.
         mIconPolicy = new PhoneStatusBarPolicy(mContext, mIconController, mCastController,
                 mHotspotController, mUserInfoController, mBluetoothController,
@@ -1608,6 +1633,9 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         mTickerEnabled = Settings.System.getIntForUser(mContext.getContentResolver(),
                     Settings.System.STATUS_BAR_SHOW_TICKER, 0, UserHandle.USER_CURRENT) == 1;
         initTickerView();
+
+
+        mSlimScreenPinningRequest = new SlimScreenPinningRequest(mContext);
 
         // set the initial view visibility
         setAreThereNotifications();
@@ -5867,6 +5895,7 @@ mWeatherTempSize, mWeatherTempFontStyle, mWeatherTempColor);
 
     public void onClosingFinished() {
         runPostCollapseRunnables();
+        mHeader.onClosingFinished();
     }
 
     public void onUnlockHintStarted() {
@@ -6231,6 +6260,8 @@ mWeatherTempSize, mWeatherTempFontStyle, mWeatherTempColor);
     }
 
     public void showScreenPinningRequest(int taskId, boolean allowCancel) {
+        hideRecents(false, false);
+        //mSlimScreenPinningRequest.showPrompt(taskId, allowCancel);
         mScreenPinningRequest.showPrompt(taskId, allowCancel);
     }
 
@@ -6510,6 +6541,71 @@ mWeatherTempSize, mWeatherTempFontStyle, mWeatherTempColor);
                         handleStopDozing();
                         break;
                 }
+            }
+        }
+    }
+
+    @Override
+    protected void hideRecents(boolean triggeredFromAltTab, boolean triggeredFromHomeKey) {
+        if (mSlimRecents != null) {
+            mSlimRecents.hideRecents(triggeredFromHomeKey);
+        } else {
+            super.hideRecents(triggeredFromAltTab, triggeredFromHomeKey);
+        }
+    }
+
+    @Override
+    protected void toggleRecents() {
+        if (mSlimRecents != null) {
+            sendCloseSystemWindows(mContext, SYSTEM_DIALOG_REASON_RECENT_APPS);
+            mSlimRecents.toggleRecents(mDisplay, mLayoutDirection, getStatusBarView());
+        } else {
+            super.toggleRecents();
+        }
+    }
+
+    @Override
+    protected void preloadRecents() {
+        if (mSlimRecents != null) {
+            mSlimRecents.preloadRecentTasksList();
+        } else {
+            super.preloadRecents();
+        }
+    }
+
+    @Override
+    protected void cancelPreloadingRecents() {
+        if (mSlimRecents != null) {
+            mSlimRecents.cancelPreloadingRecentTasksList();
+        } else {
+            super.cancelPreloadingRecents();
+        }
+    }
+
+    protected void rebuildRecentsScreen() {
+        if (mSlimRecents != null) {
+            mSlimRecents.rebuildRecentsScreen();
+        }
+    }
+
+    protected void updateRecents() {
+        boolean slimRecents = Settings.System.getIntForUser(mContext.getContentResolver(),
+                Settings.System.USE_SLIM_RECENTS, 0, UserHandle.USER_CURRENT) == 1;
+
+        if (slimRecents) {
+            mSlimRecents = new RecentController(mContext, mLayoutDirection);
+            //mSlimRecents.setCallback(this);
+            rebuildRecentsScreen();
+        } else {
+            mSlimRecents = null;
+        }
+    }
+
+    private static void sendCloseSystemWindows(Context context, String reason) {
+        if (ActivityManagerNative.isSystemReady()) {
+            try {
+                ActivityManagerNative.getDefault().closeSystemDialogs(reason);
+            } catch (RemoteException e) {
             }
         }
     }
