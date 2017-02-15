@@ -72,6 +72,7 @@ public class KeyguardStatusView extends GridLayout implements
     private TextClock mClockView;
     private TextView mAmbientDisplayBatteryView;
     private TextView mOwnerInfo;
+    private TextView mChineseDate;
 
     private View mWeatherView;
     private TextView mWeatherCity;
@@ -130,13 +131,18 @@ public class KeyguardStatusView extends GridLayout implements
             setEnableMarquee(true);
             mEnableRefresh = true;
             refresh();
-            
+            boolean mShow = Settings.System.getIntForUser(getContext().getContentResolver(),
+                  Settings.System.CHINESE_DATE_VIEW, 1, UserHandle.USER_CURRENT) == 1;
+            mChineseDate.setVisibility(mShow ? View.VISIBLE : View.GONE);
         }
 
         @Override
         public void onFinishedGoingToSleep(int why) {
             setEnableMarquee(false);
             mEnableRefresh = false;
+            boolean mShow = Settings.System.getIntForUser(getContext().getContentResolver(),
+                  Settings.System.CHINESE_DATE_VIEW, 1, UserHandle.USER_CURRENT) == 1;
+            mChineseDate.setVisibility(mShow ? View.VISIBLE : View.GONE);
         }
 
         @Override
@@ -182,6 +188,7 @@ public class KeyguardStatusView extends GridLayout implements
         mClockView.setShowCurrentUserTime(true);
         mAmbientDisplayBatteryView = (TextView) findViewById(R.id.ambient_display_battery_view);
         mOwnerInfo = (TextView) findViewById(R.id.owner_info);
+        mChineseDate = (TextView) findViewById(R.id.date_chinese);		
         mWeatherView = findViewById(R.id.keyguard_weather_view);
         mWeatherCity = (TextView) findViewById(R.id.city);
         mWeatherConditionImage = (ImageView) findViewById(R.id.weather_image);

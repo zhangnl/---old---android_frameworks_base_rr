@@ -3820,6 +3820,12 @@ public static final String PHONE_BLACKLIST_REGEX_ENABLED = "phone_blacklist_rege
         /** @hide */
         public static final Validator LOCK_TO_APP_ENABLED_VALIDATOR = sBooleanValidator;
 
+         /**
+          * Chinese date view
+          * @hide
+          */
+         public static final String CHINESE_DATE_VIEW = "chinese_date_view";
+
         /**
          * I am the lolrus.
          * <p>
