@@ -80,6 +80,7 @@ static volatile int32_t gCount = 0;
 const char* AssetManager::RESOURCES_FILENAME = "resources.arsc";
 const char* AssetManager::IDMAP_BIN = "/system/bin/idmap";
 const char* AssetManager::OVERLAY_DIR = "/vendor/overlay";
+const char* AssetManager::OVERLAY_THEME_DIR_PROPERTY = "ro.boot.vendor.overlay.theme";
 const char* AssetManager::TARGET_PACKAGE_NAME = "android";
 const char* AssetManager::TARGET_APK_PATH = "/system/framework/framework-res.apk";
 const char* AssetManager::IDMAP_DIR = "/data/resource-cache";
@@ -1640,7 +1641,6 @@ void AssetManager::mergeInfoLocked(SortedVector<AssetDir::FileInfo>* pMergedInfo
     int i, j;
     for (i = pContents->size() -1; i >= 0; i--) {
         bool add = true;
-
         for (j = pMergedInfo->size() -1; j >= 0; j--) {
             /* case-sensitive comparisons, to behave like UNIX fs */
             if (strcmp(pContents->itemAt(i).mFileName,
@@ -1651,7 +1651,6 @@ void AssetManager::mergeInfoLocked(SortedVector<AssetDir::FileInfo>* pMergedInfo
                 break;
             }
         }
-
         if (add)
             pMergedInfo->add(pContents->itemAt(i));
     }

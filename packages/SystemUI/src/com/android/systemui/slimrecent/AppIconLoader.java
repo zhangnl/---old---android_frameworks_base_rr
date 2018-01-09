@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 SlimRoms Project
+ * Copyright (C) 2014-2017 SlimRoms Project
  * Author: Lars Greiss - email: kufikugel@googlemail.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -35,6 +35,8 @@ import com.android.systemui.R;
 
 import java.lang.ref.WeakReference;
 
+import com.android.internal.util.rr.ImageHelper;
+
 /**
  * This class handles async app icon load for the requested apps
  * and put them when sucessfull into the LRU cache.
@@ -51,6 +53,10 @@ public class AppIconLoader {
     private static AppIconLoader sInstance;
 
     private Context mContext;
+
+    public interface IconCallback {
+        void onDrawableLoaded(Drawable drawable);
+    }
 
     /**
      * Get the instance.
@@ -74,12 +80,12 @@ public class AppIconLoader {
      * Load the app icon via async task.
      *
      * @params packageName
-     * @params imageView
+     * @params callback
      */
     protected void loadAppIcon(ResolveInfo info, String identifier,
-            RecentImageView imageView, float scaleFactor) {
+            IconCallback callback, float scaleFactor) {
         final BitmapDownloaderTask task =
-                new BitmapDownloaderTask(imageView, mContext, scaleFactor, identifier);
+                new BitmapDownloaderTask(callback, mContext, scaleFactor, identifier);
         task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, info);
     }
 
@@ -119,7 +125,14 @@ public class AppIconLoader {
             resources = null;
         }
         if (resources != null) {
-            int iconId = info.activityInfo.getIconResource();
+            int iconId = 0;
+            if (IconPackHelper.getInstance(context).isIconPackLoaded()){
+                iconId = IconPackHelper.getInstance(context).getResourceIdForActivityIcon(info.activityInfo);
+                if (iconId != 0) {
+                    return IconPackHelper.getInstance(context).getIconPackResources().getDrawable(iconId);
+                }
+            }
+            iconId = info.activityInfo.getIconResource();
             if (iconId != 0) {
                 return getFullResIcon(context, resources, iconId);
             }
@@ -138,14 +151,10 @@ public class AppIconLoader {
             return null;
         }
 
-        if (!(source instanceof BitmapDrawable)) {
-            return source;
-        }
-
         final int iconSize = (int) (context.getResources()
                 .getDimensionPixelSize(R.dimen.recent_app_icon_size) * scaleFactor);
 
-        final Bitmap bitmap = ((BitmapDrawable) source).getBitmap();
+        final Bitmap bitmap = ImageHelper.drawableToBitmap(source);
         final Bitmap scaledBitmap = Bitmap.createBitmap(iconSize, iconSize, Config.ARGB_8888);
 
         final float ratioX = iconSize / (float) bitmap.getWidth();
@@ -174,17 +183,19 @@ public class AppIconLoader {
 
         private Drawable mAppIcon;
 
-        private final WeakReference<RecentImageView> rImageViewReference;
         private final WeakReference<Context> rContext;
 
-        private int mOrigPri;
+        //private int mOrigPri;
+
+        private IconCallback mCallback;
+
         private float mScaleFactor;
 
         private String mLRUCacheKey;
 
-        public BitmapDownloaderTask(RecentImageView imageView,
+        public BitmapDownloaderTask(IconCallback callback,
                 Context context, float scaleFactor, String identifier) {
-            rImageViewReference = new WeakReference<RecentImageView>(imageView);
+            mCallback = callback;
             rContext = new WeakReference<Context>(context);
             mScaleFactor = scaleFactor;
             mLRUCacheKey = identifier;
@@ -192,10 +203,7 @@ public class AppIconLoader {
 
         @Override
         protected Drawable doInBackground(ResolveInfo... params) {
-            // Save current thread priority and set it during the loading
-            // to background priority.
-            mOrigPri = Process.getThreadPriority(Process.myTid());
-            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+            Process.setThreadPriority(Process.THREAD_PRIORITY_FOREGROUND);
             if (isCancelled() || rContext == null) {
                 return null;
             }
@@ -208,8 +216,6 @@ public class AppIconLoader {
             if (isCancelled()) {
                 bitmap = null;
             }
-            // Restore original thread priority.
-            Process.setThreadPriority(mOrigPri);
 
             final Context context;
             if (rContext != null) {
@@ -219,16 +225,13 @@ public class AppIconLoader {
             }
             // Assign image to the view if the view was passed through.
             // #link:loadAppIcon
-            if (rImageViewReference != null) {
-                final RecentImageView imageView = rImageViewReference.get();
-                if (imageView != null) {
-                    imageView.setImageDrawable(bitmap);
-                }
-                if (bitmap != null && context != null && bitmap instanceof BitmapDrawable) {
-                    // Put our bitmap intu LRU cache for later use.
-                    CacheController.getInstance(context)
-                            .addBitmapDrawableToMemoryCache(mLRUCacheKey, (BitmapDrawable)bitmap);
-                }
+            if (mCallback != null) {
+                mCallback.onDrawableLoaded(bitmap);
+            }
+            if (bitmap != null && context != null && bitmap instanceof BitmapDrawable) {
+                // Put our bitmap intu LRU cache for later use.
+                CacheController.getInstance(context)
+                        .addBitmapToMemoryCache(mLRUCacheKey, (BitmapDrawable)bitmap);
             }
         }
     }

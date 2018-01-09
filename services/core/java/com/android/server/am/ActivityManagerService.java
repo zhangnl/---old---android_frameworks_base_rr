@@ -125,6 +125,8 @@ import android.content.IIntentSender;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentSender;
+import android.content.om.IOverlayManager;
+import android.content.om.OverlayInfo;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.ConfigurationInfo;
@@ -190,6 +192,7 @@ import android.os.UpdateLock;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.os.WorkSource;
+import android.provider.Downloads;
 import android.os.storage.IMountService;
 import android.os.storage.MountServiceInternal;
 import android.os.storage.StorageManager;
@@ -533,9 +536,6 @@ public final class ActivityManagerService extends ActivityManagerNative
     // Intent sent when remote bugreport collection has been completed
     private static final String INTENT_REMOTE_BUGREPORT_FINISHED =
             "android.intent.action.REMOTE_BUGREPORT_FINISHED";
-
-    private static final String ACTION_POWER_OFF_ALARM =
-            "org.codeaurora.alarm.action.POWER_OFF_ALARM";
 
     // Delay to disable app launch boost
     static final int APP_BOOST_MESSAGE_DELAY = 3000;
@@ -1222,6 +1222,15 @@ public final class ActivityManagerService extends ActivityManagerNative
     /**
      * Set while we are wanting to sleep, to prevent any
      * activities from being started/resumed.
+     *
+     * TODO(b/33594039): Clarify the actual state transitions represented by mSleeping.
+     *
+     * Currently mSleeping is set to true when transitioning into the sleep state, and remains true
+     * while in the sleep state until there is a pending transition out of sleep, in which case
+     * mSleeping is set to false, and remains false while awake.
+     *
+     * Whether mSleeping can quickly toggled between true/false without the device actually
+     * display changing states is undefined.
      */
     private boolean mSleeping = false;
 
@@ -1552,8 +1561,8 @@ public final class ActivityManagerService extends ActivityManagerNative
     static final int NOTIFY_PINNED_STACK_ANIMATION_ENDED_LISTENERS_MSG = 66;
     static final int NOTIFY_FORCED_RESIZABLE_MSG = 67;
     static final int NOTIFY_ACTIVITY_DISMISSING_DOCKED_STACK_MSG = 68;
-    static final int VR_MODE_APPLY_IF_NEEDED_MSG = 69;
-    static final int SHOW_UNSUPPORTED_DISPLAY_SIZE_DIALOG_MSG = 70;
+    static final int SHOW_UNSUPPORTED_DISPLAY_SIZE_DIALOG_MSG = 69;
+    static final int NOTIFY_VR_SLEEPING_MSG = 70;
 
     static final int POST_PRIVACY_NOTIFICATION_MSG = 90;
     static final int CANCEL_PRIVACY_NOTIFICATION_MSG = 91;
@@ -1605,6 +1614,8 @@ public final class ActivityManagerService extends ActivityManagerNative
     // VoiceInteraction session ID that changes for each new request except when
     // being called for multiwindow assist in a single session.
     private int mViSessionId = 1000;
+
+    final boolean mPermissionReviewRequired;
 
     final class KillHandler extends Handler {
         static final int KILL_PROCESS_GROUP_MSG = 4000;
@@ -1660,10 +1671,16 @@ public final class ActivityManagerService extends ActivityManagerNative
                     }
                     AppErrorResult res = (AppErrorResult) data.get("result");
                     if (mShowDialogs && !mSleeping && !mShuttingDown) {
-                        Dialog d = new StrictModeViolationDialog(mContext,
-                                ActivityManagerService.this, res, proc);
-                        d.show();
-                        proc.crashDialog = d;
+                        if (Settings.System.getInt(mContext.getContentResolver(),
+                                Settings.System.DISABLE_FC_NOTIFICATIONS, 0) != 1) {
+                            Dialog d = new StrictModeViolationDialog(mContext,
+                                    ActivityManagerService.this, res, proc);
+                            d.show();
+                            proc.crashDialog = d;
+                        } else {
+                            Slog.w(TAG, "Skipping crash dialog of " + proc + ": disabled");
+                            res.set(0);
+                        }
                     } else {
                         // The device is asleep, so just pretend that the user
                         // saw a crash dialog and hit "force quit".
@@ -2411,6 +2428,9 @@ public final class ActivityManagerService extends ActivityManagerNative
             } break;
             case VR_MODE_CHANGE_MSG: {
                 VrManagerInternal vrService = LocalServices.getService(VrManagerInternal.class);
+                if (vrService == null) {
+                    break;
+                }
                 final ActivityRecord r = (ActivityRecord) msg.obj;
                 boolean vrMode;
                 ComponentName requestedPackage;
@@ -2446,14 +2466,8 @@ public final class ActivityManagerService extends ActivityManagerNative
                     }
                 }
                 vrService.setVrMode(vrMode, requestedPackage, userId, callingPackage);
-            } break;
-            case VR_MODE_APPLY_IF_NEEDED_MSG: {
-                final ActivityRecord r = (ActivityRecord) msg.obj;
-                final boolean needsVrMode = r != null && r.requestedVrComponent != null;
-                if (needsVrMode) {
-                    applyVrMode(msg.arg1 == 1, r.requestedVrComponent, r.userId,
-                            r.info.getComponentName(), false);
-                }
+            } case NOTIFY_VR_SLEEPING_MSG: {
+                notifyVrManagerOfSleepState(msg.arg1 != 0);
             } break;
             case POST_COMPONENT_PROTECTED_MSG: {
                 INotificationManager inm = NotificationManager.getService();
@@ -2798,6 +2812,9 @@ public final class ActivityManagerService extends ActivityManagerNative
 
         Slog.i(TAG, "Memory class: " + ActivityManager.staticGetMemoryClass());
 
+        mPermissionReviewRequired = mContext.getResources().getBoolean(
+                com.android.internal.R.bool.config_permissionReviewRequired);
+
         mHandlerThread = new ServiceThread(TAG,
                 android.os.Process.THREAD_PRIORITY_FOREGROUND, false /*allowIo*/);
         mHandlerThread.start();
@@ -2836,7 +2853,7 @@ public final class ActivityManagerService extends ActivityManagerNative
 
         mProcessStats = new ProcessStatsService(this, new File(systemDir, "procstats"));
 
-        mAppOpsService = new AppOpsService(new File(systemDir, "appops.xml"), mHandler);
+        mAppOpsService = new AppOpsService(new File(systemDir, "appops.xml"), mHandler, this);
         mAppOpsService.startWatchingMode(AppOpsManager.OP_RUN_IN_BACKGROUND, null,
                 new IAppOpsCallback.Stub() {
                     @Override public void opChanged(int op, int uid, String packageName) {
@@ -3104,9 +3121,11 @@ public final class ActivityManagerService extends ActivityManagerNative
 
     @Override
     public void batterySendBroadcast(Intent intent) {
-        broadcastIntentLocked(null, null, intent, null, null, 0, null, null, null,
-                AppOpsManager.OP_NONE, null, false, false,
-                -1, Process.SYSTEM_UID, UserHandle.USER_ALL);
+        synchronized (this) {
+            broadcastIntentLocked(null, null, intent, null, null, 0, null, null, null,
+                    AppOpsManager.OP_NONE, null, false, false,
+                    -1, Process.SYSTEM_UID, UserHandle.USER_ALL);
+        }
     }
 
     /**
@@ -3334,20 +3353,17 @@ public final class ActivityManagerService extends ActivityManagerNative
                 mHandler.obtainMessage(VR_MODE_CHANGE_MSG, 0, 0, r));
     }
 
-    private void applyVrModeIfNeededLocked(ActivityRecord r, boolean enable) {
+    private void sendNotifyVrManagerOfSleepState(boolean isSleeping) {
         mHandler.sendMessage(
-                mHandler.obtainMessage(VR_MODE_APPLY_IF_NEEDED_MSG, enable ? 1 : 0, 0, r));
+                mHandler.obtainMessage(NOTIFY_VR_SLEEPING_MSG, isSleeping ? 1 : 0, 0));
     }
 
-    private void applyVrMode(boolean enabled, ComponentName packageName, int userId,
-            ComponentName callingPackage, boolean immediate) {
-        VrManagerInternal vrService =
-                LocalServices.getService(VrManagerInternal.class);
-        if (immediate) {
-            vrService.setVrModeImmediate(enabled, packageName, userId, callingPackage);
-        } else {
-            vrService.setVrMode(enabled, packageName, userId, callingPackage);
+    private void notifyVrManagerOfSleepState(boolean isSleeping) {
+        final VrManagerInternal vrService = LocalServices.getService(VrManagerInternal.class);
+        if (vrService == null) {
+            return;
         }
+        vrService.onSleepStateChanged(isSleeping);
     }
 
     final void showAskCompatModeDialogLocked(ActivityRecord r) {
@@ -6505,8 +6521,19 @@ public final class ActivityManagerService extends ActivityManagerNative
     }
 
     private final ProcessRecord removeProcessNameLocked(final String name, final int uid) {
-        ProcessRecord old = mProcessNames.remove(name, uid);
-        if (old != null) {
+        return removeProcessNameLocked(name, uid, null);
+    }
+
+    private final ProcessRecord removeProcessNameLocked(final String name, final int uid,
+            final ProcessRecord expecting) {
+        ProcessRecord old = mProcessNames.get(name, uid);
+        // Only actually remove when the currently recorded value matches the
+        // record that we expected; if it doesn't match then we raced with a
+        // newly created process and we don't want to destroy the new one.
+        if ((expecting == null) || (old == expecting)) {
+            mProcessNames.remove(name, uid);
+        }
+        if (old != null && old.uidRecord != null) {
             old.uidRecord.numProcs--;
             if (old.uidRecord.numProcs == 0) {
                 // No more processes using this uid, tell clients it is gone.
@@ -6642,17 +6669,25 @@ public final class ActivityManagerService extends ActivityManagerNative
             removeLruProcessLocked(app);
             if (mBackupTarget != null && mBackupTarget.app.pid == pid) {
                 Slog.w(TAG, "Unattached app died before backup, skipping");
-                try {
-                    IBackupManager bm = IBackupManager.Stub.asInterface(
-                            ServiceManager.getService(Context.BACKUP_SERVICE));
-                    bm.agentDisconnected(app.info.packageName);
-                } catch (RemoteException e) {
-                    // Can't happen; the backup manager is local
-                }
+                mHandler.post(new Runnable() {
+                @Override
+                    public void run(){
+                        try {
+                            IBackupManager bm = IBackupManager.Stub.asInterface(
+                                    ServiceManager.getService(Context.BACKUP_SERVICE));
+                            bm.agentDisconnected(app.info.packageName);
+                        } catch (RemoteException e) {
+                            // Can't happen; the backup manager is local
+                        }
+                    }
+                });
             }
             if (isPendingBroadcastProcessLocked(pid)) {
                 Slog.w(TAG, "Unattached app died before broadcast acknowledged, skipping");
                 skipPendingBroadcastLocked(pid);
+            }
+            if (app.persistent && !app.isolated) {
+                addAppLocked(app.info, false, null /* ABI override */);
             }
         } else {
             Slog.w(TAG, "Spurious process start timeout - pid not known for " + app);
@@ -6666,6 +6701,7 @@ public final class ActivityManagerService extends ActivityManagerNative
         // the pid if we are running in multiple processes, or just pull the
         // next app record if we are emulating process with anonymous threads.
         ProcessRecord app;
+        long startTime = SystemClock.uptimeMillis();
         if (pid != MY_PID && pid >= 0) {
             synchronized (mPidsSelfLocked) {
                 app = mPidsSelfLocked.get(pid);
@@ -6744,6 +6780,8 @@ public final class ActivityManagerService extends ActivityManagerNative
             mHandler.sendMessageDelayed(msg, CONTENT_PROVIDER_PUBLISH_TIMEOUT);
         }
 
+        checkTime(startTime, "attachApplicationLocked: before bindApplication");
+        
         if (!normalMode) {
             Slog.i(TAG, "Launching preboot mode app: " + app);
         }
@@ -6802,7 +6840,8 @@ public final class ActivityManagerService extends ActivityManagerNative
                 profileFd = profileFd.dup();
             }
             ProfilerInfo profilerInfo = profileFile == null ? null
-                    : new ProfilerInfo(profileFile, profileFd, samplingInterval, profileAutoStop);
+                : new ProfilerInfo(profileFile, profileFd, samplingInterval, profileAutoStop);
+            checkTime(startTime, "attachApplicationLocked: immediately before bindApplication");
             thread.bindApplication(processName, appInfo, providers, app.instrumentationClass,
                     profilerInfo, app.instrumentationArguments, app.instrumentationWatcher,
                     app.instrumentationUiAutomationConnection, testMode,
@@ -6810,8 +6849,10 @@ public final class ActivityManagerService extends ActivityManagerNative
                     isRestrictedBackupMode || !normalMode, app.persistent,
                     new Configuration(mConfiguration), app.compat,
                     getCommonServicesLocked(app.isolated),
-                    mCoreSettingsObserver.getCoreSettingsLocked());
+                                   mCoreSettingsObserver.getCoreSettingsLocked());
+            checkTime(startTime, "attachApplicationLocked: immediately after bindApplication");
             updateLruProcessLocked(app, false, null);
+            checkTime(startTime, "attachApplicationLocked: after updateLruProcessLocked");
             app.lastRequestedGc = app.lastLowMemory = SystemClock.uptimeMillis();
         } catch (Exception e) {
             // todo: Yikes!  What should we do?  For now we will try to
@@ -6850,6 +6891,7 @@ public final class ActivityManagerService extends ActivityManagerNative
         if (!badApp) {
             try {
                 didSomething |= mServices.attachApplicationLocked(app, processName);
+                checkTime(startTime, "attachApplicationLocked: after mServices.attachApplicationLocked");
             } catch (Exception e) {
                 Slog.wtf(TAG, "Exception thrown starting services in " + app, e);
                 badApp = true;
@@ -6860,6 +6902,7 @@ public final class ActivityManagerService extends ActivityManagerNative
         if (!badApp && isPendingBroadcastProcessLocked(pid)) {
             try {
                 didSomething |= sendPendingBroadcastsLocked(app);
+                checkTime(startTime, "attachApplicationLocked: after sendPendingBroadcastsLocked");
             } catch (Exception e) {
                 // If the app died trying to launch the receiver we declare it 'bad'
                 Slog.wtf(TAG, "Exception thrown dispatching broadcasts in " + app, e);
@@ -6891,6 +6934,7 @@ public final class ActivityManagerService extends ActivityManagerNative
 
         if (!didSomething) {
             updateOomAdjLocked();
+            checkTime(startTime, "attachApplicationLocked: after updateOomAdjLocked");
         }
 
         return true;
@@ -6983,7 +7027,6 @@ public final class ActivityManagerService extends ActivityManagerNative
 
                     // Some stack visibility might change (e.g. docked stack)
                     mStackSupervisor.ensureActivitiesVisibleLocked(null, 0, !PRESERVE_WINDOWS);
-                    applyVrModeIfNeededLocked(mFocusedActivity, true);
                 }
             }
         } finally {
@@ -8780,6 +8823,12 @@ public final class ActivityManagerService extends ActivityManagerNative
                     // Only inspect grants matching package
                     if (packageName == null || perm.sourcePkg.equals(packageName)
                             || perm.targetPkg.equals(packageName)) {
+                        // Hacky solution as part of fixing a security bug; ignore
+                        // grants associated with DownloadManager so we don't have
+                        // to immediately launch it to regrant the permissions
+                        if (Downloads.Impl.AUTHORITY.equals(perm.uri.uri.getAuthority())
+                                && !persistable) continue;
+
                         persistChanged |= perm.revokeModes(persistable
                                 ? ~0 : ~Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION, true);
 
@@ -10644,6 +10693,46 @@ public final class ActivityManagerService extends ActivityManagerNative
     }
 
     /**
+     * Check if the calling UID has a possible chance at accessing the provider
+     * at the given authority and user.
+     */
+    public String checkContentProviderAccess(String authority, int userId) {
+        if (userId == UserHandle.USER_ALL) {
+            mContext.enforceCallingOrSelfPermission(
+                    Manifest.permission.INTERACT_ACROSS_USERS_FULL, TAG);
+            userId = UserHandle.getCallingUserId();
+        }
+
+        ProviderInfo cpi = null;
+        try {
+            cpi = AppGlobals.getPackageManager().resolveContentProvider(authority,
+                    STOCK_PM_FLAGS | PackageManager.GET_URI_PERMISSION_PATTERNS
+                            | PackageManager.MATCH_DIRECT_BOOT_AWARE
+                            | PackageManager.MATCH_DIRECT_BOOT_UNAWARE,
+                    userId);
+        } catch (RemoteException ignored) {
+        }
+        if (cpi == null) {
+            // TODO: make this an outright failure in a future platform release;
+            // until then anonymous content notifications are unprotected
+            //return "Failed to find provider " + authority + " for user " + userId;
+            return null;
+        }
+
+        ProcessRecord r = null;
+        synchronized (mPidsSelfLocked) {
+            r = mPidsSelfLocked.get(Binder.getCallingPid());
+        }
+        if (r == null) {
+            return "Failed to find PID " + Binder.getCallingPid();
+        }
+
+        synchronized (this) {
+            return checkContentProviderPermissionLocked(cpi, r, userId, true);
+        }
+    }
+
+    /**
      * Check if {@link ProcessRecord} has a possible chance at accessing the
      * given {@link ProviderInfo}. Final permission checking is always done
      * in {@link ContentProvider}.
@@ -10967,7 +11056,7 @@ public final class ActivityManagerService extends ActivityManagerNative
                 // pending on the process even though we managed to update its
                 // adj level.  Not sure what to do about this, but at least
                 // the race is now smaller.
-                if (!success) {
+                if (!success || cpr.proc.killedByAm) {
                     // Uh oh...  it looks like the provider's process
                     // has been killed on us.  We need to wait for a new
                     // process to be started, and make sure its death
@@ -11055,7 +11144,7 @@ public final class ActivityManagerService extends ActivityManagerNative
                     // If permissions need a review before any of the app components can run,
                     // we return no provider and launch a review activity if the calling app
                     // is in the foreground.
-                    if (Build.PERMISSIONS_REVIEW_REQUIRED) {
+                    if (mPermissionReviewRequired || Build.PERMISSIONS_REVIEW_REQUIRED) {
                         if (!requestTargetProviderPermissionsReviewIfNeededLocked(cpi, r, userId)) {
                             return null;
                         }
@@ -11888,6 +11977,7 @@ public final class ActivityManagerService extends ActivityManagerNative
             startTimeTrackingFocusedActivityLocked();
             mTopProcessState = ActivityManager.PROCESS_STATE_TOP;
             mStackSupervisor.comeOutOfSleepIfNeededLocked();
+            sendNotifyVrManagerOfSleepState(false);
             updateOomAdjLocked();
         } else if (!mSleeping && shouldSleepLocked()) {
             mSleeping = true;
@@ -11896,6 +11986,7 @@ public final class ActivityManagerService extends ActivityManagerNative
             }
             mTopProcessState = ActivityManager.PROCESS_STATE_TOP_SLEEPING;
             mStackSupervisor.goingToSleepLocked();
+            sendNotifyVrManagerOfSleepState(true);
             updateOomAdjLocked();
 
             // Initialize the wake times of all processes.
@@ -12359,6 +12450,9 @@ public final class ActivityManagerService extends ActivityManagerNative
                 break;
             case ActivityManager.BUGREPORT_OPTION_WEAR:
                 service = "bugreportwear";
+                break;
+            case ActivityManager.BUGREPORT_OPTION_TELEPHONY:
+                service = "bugreportelefony";
                 break;
         }
         if (service == null) {
@@ -13062,6 +13156,33 @@ public final class ActivityManagerService extends ActivityManagerNative
         lp.privateFlags |= WindowManager.LayoutParams.PRIVATE_FLAG_SHOW_FOR_ALL_USERS;
         ((WindowManager)mContext.getSystemService(
                 Context.WINDOW_SERVICE)).addView(v, lp);
+    }
+
+    public final void disableOverlays() {
+        try {
+            IOverlayManager iom = IOverlayManager.Stub.asInterface(
+                    ServiceManager.getService("overlay"));
+            if (iom == null) {
+                return;
+            }
+            Log.d(TAG, "Contacting the Overlay Manager Service for the list of enabled overlays");
+            Map<String, List<OverlayInfo>> allOverlays = iom.getAllOverlays(UserHandle.USER_SYSTEM);
+            if (allOverlays != null) {
+                Log.d(TAG, "The Overlay Manager Service provided the list of enabled overlays");
+                Set<String> set = allOverlays.keySet();
+                for (String targetPackageName : set) {
+                    for (OverlayInfo oi : allOverlays.get(targetPackageName)) {
+                        if (oi.isEnabled()) {
+                            iom.setEnabled(oi.packageName, false, UserHandle.USER_SYSTEM, false);
+                            Log.d(TAG, "Now disabling \'" + oi.packageName + "\'");
+                        }
+                    }
+                }
+            }
+        } catch (RemoteException re) {
+            re.printStackTrace();
+            Log.d(TAG, "RemoteException while trying to contact the Overlay Manager Service!");
+        }
     }
 
     public void noteWakeupAlarm(IIntentSender sender, int sourceUid, String sourcePkg, String tag) {
@@ -17141,6 +17262,7 @@ public final class ActivityManagerService extends ActivityManagerNative
 
         app.crashing = false;
         app.notResponding = false;
+        app.renderThreadTid = 0;
 
         app.resetPackageList(mProcessStats);
         app.unlinkDeathRecipient();
@@ -17219,13 +17341,18 @@ public final class ActivityManagerService extends ActivityManagerNative
         if (mBackupTarget != null && app.pid == mBackupTarget.app.pid) {
             if (DEBUG_BACKUP || DEBUG_CLEANUP) Slog.d(TAG_CLEANUP, "App "
                     + mBackupTarget.appInfo + " died during backup");
-            try {
-                IBackupManager bm = IBackupManager.Stub.asInterface(
-                        ServiceManager.getService(Context.BACKUP_SERVICE));
-                bm.agentDisconnected(app.info.packageName);
-            } catch (RemoteException e) {
-                // can't happen; backup manager is local
-            }
+            mHandler.post(new Runnable() {
+                @Override
+                public void run(){
+                    try {
+                        IBackupManager bm = IBackupManager.Stub.asInterface(
+                                ServiceManager.getService(Context.BACKUP_SERVICE));
+                        bm.agentDisconnected(app.info.packageName);
+                    } catch (RemoteException e) {
+                        // can't happen; backup manager is local
+                    }
+                }
+            });
         }
 
         for (int i = mPendingProcessChanges.size() - 1; i >= 0; i--) {
@@ -17248,7 +17375,7 @@ public final class ActivityManagerService extends ActivityManagerNative
             if (DEBUG_PROCESSES || DEBUG_CLEANUP) Slog.v(TAG_CLEANUP,
                     "Removing non-persistent process during cleanup: " + app);
             if (!replacingPid) {
-                removeProcessNameLocked(app.processName, app.uid);
+                removeProcessNameLocked(app.processName, app.uid, app);
             }
             if (mHeavyWeightProcess == app) {
                 mHandler.sendMessage(mHandler.obtainMessage(CANCEL_HEAVY_NOTIFICATION_MSG,
@@ -17338,8 +17465,10 @@ public final class ActivityManagerService extends ActivityManagerNative
     public List<ActivityManager.RunningServiceInfo> getServices(int maxNum,
             int flags) {
         enforceNotIsolatedCaller("getServices");
+
+        boolean granted = ActiveServices.checkIntractAcrossUsersFullPermission();
         synchronized (this) {
-            return mServices.getRunningServiceInfoLocked(maxNum, flags);
+            return mServices.getRunningServiceInfoLocked(maxNum, flags, granted);
         }
     }
 
@@ -21312,6 +21441,9 @@ public final class ActivityManagerService extends ActivityManagerNative
         int numBServices = 0;
         for (int i=N-1; i>=0; i--) {
             ProcessRecord app = mLruProcesses.get(i);
+            if (app == null) {
+                continue;
+            }
             if (mEnableBServicePropagation && app.serviceb
                     && (app.curAdj == ProcessList.SERVICE_B_ADJ)) {
                 numBServices++;
@@ -21523,6 +21655,9 @@ public final class ActivityManagerService extends ActivityManagerNative
             int curLevel = ComponentCallbacks2.TRIM_MEMORY_COMPLETE;
             for (int i=N-1; i>=0; i--) {
                 ProcessRecord app = mLruProcesses.get(i);
+                if (app == null) {
+                    continue;
+                }
                 if (allChanged || app.procStateChanged) {
                     setProcessTrackerStateLocked(app, trackerMemFactor, now);
                     app.procStateChanged = false;
@@ -22033,6 +22168,9 @@ public final class ActivityManagerService extends ActivityManagerNative
             }
             if (DEBUG_PSS) Slog.d(TAG_PSS, "Dump heap finished for " + path);
             mHandler.sendEmptyMessage(POST_DUMP_HEAP_NOTIFICATION_MSG);
+
+            // Forced gc to clean up the remnant hprof fd.
+            Runtime.getRuntime().gc();
         }
     }
 
@@ -22287,6 +22425,20 @@ public final class ActivityManagerService extends ActivityManagerNative
 
     private final class LocalService extends ActivityManagerInternal {
         @Override
+        public void grantUriPermissionFromIntent(int callingUid, String targetPkg, Intent intent,
+                int targetUserId) {
+            synchronized (ActivityManagerService.this) {
+                ActivityManagerService.this.grantUriPermissionFromIntentLocked(callingUid,
+                        targetPkg, intent, null, targetUserId);
+            }
+        }
+
+        @Override
+        public String checkContentProviderAccess(String authority, int userId) {
+            return ActivityManagerService.this.checkContentProviderAccess(authority, userId);
+        }
+
+        @Override
         public void onWakefulnessChanged(int wakefulness) {
             ActivityManagerService.this.onWakefulnessChanged(wakefulness);
         }
@@ -22301,21 +22453,6 @@ public final class ActivityManagerService extends ActivityManagerNative
         @Override
         public SleepToken acquireSleepToken(String tag) {
             Preconditions.checkNotNull(tag);
-
-            ComponentName requestedVrService = null;
-            ComponentName callingVrActivity = null;
-            int userId = -1;
-            synchronized (ActivityManagerService.this) {
-                if (mFocusedActivity != null) {
-                    requestedVrService = mFocusedActivity.requestedVrComponent;
-                    callingVrActivity = mFocusedActivity.info.getComponentName();
-                    userId = mFocusedActivity.userId;
-                }
-            }
-
-            if (requestedVrService != null) {
-                applyVrMode(false, requestedVrService, userId, callingVrActivity, true);
-            }
 
             synchronized (ActivityManagerService.this) {
                 SleepTokenImpl token = new SleepTokenImpl(tag);

@@ -15,10 +15,12 @@
  */
 package com.android.systemui.qs.tiles;
 
+import android.app.ThemeManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
@@ -59,22 +61,11 @@ public class BatteryTile extends QSTile<QSTile.State> implements BatteryControll
     private boolean mCharging;
     private boolean mDetailShown;
     private boolean mPluggedIn;
-    private int mBatteryStyle;
     private int mBatteryStyleTile;
-
-    public static final int BATTERY_STYLE_HIDDEN    = 3;
-    public static final int BATTERY_STYLE_TEXT      = 5;
 
     public BatteryTile(Host host) {
         super(host);
         mBatteryController = host.getBatteryController();
-        mBatteryStyle = CMSettings.System.getInt(host.getContext().getContentResolver(),
-                CMSettings.System.STATUS_BAR_BATTERY_STYLE, 0);
-        mBatteryStyleTile = Settings.Secure.getInt(host.getContext().getContentResolver(),
-                Settings.Secure.STATUS_BAR_BATTERY_STYLE_TILE, 1);
-        if (mBatteryStyle == BATTERY_STYLE_HIDDEN || mBatteryStyle == BATTERY_STYLE_TEXT || mBatteryStyleTile == 0) {
-            mBatteryStyle = 0;
-        }
     }
 
     @Override
@@ -161,16 +152,10 @@ public class BatteryTile extends QSTile<QSTile.State> implements BatteryControll
         state.icon = new Icon() {
             @Override
             public Drawable getDrawable(Context context) {
-                mBatteryStyle = CMSettings.System.getInt(context.getContentResolver(),
-                        CMSettings.System.STATUS_BAR_BATTERY_STYLE, 0);
                 mBatteryStyleTile = Settings.Secure.getInt(context.getContentResolver(),
-                        Settings.Secure.STATUS_BAR_BATTERY_STYLE_TILE, 1);
-                if (mBatteryStyle == BATTERY_STYLE_HIDDEN || mBatteryStyle == BATTERY_STYLE_TEXT || mBatteryStyleTile == 0) {
-                    mBatteryStyle = 0;
-                }
+                        Settings.Secure.BATTERY_TILE_STYLE, 0);
                 BatteryMeterDrawable drawable =
-                        new BatteryMeterDrawable(context, new Handler(Looper.getMainLooper()),
-                        context.getColor(R.color.batterymeter_frame_color), mBatteryStyle);
+                        new BatteryMeterDrawable(context, new Handler(Looper.getMainLooper()),context.getColor(R.color.qs_batterymeter_frame_color), mBatteryStyleTile,true);
                 drawable.onBatteryLevelChanged(mLevel, mPluggedIn, mCharging);
                 drawable.onPowerSaveChanged(mPowerSave);
                 return drawable;
@@ -216,7 +201,7 @@ public class BatteryTile extends QSTile<QSTile.State> implements BatteryControll
     private final class BatteryDetail implements DetailAdapter, OnClickListener,
             OnAttachStateChangeListener {
         private final BatteryMeterDrawable mDrawable = new BatteryMeterDrawable(mHost.getContext(),
-                new Handler(), mHost.getContext().getColor(R.color.batterymeter_frame_color), mBatteryStyle);
+                new Handler(), mHost.getContext().getColor(R.color.qs_batterymeter_frame_color),mBatteryStyleTile,true);
         private View mCurrentView;
 
         @Override
@@ -302,9 +287,20 @@ public class BatteryTile extends QSTile<QSTile.State> implements BatteryControll
                 }
                 builder.append(info.remainingLabel);
             }
-            ((TextView) mCurrentView.findViewById(R.id.charge_and_estimation)).setText(builder);
+            final TextView mEstimatedCharge = (TextView) mCurrentView.findViewById(
+                    R.id.charge_and_estimation);
+            final UsageView mBatteryUsage = (UsageView) mCurrentView.findViewById(
+                    R.id.battery_usage);
+            if (!ThemeManager.isOverlayEnabled()) {
+                final TypedArray ta = mContext.obtainStyledAttributes(new int[]{
+                        android.R.attr.colorAccent});
+                mEstimatedCharge.setTextColor(ta.getColor(0, 0));
+                mBatteryUsage.setAccentColor(ta.getColor(0, 0));
+                ta.recycle();
+            }
+            mEstimatedCharge.setText(builder);
 
-            info.bindHistory((UsageView) mCurrentView.findViewById(R.id.battery_usage));
+            info.bindHistory(mBatteryUsage);
         }
 
         @Override

@@ -49,23 +49,23 @@ import android.util.Log;
  * <i>These levels are mutually exclusive - you may only specify one of them.</i>
  *
  * <table>
- *     <tr><th>Flag Value</th> 
+ *     <tr><th>Flag Value</th>
  *     <th>CPU</th> <th>Screen</th> <th>Keyboard</th></tr>
  *
  *     <tr><td>{@link #PARTIAL_WAKE_LOCK}</td>
- *         <td>On*</td> <td>Off</td> <td>Off</td> 
+ *         <td>On*</td> <td>Off</td> <td>Off</td>
  *     </tr>
- *     
+ *
  *     <tr><td>{@link #SCREEN_DIM_WAKE_LOCK}</td>
- *         <td>On</td> <td>Dim</td> <td>Off</td> 
+ *         <td>On</td> <td>Dim</td> <td>Off</td>
  *     </tr>
  *
  *     <tr><td>{@link #SCREEN_BRIGHT_WAKE_LOCK}</td>
- *         <td>On</td> <td>Bright</td> <td>Off</td> 
+ *         <td>On</td> <td>Bright</td> <td>Off</td>
  *     </tr>
- *     
+ *
  *     <tr><td>{@link #FULL_WAKE_LOCK}</td>
- *         <td>On</td> <td>Bright</td> <td>Bright</td> 
+ *         <td>On</td> <td>Bright</td> <td>Bright</td>
  *     </tr>
  * </table>
  * </p><p>
@@ -85,13 +85,13 @@ import android.util.Log;
  *         the illumination to remain on once it turns on (e.g. from user activity).  This flag
  *         will force the screen and/or keyboard to turn on immediately, when the WakeLock is
  *         acquired.  A typical use would be for notifications which are important for the user to
- *         see immediately.</td> 
+ *         see immediately.</td>
  *     </tr>
- *     
+ *
  *     <tr><td>{@link #ON_AFTER_RELEASE}</td>
  *         <td>If this flag is set, the user activity timer will be reset when the WakeLock is
- *         released, causing the illumination to remain on a bit longer.  This can be used to 
- *         reduce flicker if you are cycling between wake lock conditions.</td> 
+ *         released, causing the illumination to remain on a bit longer.  This can be used to
+ *         reduce flicker if you are cycling between wake lock conditions.</td>
  *     </tr>
  * </table>
  * <p>
@@ -334,6 +334,14 @@ public final class PowerManager {
     public static final int USER_ACTIVITY_FLAG_INDIRECT = 1 << 1;
 
     /**
+     * User activity flag: Certain hardware buttons are not supposed to
+     * activate hardware button illumination.  This flag indicates a
+     * button event from one of those buttons.
+     * @hide
+     */
+    public static final int USER_ACTIVITY_FLAG_NO_BUTTON_LIGHTS = 1 << 2;
+
+    /**
      * Go to sleep reason code: Going to sleep due by application request.
      * @hide
      */
@@ -473,12 +481,32 @@ public final class PowerManager {
     }
 
     /**
-     * Returns true if the twilight service should be used to adjust screen brightness
-     * policy.  This setting is experimental and disabled by default.
+     * Gets the minimum supported screen brightness setting for VR Mode.
      * @hide
      */
-    public static boolean useTwilightAdjustmentFeature() {
-        return SystemProperties.getBoolean("persist.power.usetwilightadj", false);
+    public int getMinimumScreenBrightnessForVrSetting() {
+        return mContext.getResources().getInteger(
+                com.android.internal.R.integer.config_screenBrightnessForVrSettingMinimum);
+    }
+
+    /**
+     * Gets the maximum supported screen brightness setting for VR Mode.
+     * The screen may be allowed to become dimmer than this value but
+     * this is the maximum value that can be set by the user.
+     * @hide
+     */
+    public int getMaximumScreenBrightnessForVrSetting() {
+        return mContext.getResources().getInteger(
+                com.android.internal.R.integer.config_screenBrightnessForVrSettingMaximum);
+    }
+
+    /**
+     * Gets the default screen brightness for VR setting.
+     * @hide
+     */
+    public int getDefaultScreenBrightnessForVrSetting() {
+        return mContext.getResources().getInteger(
+                com.android.internal.R.integer.config_screenBrightnessForVrSettingDefault);
     }
 
     /**
@@ -1483,5 +1511,16 @@ public final class PowerManager {
     public int getDefaultKeyboardBrightness() {
         return mContext.getResources().getInteger(
                 com.android.internal.R.integer.config_keyboardBrightnessSettingDefault);
+    }
+
+    /**
+     *  powerHint used by some Nvidia devices
+     *  Ignores any bytes of data beyond the first
+     *  @hide
+     */
+    public void powerHint(int hintId, int[] data) {
+        try {
+            mService.powerHint(hintId, data.length > 0 ? data[0] : 0);
+        } catch (RemoteException dummy) {}
     }
 }

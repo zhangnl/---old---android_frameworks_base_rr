@@ -210,9 +210,16 @@ public class StatusBarIconView extends AnimatedImageView {
         if (mIcon == null) {
             return false;
         }
-        Drawable drawable = getIcon(mIcon);
+        Drawable drawable;
+        try {
+            drawable = getIcon(mIcon);
+        } catch (OutOfMemoryError e) {
+            Log.w(TAG, "OOM while inflating " + mIcon.icon + " for slot " + mSlot);
+            return false;
+        }
+
         if (drawable == null) {
-            Log.w(TAG, "No icon for slot " + mSlot);
+            Log.w(TAG, "No icon for slot " + mSlot + "; " + mIcon.icon);
             return false;
         }
         if (withClear) {
@@ -320,7 +327,7 @@ public class StatusBarIconView extends AnimatedImageView {
                 android.R.integer.status_bar_notification_info_maxnum);
         if (mIcon.number > tooBig) {
             str = getContext().getResources().getString(
-                        android.R.string.status_bar_notification_info_overflow);
+                        R.string.status_bar_notification_info_overflow);
         } else {
             NumberFormat f = NumberFormat.getIntegerInstance();
             str = f.format(mIcon.number);

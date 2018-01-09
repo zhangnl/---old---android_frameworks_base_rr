@@ -34,4 +34,87 @@
         <item>@string/quick_settings_location_high_accuracy_label</item>
     </string-array>
 
+    <!-- Cardinal directions for the compass tile -->
+    <string-array name="cardinal_directions">
+        <item>@string/quick_settings_compass_N</item>  <!-- North -->
+        <item>@string/quick_settings_compass_NE</item> <!-- North east -->
+        <item>@string/quick_settings_compass_E</item>  <!-- East -->
+        <item>@string/quick_settings_compass_SE</item> <!-- South east -->
+        <item>@string/quick_settings_compass_S</item>  <!-- South -->
+        <item>@string/quick_settings_compass_SW</item> <!-- South west -->
+        <item>@string/quick_settings_compass_W</item>  <!-- West -->
+        <item>@string/quick_settings_compass_NW</item> <!-- North west -->
+    </string-array>
+
+    <!-- Performance profiles description-->
+    <string-array name="perf_profile_description" translatable="false">
+        <item>@string/accessibility_quick_settings_perf_profile_pwrsv</item>
+        <item>@string/accessibility_quick_settings_perf_profile_bias_power</item>
+        <item>@string/accessibility_quick_settings_perf_profile_bal</item>
+        <item>@string/accessibility_quick_settings_perf_profile_bias_perf</item>
+        <item>@string/accessibility_quick_settings_perf_profile_perf</item>
+    </string-array>
+
+    <!-- Performance profiles announcement-->
+    <string-array name="perf_profile_announcement" translatable="false">
+        <item>@string/accessibility_quick_settings_perf_profile_changed_pwrsv</item>
+        <item>@string/accessibility_quick_settings_perf_profile_changed_bias_power</item>
+        <item>@string/accessibility_quick_settings_perf_profile_changed_bal</item>
+        <item>@string/accessibility_quick_settings_perf_profile_changed_bias_perf</item>
+        <item>@string/accessibility_quick_settings_perf_profile_changed_perf</item>
+    </string-array>
+
+
+    <!-- LiveDisplay -->
+    <string-array name="live_display_entries" translatable="false">
+        <item>@string/live_display_auto</item>
+        <item>@string/live_display_off</item>
+        <item>@string/live_display_day</item>
+        <item>@string/live_display_night</item>
+        <item>@string/live_display_outdoor</item>
+    </string-array>
+
+    <string-array name="live_display_summaries" translatable="false">
+        <item>@string/live_display_auto_summary</item>
+        <item>@string/live_display_off_summary</item>
+        <item>@string/live_display_day_summary</item>
+        <item>@string/live_display_night_summary</item>
+        <item>@string/live_display_outdoor_summary</item>
+    </string-array>
+
+    <string-array name="live_display_values" translatable="false">
+        <item>2</item>
+        <item>0</item>
+        <item>4</item>
+        <item>1</item>
+        <item>3</item>
+    </string-array>
+
+    <!-- LiveDisplay drawables -->
+    <string-array name="live_display_drawables" translatable="false">
+        <item>@drawable/ic_livedisplay_auto</item>
+        <item>@drawable/ic_livedisplay_off</item>
+        <item>@drawable/ic_livedisplay_day</item>
+        <item>@drawable/ic_livedisplay_night</item>
+        <item>@drawable/ic_livedisplay_outdoor</item>
+    </string-array>
+
+    <!-- LiveDisplay description-->
+    <string-array name="live_display_description" translatable="false">
+        <item>@string/accessibility_quick_settings_live_display_auto</item>
+        <item>@string/accessibility_quick_settings_live_display_off</item>
+        <item>@string/accessibility_quick_settings_live_display_day</item>
+        <item>@string/accessibility_quick_settings_live_display_night</item>
+        <item>@string/accessibility_quick_settings_live_display_outdoor</item>
+    </string-array>
+
+    <!-- LiveDisplay announcement-->
+    <string-array name="live_display_announcement" translatable="false">
+        <item>@string/accessibility_quick_settings_live_display_changed_auto</item>
+        <item>@string/accessibility_quick_settings_live_display_changed_off</item>
+        <item>@string/accessibility_quick_settings_live_display_changed_day</item>
+        <item>@string/accessibility_quick_settings_live_display_changed_night</item>
+        <item>@string/accessibility_quick_settings_live_display_changed_outdoor</item>
+    </string-array>
+
 </resources>

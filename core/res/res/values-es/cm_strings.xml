@@ -21,10 +21,6 @@
   <string name="app_killed_message">Aplicación finalizada</string>
   <!-- label for item that screenshots in phone options dialog -->
   <string name="global_action_screenshot">Captura de pantalla</string>
-  <!-- Title of a category of application permissions, listed so the user can choose whether they want to allow the application to do this. -->
-  <string name="permgrouplab_security">Seguridad</string>
-  <!-- Description of a category of application permissions, listed so the user can choose whether they want to allow the application to do this. -->
-  <string name="permgroupdesc_security">Permisos relacionados con la seguridad de la información del dispositivo.</string>
   <!-- label for item that restarts the phone in phone options dialog -->
   <string name="global_action_reboot">Reiniciar</string>
   <!-- label for current user in phone options dialog -->
@@ -140,4 +136,11 @@
   <string name="lock_to_app_toast_no_navbar">Para liberar esta pantalla, mantén pulsado el botón Atrás.</string>
   <!-- Message to show the user when their vendor image doesn't match the build's fingerprint. -->
   <string name="lineage_system_error_manufacturer">Se ha detectado una falta de coincidencia con la imagen del proveedor. Por lo general esto significa que dicha imagen está desactualizada. Asegúrese de que coincida con <xliff:g id="fingerprint">%1$s </xliff:g>.</string>
+  <!-- Single hand mode -->
+  <string name="singlehandmode_click_hint_message">Toca fuera de la pantalla para salir del modo de una sola mano</string>
+  <!-- Strings for tethered notification -->
+  <!-- Shown when the device is tethered -->
+  <string name="tethered_notification_no_device_message">Ningún dispositivo conectado</string>
+  <string name="tethered_notification_one_device_message"><xliff:g id="count">%1$s</xliff:g> dispositivo conectado</string>
+  <string name="tethered_notification_multi_device_message"><xliff:g id="count">%1$s</xliff:g> dispositivos conectados</string>
 </resources>

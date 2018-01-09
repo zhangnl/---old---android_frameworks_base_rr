@@ -47,6 +47,7 @@ import android.os.ServiceManager;
 import android.os.RemoteException;
 import android.provider.Settings;
 import android.util.AttributeSet;
+import android.util.EventLog;
 import android.util.MathUtils;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -88,6 +89,7 @@ import com.android.systemui.statusbar.StatusBarState;
 import com.android.systemui.statusbar.notification.NotificationUtils;
 import com.android.systemui.statusbar.policy.HeadsUpManager;
 import com.android.systemui.statusbar.policy.KeyguardUserSwitcher;
+import com.android.systemui.statusbar.policy.OnHeadsUpChangedListener;
 import com.android.systemui.statusbar.stack.NotificationStackScrollLayout;
 import com.android.systemui.statusbar.stack.StackStateAnimator;
 import com.android.systemui.statusbar.*;
@@ -97,12 +99,14 @@ import com.android.internal.statusbar.IStatusBarService;
 import java.util.List;
 
 import cyanogenmod.providers.CMSettings;
+import com.android.settingslib.Utils;
+
 
 public class NotificationPanelView extends PanelView implements
         ExpandableView.OnHeightChangedListener,
         View.OnClickListener, NotificationStackScrollLayout.OnOverscrollTopChangedListener,
         KeyguardAffordanceHelper.Callback, NotificationStackScrollLayout.OnEmptySpaceClickListener,
-        HeadsUpManager.OnHeadsUpChangedListener {
+        OnHeadsUpChangedListener {
 
     private static final boolean DEBUG = false;
 
@@ -269,6 +273,7 @@ public class NotificationPanelView extends PanelView implements
     private static AlphaAnimation mAlphaAnimation;
     private static boolean mTranslucentQuickSettings;
     private static FrameLayout mInnerBlurredView;
+    private int mAccentColor;
     
     private static Animation.AnimationListener mAnimationListener = new Animation.AnimationListener() {
 
@@ -349,6 +354,7 @@ public class NotificationPanelView extends PanelView implements
         mAfforanceHelper = new KeyguardAffordanceHelper(this, getContext());
         mKeyguardBottomArea.setAffordanceHelper(mAfforanceHelper);
         mLastOrientation = getResources().getConfiguration().orientation;
+        mAccentColor = Utils.getColorAccent(mContext);
         mServices = (ImageButton) findViewById(R.id.tm_services);
         mClearall = (ImageButton) findViewById(R.id.tm_clear_all);
         mServices.setOnClickListener(this);
@@ -514,9 +520,9 @@ public class NotificationPanelView extends PanelView implements
                 R.dimen.qs_falsing_threshold);
         mPositionMinSideMargin = getResources().getDimensionPixelSize(
                 R.dimen.notification_panel_min_side_margin);
-        mStatusBarHeaderHeight = getResources().getDimensionPixelSize(R.dimen.status_bar_header_height);
         mMaxFadeoutHeight = getResources().getDimensionPixelSize(
                 R.dimen.max_notification_fadeout_height);
+        mStatusBarHeaderHeight = getResources().getDimensionPixelSize(R.dimen.status_bar_header_height);
     }
 
     public void updateResources() {
@@ -1394,6 +1400,9 @@ public class NotificationPanelView extends PanelView implements
         } else {
             mKeyguardStatusBar.setAlpha(1f);
             mKeyguardStatusBar.setVisibility(keyguardShowing ? View.VISIBLE : View.INVISIBLE);
+            if (keyguardShowing) {
+                mKeyguardStatusBar.toggleContents(true);
+            }
             if (keyguardShowing && oldState != mStatusBarState) {
                 mKeyguardBottomArea.onKeyguardShowingChanged();
                 mQsContainer.hideImmediately();
@@ -2586,9 +2595,6 @@ public class NotificationPanelView extends PanelView implements
 
         // Hide "No notifications" in QS.
         mNotificationStackScroller.updateEmptyShadeView(mShadeEmpty && !mQsExpanded);
-        if (mStatusBarState == StatusBarState.KEYGUARD) {
-            positionClockAndNotifications();
-        }
     }
 
     public void setQsScrimEnabled(boolean qsScrimEnabled) {
@@ -2833,6 +2839,10 @@ public class NotificationPanelView extends PanelView implements
      * @param keyguardIsShowing whether keyguard is being shown
      */
     public boolean canCameraGestureBeLaunched(boolean keyguardIsShowing) {
+        if (!mStatusBar.isCameraAllowedByAdmin()) {
+            EventLog.writeEvent(0x534e4554, "63787722", -1, "");
+            return false;
+        }
         ResolveInfo resolveInfo = mKeyguardBottomArea.resolveCameraIntent();
         String packageToLaunch = (resolveInfo == null || resolveInfo.activityInfo == null)
                 ? null : resolveInfo.activityInfo.packageName;
@@ -2949,7 +2959,7 @@ public class NotificationPanelView extends PanelView implements
         public void update() {
             ContentResolver resolver = mContext.getContentResolver();
             mOneFingerQuickSettingsIntercept = CMSettings.System.getInt(
-                    resolver, CMSettings.System.STATUS_BAR_QUICK_QS_PULLDOWN, 1);
+                    resolver, CMSettings.System.STATUS_BAR_QUICK_QS_PULLDOWN, 0);
             mDoubleTapToSleepEnabled = CMSettings.System.getInt(
                     resolver, CMSettings.System.DOUBLE_TAP_SLEEP_GESTURE, 1) == 1;
             mDoubleTapToSleepAnywhere = Settings.System.getIntForUser(resolver,
@@ -2959,7 +2969,7 @@ public class NotificationPanelView extends PanelView implements
             mQSStroke = Settings.System.getInt(mContext.getContentResolver(),
                         Settings.System.QS_STROKE, 0);
             mCustomStrokeColor = Settings.System.getInt(mContext.getContentResolver(),
-                        Settings.System.QS_STROKE_COLOR, mContext.getResources().getColor(R.color.system_accent_color));
+                        Settings.System.QS_STROKE_COLOR, mAccentColor);
             mCustomStrokeThickness = Settings.System.getInt(mContext.getContentResolver(),
                         Settings.System.QS_STROKE_THICKNESS, 4);
             mCustomCornerRadius = Settings.System.getInt(mContext.getContentResolver(),
@@ -3012,7 +3022,7 @@ public class NotificationPanelView extends PanelView implements
                 // Don't do anything when disabled, it fucks up themes that use drawable instead of color
             } else if (mQSStroke == 1) { // use accent color for border
                 qSGd.setColor(mContext.getResources().getColor(R.color.system_primary_color));
-                qSGd.setStroke(mCustomStrokeThickness, mContext.getResources().getColor(R.color.system_accent_color),
+                qSGd.setStroke(mCustomStrokeThickness, mAccentColor,
                         mCustomDashWidth, mCustomDashGap);
             } else if (mQSStroke == 2) { // use custom border color
                 qSGd.setColor(mContext.getResources().getColor(R.color.system_primary_color));

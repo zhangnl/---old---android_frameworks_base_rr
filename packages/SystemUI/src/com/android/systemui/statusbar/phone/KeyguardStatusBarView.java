@@ -16,6 +16,10 @@
 
 package com.android.systemui.statusbar.phone;
 
+import android.animation.Animator;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.database.ContentObserver;
 import android.content.res.Configuration;
@@ -28,6 +32,7 @@ import android.provider.Settings;
 import android.os.UserHandle;
 import android.util.AttributeSet;
 import android.util.TypedValue;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
@@ -100,7 +105,7 @@ public class KeyguardStatusBarView extends RelativeLayout
     public static final int FONT_NOTOSERIF_BOLD = 23;
     public static final int FONT_NOTOSERIF_BOLD_ITALIC = 24;
     private int mCarrierLabelFontStyle = FONT_NORMAL;
-    private int mCarrierFontSize = 10;
+    private int mCarrierFontSize = 12;
 
     private BatteryController mBatteryController;
     private KeyguardUserSwitcher mKeyguardUserSwitcher;
@@ -124,6 +129,8 @@ public class KeyguardStatusBarView extends RelativeLayout
             updateVisibilities();
         }
     };
+    private boolean mHideContents;
+    private boolean mTouchStarted;
 
     public KeyguardStatusBarView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -133,7 +140,7 @@ public class KeyguardStatusBarView extends RelativeLayout
 
     private void showStatusBarCarrier() {
         mShowCarrierLabel = Settings.System.getIntForUser(getContext().getContentResolver(),
-                Settings.System.STATUS_BAR_SHOW_CARRIER, 1, UserHandle.USER_CURRENT);
+                Settings.System.STATUS_BAR_SHOW_CARRIER, 0, UserHandle.USER_CURRENT);
         mCarrierLabelFontStyle = Settings.System.getIntForUser(getContext().getContentResolver(),
                 Settings.System.STATUS_BAR_CARRIER_FONT_STYLE, FONT_NORMAL,
                 UserHandle.USER_CURRENT);
@@ -157,6 +164,23 @@ public class KeyguardStatusBarView extends RelativeLayout
         loadDimens();
         updateUserSwitcher();
         updateVisibilities();
+        setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                final int action = event.getAction();
+                if (action == MotionEvent.ACTION_DOWN) {
+                    mTouchStarted = true;
+                } else if (action == MotionEvent.ACTION_UP) {
+                    if (mTouchStarted) {
+                        toggleContents(!mHideContents);
+                    }
+                    mTouchStarted = false;
+                } else if (action == MotionEvent.ACTION_CANCEL) {
+                    mTouchStarted = false;
+                }
+                return true;
+            }
+        });
     }
 
     @Override
@@ -258,7 +282,7 @@ public class KeyguardStatusBarView extends RelativeLayout
             // we don't show the multi-user avatar unless there is more than 1 user on the device.
             if (mUserSwitcherController != null
                     && mUserSwitcherController.getSwitchableUserCount() > 1) {
-                mMultiUserSwitch.setVisibility(View.VISIBLE);
+                mMultiUserSwitch.setVisibility(mHideContents ? View.INVISIBLE : View.VISIBLE);
             } else {
                 mMultiUserSwitch.setVisibility(View.GONE);
             }
@@ -274,7 +298,8 @@ public class KeyguardStatusBarView extends RelativeLayout
             } else {
                 mCarrierLabel.setVisibility(View.GONE);
             }
-        }
+         }
+
        getFontStyle(mCarrierLabelFontStyle);
     }
 
@@ -586,6 +611,86 @@ public class KeyguardStatusBarView extends RelativeLayout
                 break;
             default:
                 break;
+        }
+    }
+
+    public void toggleContents(boolean hideContents) {
+        boolean shouldHideContents = Settings.Secure.getIntForUser(
+                getContext().getContentResolver(), Settings.Secure.LOCK_HIDE_STATUS_BAR, 0,
+                UserHandle.USER_CURRENT) == 1;
+        if (!shouldHideContents) {
+            hideContents = false;
+        }
+        if (mHideContents == hideContents) {
+            return;
+        }
+
+        mHideContents = hideContents;
+        if (mHideContents) {
+            Animator fadeAnimator1 = null;
+            if (mMultiUserSwitch.getVisibility() != View.GONE) {
+                fadeAnimator1 = ObjectAnimator.ofFloat(mMultiUserSwitch, "alpha", 1f, 0f);
+                fadeAnimator1.setDuration(500);
+                fadeAnimator1.setInterpolator(Interpolators.ALPHA_OUT);
+                fadeAnimator1.addListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        mMultiUserSwitch.setVisibility(View.INVISIBLE);
+                    }
+                });
+            }
+            Animator fadeAnimator2 = ObjectAnimator.ofFloat(mSystemIconsSuperContainer, "alpha", 1f, 0f);
+            fadeAnimator2.setDuration(500);
+            fadeAnimator2.setInterpolator(Interpolators.ALPHA_OUT);
+            fadeAnimator2.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    mSystemIconsSuperContainer.setVisibility(View.INVISIBLE);
+                }
+            });
+            Animator fadeAnimator3 = ObjectAnimator.ofFloat(mCarrierLabel, "alpha", 1f, 0f);
+            fadeAnimator3.setDuration(500);
+            fadeAnimator3.setInterpolator(Interpolators.ALPHA_OUT);
+            fadeAnimator3.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    mCarrierLabel.setVisibility(View.INVISIBLE);
+                }
+            });
+            AnimatorSet set = new AnimatorSet();
+            set.playTogether(fadeAnimator2, fadeAnimator3);
+            if (fadeAnimator1 != null) {
+                set.playTogether(fadeAnimator1);
+            }
+            set.start();
+        } else {
+            Animator fadeAnimator1 = null;
+            if (mMultiUserSwitch.getVisibility() != View.GONE) {
+                mMultiUserSwitch.setAlpha(0f);
+                mMultiUserSwitch.setVisibility(View.VISIBLE);
+                fadeAnimator1 = ObjectAnimator.ofFloat(mMultiUserSwitch, "alpha", 0f, 1f);
+                fadeAnimator1.setDuration(500);
+                fadeAnimator1.setInterpolator(Interpolators.ALPHA_IN);
+            }
+
+            mSystemIconsSuperContainer.setAlpha(0f);
+            mSystemIconsSuperContainer.setVisibility(View.VISIBLE);
+            Animator fadeAnimator2 = ObjectAnimator.ofFloat(mSystemIconsSuperContainer, "alpha", 0f, 1f);
+            fadeAnimator2.setDuration(500);
+            fadeAnimator2.setInterpolator(Interpolators.ALPHA_IN);
+
+            mCarrierLabel.setAlpha(0f);
+            mCarrierLabel.setVisibility(View.VISIBLE);
+            Animator fadeAnimator3 = ObjectAnimator.ofFloat(mCarrierLabel, "alpha", 0f, 1f);
+            fadeAnimator3.setDuration(500);
+            fadeAnimator3.setInterpolator(Interpolators.ALPHA_IN);
+
+            AnimatorSet set = new AnimatorSet();
+            set.playTogether(fadeAnimator2, fadeAnimator3);
+            if (fadeAnimator1 != null) {
+                set.playTogether(fadeAnimator1);
+            }
+            set.start();
         }
     }
 }

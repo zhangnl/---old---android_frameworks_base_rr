@@ -21,10 +21,6 @@
   <string name="app_killed_message">Aplicação terminada</string>
   <!-- label for item that screenshots in phone options dialog -->
   <string name="global_action_screenshot">Captura de ecrã</string>
-  <!-- Title of a category of application permissions, listed so the user can choose whether they want to allow the application to do this. -->
-  <string name="permgrouplab_security">Segurança</string>
-  <!-- Description of a category of application permissions, listed so the user can choose whether they want to allow the application to do this. -->
-  <string name="permgroupdesc_security">Permissões relacionadas com as informações de segurança do dispositivo.</string>
   <!-- label for item that restarts the phone in phone options dialog -->
   <string name="global_action_reboot">Reiniciar</string>
   <!-- label for current user in phone options dialog -->
@@ -80,7 +76,7 @@
   <string name="app_ops_keep_device_awake">manter o seu dispositivo acordado</string>
   <string name="app_ops_make_phone_call">fazer uma chamada telefónica</string>
   <string name="app_ops_modify_calendar">atualizar o seu calendário</string>
-  <string name="app_ops_modify_call_log">atualização do registo de chamadas</string>
+  <string name="app_ops_modify_call_log">atualizar o registo de chamadas</string>
   <string name="app_ops_modify_clipboard">modificar a área de transferência</string>
   <string name="app_ops_modify_contacts">atualizar os seus contatos</string>
   <string name="app_ops_modify_settings">atualizar as definições de sistema</string>
@@ -88,11 +84,11 @@
   <string name="app_ops_play_audio">reproduzir áudio</string>
   <string name="app_ops_post_notification">postar uma notificação</string>
   <string name="app_ops_project_media">projetar multimédia</string>
-  <string name="app_ops_read_calendar">ver o seu calendário</string>
-  <string name="app_ops_read_call_log">ver o registo de chamadas</string>
-  <string name="app_ops_read_clipboard">ver a área de transferência</string>
-  <string name="app_ops_read_contacts">ver os seus contactos</string>
-  <string name="app_ops_read_mms">ver as suas mensagens MMS</string>
+  <string name="app_ops_read_calendar">ler o seu calendário</string>
+  <string name="app_ops_read_call_log">ler o registo de chamadas</string>
+  <string name="app_ops_read_clipboard">ler a área de transferência</string>
+  <string name="app_ops_read_contacts">ler os seus contactos</string>
+  <string name="app_ops_read_mms">ler as suas mensagens MMS</string>
   <string name="app_ops_read_sms">ler as suas mensagens SMS</string>
   <string name="app_ops_receive_sms">receber uma mensagem de SMS</string>
   <string name="app_ops_record_audio">gravar áudio</string>
@@ -101,9 +97,9 @@
   <string name="app_ops_start_at_bootup">iniciar no arranque</string>
   <string name="app_ops_toast_window">exibir avisos no ecrã</string>
   <string name="app_ops_toggle_bluetooth">ligar/desligar o bluetooth</string>
-  <string name="app_ops_toggle_mobile_data">alternar o estado dos dados móveis</string>
-  <string name="app_ops_toggle_nfc">alternar NFC</string>
-  <string name="app_ops_toggle_wifi">alternar Wi-Fi</string>
+  <string name="app_ops_toggle_mobile_data">ligar/desligar os dados móveis</string>
+  <string name="app_ops_toggle_nfc">ligar/desligar o NFC</string>
+  <string name="app_ops_toggle_wifi">ligar/desligar o Wi-Fi</string>
   <string name="app_ops_use_alarm_volume">controlar volume do alarme</string>
   <string name="app_ops_use_audio_focus">controlar o foco de áudio</string>
   <string name="app_ops_use_bluetooth_volume">controlar o volume do bluetooth</string>
@@ -140,4 +136,11 @@
   <string name="lock_to_app_toast_no_navbar">Para soltar este ecrã, toque e segure o botão Anterior.</string>
   <!-- Message to show the user when their vendor image doesn't match the build's fingerprint. -->
   <string name="lineage_system_error_manufacturer">Foi detetada uma imagem de fornecedor inválida. Normalmente isto significa que a sua imagem de fornecedor está desatualizada. Por favor, certifique-se que a sua imagem de fornecedor corresponde com <xliff:g id="fingerprint">%1$s</xliff:g>.</string>
+  <!-- Single hand mode -->
+  <string name="singlehandmode_click_hint_message">Toque na área escurecida para sair do modo de uma mão</string>
+  <!-- Strings for tethered notification -->
+  <!-- Shown when the device is tethered -->
+  <string name="tethered_notification_no_device_message">Nenhum dispositivo conectado</string>
+  <string name="tethered_notification_one_device_message"><xliff:g id="count">%1$s</xliff:g> dispositivo conectado</string>
+  <string name="tethered_notification_multi_device_message"><xliff:g id="count">%1$s</xliff:g> dispositivos conectados</string>
 </resources>

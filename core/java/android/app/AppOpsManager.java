@@ -443,8 +443,8 @@ public class AppOpsManager {
             OP_WRITE_SMS,
             OP_RECEIVE_SMS,
             OP_RECEIVE_SMS,
-            OP_RECEIVE_SMS,
-            OP_RECEIVE_SMS,
+            OP_RECEIVE_MMS,
+            OP_RECEIVE_WAP_PUSH,
             OP_SEND_SMS,
             OP_READ_SMS,
             OP_WRITE_SMS,
@@ -1203,6 +1203,15 @@ public class AppOpsManager {
     private static HashMap<String, Integer> sRuntimePermToOp = new HashMap<>();
 
     private static HashMap<String, Integer> sNameToOp = new HashMap<String, Integer>();
+
+    /** @hide */
+    public static final int[] PRIVACY_GUARD_OP_STATES = new int[] {
+            OP_COARSE_LOCATION,
+            OP_READ_CALL_LOG,
+            OP_READ_CONTACTS,
+            OP_READ_CALENDAR,
+            OP_READ_SMS,
+    };
 
     static {
         if (sOpToSwitch.length != _NUM_OP) {

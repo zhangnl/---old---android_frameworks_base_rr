@@ -2834,6 +2834,15 @@ public final class Settings {
                 new InclusiveIntegerRangeValidator(0, 255);
 
         /**
+         * The screen backlight brightness between 0 and 255.
+         * @hide
+         */
+        public static final String SCREEN_BRIGHTNESS_FOR_VR = "screen_brightness_for_vr";
+
+        private static final Validator SCREEN_BRIGHTNESS_FOR_VR_VALIDATOR =
+                new InclusiveIntegerRangeValidator(0, 255);
+
+        /**
          * Control whether to enable automatic brightness mode.
          */
         public static final String SCREEN_BRIGHTNESS_MODE = "screen_brightness_mode";
@@ -3556,6 +3565,12 @@ public static final String PHONE_BLACKLIST_REGEX_ENABLED = "phone_blacklist_rege
         public static final Validator NOTIFICATION_LIGHT_PULSE_VALIDATOR = sBooleanValidator;
 
         /**
+         * Whether to show battery light when DND mode is active
+         * @hide
+         */
+        public static final String BATTERY_LIGHT_ALLOW_ON_DND = "battery_light_allow_on_dnd";
+
+        /**
          * Show pointer location on screen?
          * 0 = no
          * 1 = yes
@@ -3637,6 +3652,24 @@ public static final String PHONE_BLACKLIST_REGEX_ENABLED = "phone_blacklist_rege
          * @hide
          */
         public static final String KEY_VOICEMAIL_BREATH = "voicemail_breath";
+
+        /**
+         * Whether to show the carrier name on the empty shade view
+         * @hide
+         */
+        public static final String EMPTY_SHADE_VIEW_SHOW_CARRIER_NAME = "empty_shade_view_show_carrier_name";
+
+        /**
+         * Whether to show the wifi name on the empty shade view
+         * @hide
+         */
+        public static final String EMPTY_SHADE_VIEW_SHOW_WIFI_NAME = "empty_shade_view_show_wifi_name";
+
+        /**
+         * Color of the text on the empty shade view
+        * @hide
+         */
+        public static final String EMPTY_SHADE_VIEW_TEXT_COLOR = "empty_shade_view_text_color";
 
         /**
          * @deprecated Use {@link android.provider.Settings.Global#KEY_SMS_BREATH} instead
@@ -3862,9 +3895,23 @@ public static final String PHONE_BLACKLIST_REGEX_ENABLED = "phone_blacklist_rege
 
         /**
          * List of wakelock blocks selected
+         * Whether or not to allow quick settings expansion with one swipe on the fingerprint sensor.
+         * @hide
+         */
+        public static final String STATUS_BAR_QUICK_QS_PULLDOWN_FP = "status_bar_quick_qs_pulldown_fp";
+
+        /**
+         * List of wakelock blocks selected
          * @hide
          */
         public static final String WAKELOCK_BLOCKING_LIST = "wakelock_blocking_list";
+
+        /**
+         * Enable blocking wakelock
+         * Boolean value on whether to show weather in the statusbar
+         * @hide
+         */
+        public static final String STATUS_BAR_SHOW_WEATHER = "status_bar_show_weather";
 
         /**
           * Volume keys control cursor in text fields (default is 0)
@@ -3892,6 +3939,13 @@ public static final String PHONE_BLACKLIST_REGEX_ENABLED = "phone_blacklist_rege
          * @hide
          */
         public static final String SCREENSHOT_DELAY = "screenshot_delay";
+
+        /**
+         * Indicates whether ANBI (Accidental navigation button interaction) is enabled.
+         *
+         * @hide
+         */
+        public static final String ANBI_ENABLED = "anbi_enabled";
 
         /**
          * Quick Settings number of columns
@@ -3958,6 +4012,96 @@ public static final String PHONE_BLACKLIST_REGEX_ENABLED = "phone_blacklist_rege
          * @hide
          */
         public static final String NAVBAR_BUTTON_COLOR= "navbar_button_color";
+
+        /**
+         * Navbar Button Custom icon Color Switch
+         * @hide
+         */
+        public static final String NAVBAR_BUTON_CUSTOM_ICON_SWITCH = "navbar_button_custom_icon_switch";
+
+        /**
+         * Pixel Anim Duration
+         * @hide
+         */
+        public static final String OPA_ANIM_DURATION_Y = "opa_anim_duration_y";
+
+        /**
+         * Pixel Anim Duration
+         * @hide
+         */
+        public static final String OPA_ANIM_DURATION_X = "opa_anim_duration_x";
+
+        /**
+         * Headset Connect Player
+         * @hide
+         */
+        public static final String HEADSET_CONNECT_PLAYER = "headset_connect_player";
+
+        /**
+         * Pixel Anim Duration
+         * @hide
+         */
+        public static final String COLLAPSE_ANIMATION_DURATION_RY = "collapse_anim_duration_ry";
+
+        /**
+         * Pixel Anim Duration
+         * @hide
+         */
+        public static final String COLLAPSE_ANIMATION_DURATION_BG = "collapse_anim_duration_bg";
+
+        /**
+         * Pixel Anim Duration
+         * @hide
+         */
+        public static final String RETRACT_ANIMATION_DURATION = "retract_anim_duration";
+
+        /**
+         * Pixel Anim Duration
+         * @hide
+         */
+        public static final String DIAMOND_ANIMATION_DURATION = "diamond_anim_duration";
+
+        /**
+         * Pixel Anim Duration
+         * @hide
+         */
+        public static final String DOTS_RESIZE_DURATION = "dots_anim_duration";
+
+        /**
+         * Pixel Anim Duration
+         * @hide
+         */
+        public static final String HOME_RESIZE_DURATION = "home_resize_anim_duration";
+
+        /**
+         * Pixel Anim Color
+         * @hide
+         */
+        public static final String DOT_TOP_COLOR = "dot_top_color";
+
+        /**
+         * Pixel Anim Color
+         * @hide
+         */
+        public static final String DOT_BOTTOM_COLOR = "dot_bottom_color";
+
+        /**
+         * Pixel Anim Color
+         * @hide
+         */
+        public static final String DOT_LEFT_COLOR = "dot_left_color";
+
+        /**
+         * Pixel Anim Color
+         * @hide
+         */
+        public static final String DOT_RIGHT_COLOR = "dot_right_color";
+
+        /**
+         * Pixel Anim Color
+         * @hide
+         */
+        public static final String DOT_COLOR_SWITCH = "dot_color_switch";
 
  	    /**
          * Position of Custom logo
@@ -4382,6 +4526,18 @@ public static final String PHONE_BLACKLIST_REGEX_ENABLED = "phone_blacklist_rege
         public static final String RR_OTA_FAB = "rr_ota_fab";
 
         /**
+         * Null Signal indicator disabling switch
+         * @hide
+         */
+        public static final String NO_SIM_CLUSTER_SWITCH = "no_sim_cluster_switch";
+
+        /**
+         * Disable No sim icon if sim isnt available
+         * @hide
+         */
+        public static final String DISABLE_NO_SIM = "disable_no_sim";
+
+        /**
          * @hide
          */
         public static final String AMBIENT_DISPLAY_SHOW_BATTERY = "ambient_display_show_battery";
@@ -4488,6 +4644,12 @@ public static final String PHONE_BLACKLIST_REGEX_ENABLED = "phone_blacklist_rege
         public static final String LOCKDATE_FONT_SIZE= "lockdate_font_size";
 
         /**
+         * Recents lock icon
+         * @hide
+         */
+        public static final String RECENTS_LOCK_ICON = "recents_lock_icon";
+
+        /**
          * Change fonts for the system lockscreen date
          *
          * @hide
@@ -4513,6 +4675,13 @@ public static final String PHONE_BLACKLIST_REGEX_ENABLED = "phone_blacklist_rege
          * @hide
          */
         public static final String STATUS_BAR_QUICK_QS_PULLDOWN = "status_bar_quick_qs_pulldown";
+
+        /**
+         *
+         * @hide
+         */
+
+        public static final String QUICK_TILE_ADD = "quick_tile_add";
 
         /**
          * Enable/Disable screenshot sound
@@ -4547,8 +4716,11 @@ public static final String PHONE_BLACKLIST_REGEX_ENABLED = "phone_blacklist_rege
         /**
          * Status bar weather temperature
          * 0: Hide the temperature
-         * 1: Display the temperature with scale
-         * 2: Display the temperature without scale
+         * 1: Display the temperature with scale and image
+         * 2: Display the temperature without scale and with image
+         * 3: Display the temparature with scale and without image
+         * 4: Display the temperature without scale and without image
+         * 5: Display the temperature image
          * @hide
          */
         public static final String STATUS_BAR_SHOW_WEATHER_TEMP = "status_bar_show_weather_temp";
@@ -4579,11 +4751,24 @@ public static final String PHONE_BLACKLIST_REGEX_ENABLED = "phone_blacklist_rege
          */
         public static final String STATUS_BAR_WEATHER_COLOR = "status_bar_weather_color";
 
+        /**
+         * Statusbar weather color setting
+         * @hide
+         */
+        public static final String STATUS_BAR_WEATHER_IMAGE_COLOR = "status_bar_weather_image_color";
+
+
         /*
          * Dyanamic Navbar Switch
          * @hide
          */
         public static final String NAV_BAR_DYNAMIC = "nav_bar_dynamic";
+
+        /*
+         * Whether to light hw keys when screen pressed
+         * @hide
+         */
+        public static final String BUTTON_LIGHT_SCREEN = "button_light_screen";
 
         /*
          * Whether to show the weather info on the lock screen
@@ -4625,8 +4810,14 @@ public static final String PHONE_BLACKLIST_REGEX_ENABLED = "phone_blacklist_rege
          */
         public static final String SHOW_SETTINGS_DRAWER = "show_settings_drawer";
 
+        /**
+         * Whether to hide Settings custom header
+         * @hide
+         */
+        public static final String SHOW_SETTINGS_HEADER = "show_settings_header";
 
-	/*
+
+	    /*
          * show clear all recents button
          *  @hide
          */
@@ -4879,7 +5070,7 @@ public static final String PHONE_BLACKLIST_REGEX_ENABLED = "phone_blacklist_rege
          * Alternative recent apps integration using OmniSwitch
          * @hide
          */
-        public static final String RECENTS_USE_OMNISWITCH = "recents_use_omniswitch";
+        public static final String NAVIGATION_BAR_RECENTS = "navigation_bar_recents";
 
 		/**
          * Whether to mute annoying notifications
@@ -4943,6 +5134,12 @@ public static final String PHONE_BLACKLIST_REGEX_ENABLED = "phone_blacklist_rege
          * @hide
          */
         public static final String VOLUME_DIALOG_STROKE_DASH_GAP = "volume_dialog_stroke_dash_gap";
+
+        /**
+         * Switch to add confirmation to power Dialog
+         * @hide
+         */
+        public static final String CONFIRM_SHUTDOWN_SWITCH = "confirm_shutdown_switch";
 
         /**
          * Transparent power menu and dialogs
@@ -5091,6 +5288,18 @@ public static final String PHONE_BLACKLIST_REGEX_ENABLED = "phone_blacklist_rege
          * String.
          */
         public static final String CUSTOM_CARRIER_LABEL = "custom_carrier_label";
+
+	/*
+         * change lockscreen alpha color
+         * @hide
+         */
+        public static final String LOCKSCREEN_ALPHA = "lockscreen_alpha";
+
+        /**
+         * change lockscreen security alpha color
+         * @hide
+         */
+        public static final String LOCKSCREEN_SECURITY_ALPHA = "lockscreen_security_alpha";
 
         /**
          * Carrier Label Custom Color
@@ -5341,6 +5550,7 @@ public static final String PHONE_BLACKLIST_REGEX_ENABLED = "phone_blacklist_rege
          */
         public static final String PA_PIE_ALWAYS_RIGHT = "pa_pie_always_right";
 
+
         /**
          * Use EdgeGesture Service for system gestures in PhoneWindowManager
          * @hide
@@ -5414,7 +5624,7 @@ public static final String PHONE_BLACKLIST_REGEX_ENABLED = "phone_blacklist_rege
          */
         public static final String LOCK_SCREEN_WEATHER_ICON_COLOR = "lock_screen_weather_icon_color";
 
-	/**
+	   /**
          * Define if screenshot crop & share is active
          * @hide
          */
@@ -5463,6 +5673,12 @@ public static final String PHONE_BLACKLIST_REGEX_ENABLED = "phone_blacklist_rege
         public static final String LOCK_SCREEN_WEATHER_WIND_COLOR = "lock_screen_weather_wind_color";
 
         /**
+         * Smartbar touch sounds
+         * @hide
+         */
+        public static final String NAV_BUTTON_SOUNDS = "nav_button_sounds";
+
+        /**
          * Color of Lockscreen Shortcuts Icons
          * @hide
          */
@@ -5495,6 +5711,21 @@ public static final String PHONE_BLACKLIST_REGEX_ENABLED = "phone_blacklist_rege
          */
         public static final String FORMAL_TEXT_INPUT = "formal_text_input";
 
+
+        /**
+         * Whether to show or hide Weather panel in expanded header
+         * @hide
+         */
+        public static final String HEADER_WEATHER_ENABLED = "header_weather_enabled";
+
+
+        /**
+         * Whether to show or hide Weather panel image in expanded header
+         * @hide
+         */
+        public static final String HEADER_WEATHER_IMAGE_ENABLED = "header_weather_image_enabled";
+
+
         /**
          * Whether to show or hide the Settings Shortcut
          * @hide
@@ -5518,12 +5749,6 @@ public static final String PHONE_BLACKLIST_REGEX_ENABLED = "phone_blacklist_rege
          * @hide
          */
         public static final String QS_EXPAND_INDICATOR_TOGGLE = "qs_expand_indicator_toggle";
-
-        /**
-         * Whether to center or left justify date time group
-         * @hide
-         */
-        public static final String QS_DATE_TIME_CENTER = "qs_date_time_center";
 
         /**
          * Whether to use the custom status bar header or not
@@ -5671,9 +5896,230 @@ public static final String PHONE_BLACKLIST_REGEX_ENABLED = "phone_blacklist_rege
         public static final String RECENT_CARD_TEXT_COLOR = "recent_card_text_color";
 
         /**
+         * show the membar in slim recents
+         *  @hide
+         */
+        public static final String SLIM_RECENTS_MEM_DISPLAY = "slim_recents_mem_display";
+
+        /**
+         * Use the membar in slim recents as clear all button on longclick
+         *  @hide
+         */
+        public static final String SLIM_RECENTS_MEM_DISPLAY_LONG_CLICK_CLEAR =
+                "slim_recents_mem_display_long_click_clear";
+
+       /**
+         * Slim Recents MemBar Color
          * @hide
          */
-        public static final String QS_QUICKBAR_SCROLL_ENABLED = "qs_quickbar_scroll_enabled";
+        public static final String SLIM_MEM_BAR_COLOR= "slim_mem_bar_color";
+
+       /**
+         * Slim Recents MemBar Text Color
+         * @hide
+         */
+        public static final String SLIM_MEM_TEXT_COLOR= "slim_mem_text_color";
+
+        /**
+         * Unlock keystore with fingerprint after reboot
+         * @hide
+         */
+        public static final String FP_UNLOCK_KEYSTORE = "fp_unlock_keystore";
+
+        /**
+         * Whether to use slim recent app sidebar
+         * @hide
+         */
+        public static final String USE_RECENT_APP_SIDEBAR = "use_recent_app_sidebar";
+
+        /**
+         * Recent app sidebar content
+         *
+         * @hide
+         */
+        public static final String RECENT_APP_SIDEBAR_CONTENT = "recent_app_sidebar_content";
+
+        /**
+         * Disable text labels for the slim recent app sidebar items
+         *
+         * @hide
+         */
+        public static final String RECENT_APP_SIDEBAR_DISABLE_LABELS = "recent_app_sidebar_disable_labels";
+
+        /**
+         * Slim recent app sidebar background color
+         *
+         * @hide
+         */
+        public static final String RECENT_APP_SIDEBAR_BG_COLOR = "recent_app_sidebar_bg_color";
+
+        /**
+         * Slim recent app sidebar text color
+         *
+         * @hide
+         */
+        public static final String RECENT_APP_SIDEBAR_TEXT_COLOR = "recent_app_sidebar_text_color";
+
+        /**
+         * Size of recent app sidebar in percent (default = 100).
+         *
+         * @hide
+         */
+        public static final String RECENT_APP_SIDEBAR_SCALE_FACTOR = "recent_app_sidebar_scale_factor";
+
+        /**
+         * Whether the app sidebar should open simultaneously with recents
+         * Alternative: recents are allowed to open before the app sidebar finished inflating
+         *
+         * @hide
+         */
+        public static final String RECENT_APP_SIDEBAR_OPEN_SIMULTANEOUSLY =
+                "recent_app_sidebar_open_simultaneously";
+
+        /**
+         * Whether to show the kill app button in notification guts
+         *
+         * @hide
+         */
+        public static final String NOTIFICATION_GUTS_KILL_APP_BUTTON =
+                "notification_guts_kill_app_button";
+
+        /**
+         * @hide
+         */
+        public static final String OMNIJAWS_WEATHER_ICON_PACK = "omnijaws_weather_icon_pack";
+
+        /**
+         * Disable FC Notifications
+         * @hide
+         */
+        public static final String DISABLE_FC_NOTIFICATIONS = "disable_fc_notifications";
+
+        /**
+         * Whether to display roaming indicator for roaming signal connection
+         * @hide
+         */
+        public static final String ROAMING_INDICATOR_ICON = "roaming_indicator_icon";
+
+        /**
+         * Whether to display cross sign for a data disabled connection
+         * @hide
+         */
+        public static final String DATA_DISABLED_ICON = "data_disabled_icon";
+
+        /**
+         * @hide
+         */
+        public static final String START_SCREEN_STATE_SERVICE = "start_screen_state_service";
+
+        /**
+         * @hide
+         */
+        public static final String SCREEN_STATE_TWOG = "screen_state_twog";
+
+        /**
+         * @hide
+         */
+        public static final String SCREEN_STATE_GPS = "screen_state_gps";
+
+        /**
+         * @hide
+         */
+        public static final String SCREEN_STATE_MOBILE_DATA = "screen_state_mobile_data";
+
+        /**
+         * @hide
+         */
+        public static final String SCREEN_STATE_OFF_DELAY = "screen_state_off_delay";
+
+        /**
+         * @hide
+         */
+        public static final String SCREEN_STATE_ON_DELAY = "screen_state_on_delay";
+
+        /**
+         * Use Dnd when call active
+         * @hide
+         */
+        public static final String DND_WHEN_CALL = "dnd_when_call";
+
+        /**
+         * Whether to show the heads up for dialer when heads up are disabled
+         * @hide
+         */
+        public static final String ALWAYS_HEADSUP_DIALER = "always_headsup_dialer";
+
+       /**
+        * Custom icon pack name to use for Slim Recents
+        * @hide
+        */
+        public static final String SLIM_RECENTS_ICON_PACK = "slim_recents_icon_pack";
+
+        /**
+         * Whether to display data activity arrows for wifi/data connections
+         * @hide
+         */
+        public static final String DATA_ACTIVITY_ARROWS = "data_activity_arrows";
+
+        /**
+         * Whether to show QS footer warnings
+         * @hide
+         */
+        public static final String QS_FOOTER_WARNINGS = "qs_footer_warnings";
+
+        /**
+         * Whether the phone vibrates on call connect
+         * @hide
+         */
+        public static final String VIBRATE_ON_CONNECT = "vibrate_on_connect";
+
+        /**
+         * Whether the phone vibrates on call waiting
+         * @hide
+         */
+        public static final String VIBRATE_ON_CALLWAITING = "vibrate_on_callwaiting";
+
+        /**
+         * Whether the phone vibrates on disconnect
+         * @hide
+         */
+        public static final String VIBRATE_ON_DISCONNECT = "vibrate_on_disconnect";
+
+        /**
+         * Whether to enable the no navigation method notification.
+         * @hide
+         */
+        public static final String NO_NAVIGATION_NOTIFICATION = "no_navigation_notification";
+
+        /**
+         * Wheter to use corner radius for Slim Recents cards
+         * @hide
+         */
+        public static final String SLIM_RECENTS_CORNER_RADIUS = "slim_recents_corner_radius";
+
+        /**
+         * Whether to answer or silence an incoming call with a swipe action on fingerprint scanner
+         * 0 = don't do anything (default)
+         * 1 = answer call with both swipe up and swipe down actions
+         * 2 = swipe up to answer, swipe down to silence the call
+         * @hide
+         */
+        public static final String FP_SWIPE_CALL_ACTIONS = "fp_swipe_call_actions";
+
+        /**
+         * Whether allowing pocket service to register sensors and dispatch informations.
+         *   0 = disabled
+         *   1 = enabled
+         * @author Carlo Savignano
+         * @hide
+         */
+        public static final String POCKET_JUDGE = "pocket_judge";
+
+        /**
+         * Sensor block per-package
+         * @hide
+         */
+        public static final String SENSOR_BLOCK = "sensor_block";
 
         /**
          * Settings to backup. This is here so that it's in the same place as the settings
@@ -5829,6 +6275,8 @@ public static final String PHONE_BLACKLIST_REGEX_ENABLED = "phone_blacklist_rege
             PRIVATE_SETTINGS.add(POINTER_SPEED);
             PRIVATE_SETTINGS.add(LOCK_TO_APP_ENABLED);
             PRIVATE_SETTINGS.add(EGG_MODE);
+            // Pocket mode handler.
+            PRIVATE_SETTINGS.add(POCKET_JUDGE);
         }
 
         /**
@@ -5848,6 +6296,7 @@ public static final String PHONE_BLACKLIST_REGEX_ENABLED = "phone_blacklist_rege
             VALIDATORS.put(DIM_SCREEN, DIM_SCREEN_VALIDATOR);
             VALIDATORS.put(SCREEN_OFF_TIMEOUT, SCREEN_OFF_TIMEOUT_VALIDATOR);
             VALIDATORS.put(SCREEN_BRIGHTNESS, SCREEN_BRIGHTNESS_VALIDATOR);
+            VALIDATORS.put(SCREEN_BRIGHTNESS_FOR_VR, SCREEN_BRIGHTNESS_FOR_VR_VALIDATOR);
             VALIDATORS.put(SCREEN_BRIGHTNESS_MODE, SCREEN_BRIGHTNESS_MODE_VALIDATOR);
             VALIDATORS.put(MODE_RINGER_STREAMS_AFFECTED, MODE_RINGER_STREAMS_AFFECTED_VALIDATOR);
             VALIDATORS.put(MUTE_STREAMS_AFFECTED, MUTE_STREAMS_AFFECTED_VALIDATOR);
@@ -7222,6 +7671,46 @@ public static final String PHONE_BLACKLIST_REGEX_ENABLED = "phone_blacklist_rege
         public static final String PULSE_LAVALAMP_SOLID_SPEED = "lava_lamp_solid_speed";
  
         /**
+         * Pulse Solid units count
+         * @hide
+         */
+        public static final String PULSE_SOLID_UNITS_COUNT = "pulse_solid_units_count";
+
+        /**
+         * Pulse Solid units opacity
+         * @hide
+         */
+        public static final String PULSE_SOLID_UNITS_OPACITY = "pulse_solid_units_opacity";
+
+        /**
+         * Pulse Fading units opacity
+         * @hide
+         */
+        public static final String PULSE_FADING_BLOCKS_OPACITY = "pulse_fading_blocks_opacity";
+
+
+        /**
+         * SmartBar buttons opacity on Pulse
+         * @hide
+         */
+        public static final String PULSE_CUSTOM_BUTTONS_OPACITY = "pulse_custom_buttons_opacity";
+
+        /**
+         * Long press delay for smartbar buttons
+         * @hide
+         * 0: Default (fast)
+         * 1: Normal delay
+         * 2: Long delay
+         */
+        public static final String SMARTBAR_LONGPRESS_DELAY = "smartbar_longpress_delay";
+
+        /**
+         * Scaling value for smartbar custom button icon
+         * @hide
+         */
+        public static final String SMARTBAR_CUSTOM_ICON_SIZE = "smartbar_custom_icon_size";
+
+        /**
          * A flag containing settings used for biometric weak
          * @hide
          */
@@ -7287,6 +7776,11 @@ public static final String PHONE_BLACKLIST_REGEX_ENABLED = "phone_blacklist_rege
         public static final String LOCK_SHOW_ERROR_PATH = "lock_pattern_show_error_path";
 
         /**
+         * @hide
+         */
+        public static final String LOCK_HIDE_STATUS_BAR = "lockscreen_hide_status_bar";
+
+        /**
          * This preference allows the device to be locked given time after screen goes off,
          * subject to current DeviceAdmin policy limits.
          * @hide
@@ -7340,14 +7834,6 @@ public static final String PHONE_BLACKLIST_REGEX_ENABLED = "phone_blacklist_rege
          */
         public static final String LOCK_SCREEN_ALLOW_PRIVATE_NOTIFICATIONS =
                 "lock_screen_allow_private_notifications";
-
-
-        /**
-         * Separate password for encryption and the lockscreen.
-          * @hide
-         */
-        public static final String LOCK_SEPARATE_ENCRYPTION_PASSWORD =
-                "lock_separate_encryption_password";
 
         /**
          * When set by a user, allows notification remote input atop a securely locked screen
@@ -7771,6 +8257,13 @@ public static final String PHONE_BLACKLIST_REGEX_ENABLED = "phone_blacklist_rege
          * @hide
          */
         public static final String LONG_PRESS_TIMEOUT = "long_press_timeout";
+
+        /**
+         * The duration in milliseconds between the first tap's up event and the second tap's
+         * down event for an interaction to be considered part of the same multi-press.
+         * @hide
+         */
+        public static final String MULTI_PRESS_TIMEOUT = "multi_press_timeout";
 
         /**
          * List of the enabled print services.
@@ -8345,6 +8838,36 @@ public static final String PHONE_BLACKLIST_REGEX_ENABLED = "phone_blacklist_rege
                 INCALL_POWER_BUTTON_BEHAVIOR_SCREEN_OFF;
 
         /**
+         * What happens when the user presses the Back button while in-call
+         * and the screen is on.<br/>
+         * <b>Values:</b><br/>
+         * 0 - The Back buttons does nothing different.<br/>
+         * 1 - The Back button hangs up the current call.<br/>
+         *
+         * @hide
+         */
+        public static final String INCALL_BACK_BUTTON_BEHAVIOR = "incall_back_button_behavior";
+
+        /**
+         * INCALL_BACK_BUTTON_BEHAVIOR value for no action.
+         * @hide
+         */
+        public static final int INCALL_BACK_BUTTON_BEHAVIOR_NONE = 0x0;
+
+        /**
+         * INCALL_BACK_BUTTON_BEHAVIOR value for "hang up".
+         * @hide
+         */
+        public static final int INCALL_BACK_BUTTON_BEHAVIOR_HANGUP = 0x1;
+
+        /**
+         * INCALL_POWER_BUTTON_BEHAVIOR default value.
+         * @hide
+         */
+        public static final int INCALL_BACK_BUTTON_BEHAVIOR_DEFAULT =
+                INCALL_BACK_BUTTON_BEHAVIOR_NONE;
+
+        /**
          * Whether the device should wake when the wake gesture sensor detects motion.
          * @hide
          */
@@ -8363,10 +8886,28 @@ public static final String PHONE_BLACKLIST_REGEX_ENABLED = "phone_blacklist_rege
         public static final String QS_BT_EASY_TOGGLE = "qs_bt_easy_toggle";
 
         /**
+         * Recents lock
+         * @hide
+         */
+        public static final String LOCKED_RECENT_TASK_LIST = "locked_recent_task_list";
+
+        /**
          * Enable single click to turn Battery Saver on or off.
          * @hide
          */
         public static final String QS_BATTERY_EASY_TOGGLE = "qs_battery_easy_toggle";
+
+        /**
+         * Enable single click to turn Location services on or off.
+         * @hide
+         */
+        public static final String QS_LOCATION_EASY_TOGGLE = "qs_location_easy_toggle";
+
+        /**
+         * Enable Volume Up to disable all overlays during boot.
+         * @hide
+         */
+        public static final String VOL_UP_DISABLE_OVERLAYS = "vol_up_disable_overlays";
 
         /**
          * Whether the device should doze if configured.
@@ -8380,6 +8921,18 @@ public static final String PHONE_BLACKLIST_REGEX_ENABLED = "phone_blacklist_rege
          * @hide
          */
         public static final String HARDWARE_KEYS_DISABLE = "hardware_keys_disable";
+
+        /**
+         * Allows to store the custom user auto brightness value
+         * @hide
+         */
+        public static final String NIGHT_AUTOBRIGHTNESS_USERVALUE = "night_autobrightness_uservalue";
+
+        /**
+         * Allows to store the custom user manual brightness value
+         * @hide
+         */
+        public static final String NIGHT_MANBRIGHTNESS_USERVALUE = "night_manbrightness_uservalue";
 
         /**
          * Whether the device should pulse on pick up gesture.
@@ -8561,6 +9114,14 @@ public static final String PHONE_BLACKLIST_REGEX_ENABLED = "phone_blacklist_rege
                 "lock_screen_show_notifications";
 
         /**
+         * This preference stores the last stack active task time for each user, which affects what
+         * tasks will be visible in Overview.
+         * @hide
+         */
+        public static final String OVERVIEW_LAST_STACK_ACTIVE_TIME =
+                "overview_last_stack_active_time";
+
+        /**
          * List of TV inputs that are currently hidden. This is a string
          * containing the IDs of all hidden TV inputs. Each ID is encoded by
          * {@link android.net.Uri#encode(String)} and separated by ':'.
@@ -8663,6 +9224,13 @@ public static final String PHONE_BLACKLIST_REGEX_ENABLED = "phone_blacklist_rege
          */
         public static final String FORCE_CHARGE_BATTERY_TEXT = "force_charge_battery_text";
 
+         /**
+         * Whether to pulse the battery icon when charging
+         *
+         * @hide
+         */
+       public static final String STATUS_BAR_PULSE_CHARGING_BATTERY = "status_bar_pulse_charging_battery";
+
         /**
          * Charging symbol near battery text percentage
          * 0: no symbol
@@ -8706,6 +9274,17 @@ public static final String PHONE_BLACKLIST_REGEX_ENABLED = "phone_blacklist_rege
          * @hide
          */
         public static final String NIGHT_DISPLAY_CUSTOM_END_TIME = "night_display_custom_end_time";
+
+        /**
+         * Display style of the battery tile
+         * 0: Display the battery an icon in portrait mode
+         * 2: Display the battery as a circle
+         * 5: Display the battery an icon in landscape mode
+         * 7: Display the battery as solid circle
+         * default: 0
+         * @hide
+         */
+        public static final String BATTERY_TILE_STYLE = "battery_tile_style";
 
         /**
          * Whether brightness should automatically adjust based on twilight state.
@@ -8795,6 +9374,98 @@ public static final String PHONE_BLACKLIST_REGEX_ENABLED = "phone_blacklist_rege
 
         public static final String QS_DATA_ADVANCED = "qs_data_advanced";
 
+        /**
+         * Whether to show PIE controls on the screen.
+         * 0 = OFF
+         * 1 = ON
+         * Changes aspect depends on status bar visibility.
+         * @hide
+         */
+        public static final String PIE_STATE = "pie_state";
+
+        /**
+         * PIE controls current location.
+         * Gravity.BOTTOM (default)
+         * Gravity.LEFT
+         * Gravity.RIGHT
+         * @hide
+         */
+        public static final String PIE_GRAVITY = "pie_gravity";
+
+        /**
+         * Whether to show battery circle in PIE controls.
+         * 0 = Text only
+         * 1 = Circle only
+         * 2 = Text and circle
+         * @hide
+         */
+        public static final String PIE_BATTERY_MODE = "pie_battery_mode";
+
+        /**
+         * PIE controls theme mode.
+         * 0 = AUTO
+         * 1 = WHITE
+         * 2 = DARK
+         * @hide
+         */
+        public static final String PIE_THEME_MODE = "pie_theme_mode";
+
+        /**
+         * PIE controls status indicator mode.
+         * 0 = BOTH
+         * 1 = WIFI ONLY
+         * 2 = MOBILE NETWORK ONLY
+         * 3 = NONE
+         * @hide
+         */
+        public static final String PIE_STATUS_INDICATOR = "pie_status_indicator";
+
+        /**
+         * Used to store the last used system ui flags to make qs settings stick after reboot
+         * @hide
+         */
+        public static final String LAST_SYSTEM_DESIGN_FLAGS = "last_system_design_flags";
+
+        /**
+         * Setting to record how the look and feel of the system should be tweaked. This
+         * should be used in combination with magic.
+         *
+         * @see android.view.View#SYSTEM_DESIGN_FLAG_IMMERSIVE_NAV
+         * @see android.view.View#SYSTEM_DESIGN_FLAG_IMMERSIVE_STATUS
+         * @hide
+         */
+        public static final String SYSTEM_DESIGN_FLAGS = "system_design_flags";
+
+        /**
+         * Settings to reset on user request. They will fall back to their default value (0).
+         *
+         * @hide
+         */
+        public static final String[] SETTINGS_TO_RESET = {
+            PIE_STATE,
+            PIE_GRAVITY
+        };
+
+        /**
+         * Whether dark theme is enabled or not
+         *
+         * @hide
+         */
+        public static final String THEME_PRIMARY_COLOR = "theme_primary_color";
+
+        /**
+         * Whether accent colors for themes are enabled or not
+         *
+         * @hide
+         */
+        public static final String THEME_ACCENT_COLOR = "theme_accent_color";
+
+        /**
+         * Whether accent colors or dark mode is supposed to show first
+         *
+         * @hide
+         */
+        public static final String THEME_SETTINGS_MODE = "theme_settings_mode";
 
         /**
          * Whether or not the automatic storage manager is enabled and should run on the device.
@@ -8888,6 +9559,24 @@ public static final String PHONE_BLACKLIST_REGEX_ENABLED = "phone_blacklist_rege
         public static final String WEB_ACTION_ENABLED = "web_action_enabled";
 
         /**
+         * Has this pairable device been paired or upgraded from a previously paired system.
+         * @hide
+         */
+        public static final String DEVICE_PAIRED = "device_paired";
+
+        /**
+         * Force authorize Substratum (or equivalent) frontend calling packages by Masquerade
+         * @hide
+         */
+        public static final String FORCE_AUTHORIZE_SUBSTRATUM_PACKAGES = "force_authorize_substratum_packages";
+
+        /**
+         * Low brightness level for the advanced night mode tile
+         * @hide
+         */
+        public static final String QS_NIGHT_BRIGHTNESS_VALUE = "qs_night_brightness_value";
+
+        /**
          * This are the settings to be backed up.
          *
          * NOTE: Settings are backed up and restored in the order they appear
@@ -8971,10 +9660,13 @@ public static final String PHONE_BLACKLIST_REGEX_ENABLED = "phone_blacklist_rege
             CAMERA_DOUBLE_TWIST_TO_FLIP_ENABLED,
             CAMERA_DOUBLE_TAP_POWER_GESTURE_DISABLED,
             SYSTEM_NAVIGATION_KEYS_ENABLED,
-            STATUS_BAR_BATTERY_STYLE_TILE,
+            BATTERY_TILE_STYLE,
             DOZE_ENABLED,
             DOZE_PULSE_ON_PICK_UP,
-            DOZE_PULSE_ON_DOUBLE_TAP
+            DOZE_PULSE_ON_DOUBLE_TAP,
+            NFC_PAYMENT_DEFAULT_COMPONENT,
+            ADVANCED_REBOOT,
+            CAMERA_GESTURE_DISABLED
         };
 
         /**
@@ -9367,6 +10059,12 @@ public static final String PHONE_BLACKLIST_REGEX_ENABLED = "phone_blacklist_rege
         public static final String DOCK_SOUNDS_ENABLED = "dock_sounds_enabled";
 
         /**
+         * Whether to play a sound for dock events, only when an accessibility service is on.
+         * @hide
+         */
+        public static final String DOCK_SOUNDS_ENABLED_WHEN_ACCESSIBILITY = "dock_sounds_enabled_when_accessbility";
+
+        /**
          * URI for the "device locked" (keyguard shown) sound.
          * @hide
          */
@@ -9673,6 +10371,13 @@ public static final String PHONE_BLACKLIST_REGEX_ENABLED = "phone_blacklist_rege
         * @hide
         */
        public static final String MOBILE_DATA_ALWAYS_ON = "mobile_data_always_on";
+
+        /**
+         * Size of the event buffer for IP connectivity metrics.
+         * @hide
+         */
+        public static final String CONNECTIVITY_METRICS_BUFFER_SIZE =
+              "connectivity_metrics_buffer_size";
 
        /** {@hide} */
        public static final String NETSTATS_ENABLED = "netstats_enabled";
@@ -10098,6 +10803,13 @@ public static final String PHONE_BLACKLIST_REGEX_ENABLED = "phone_blacklist_rege
         */
        public static final String WIMAX_NETWORKS_AVAILABLE_NOTIFICATION_ON =
                "wimax_networks_available_notification_on";
+
+       /**
+        * Whether we support connecting to Carrier Networks.
+        * @hide
+        **/
+        public static final String WIFI_CONNECT_CARRIER_NETWORKS =
+               "wifi_connect_carrier_networks";
 
        /**
         * Delay (in seconds) before repeating the Wi-Fi networks available notification.
@@ -10527,11 +11239,45 @@ public static final String PHONE_BLACKLIST_REGEX_ENABLED = "phone_blacklist_rege
         public static final String PAC_CHANGE_DELAY = "pac_change_delay";
 
         /**
-         * Setting to turn off captive portal detection. Feature is enabled by
-         * default and the setting needs to be set to 0 to disable it.
+         * Don't attempt to detect captive portals.
          *
          * @hide
          */
+        public static final int CAPTIVE_PORTAL_MODE_IGNORE = 0;
+
+        /**
+         * When detecting a captive portal, display a notification that
+         * prompts the user to sign in.
+         *
+         * @hide
+         */
+        public static final int CAPTIVE_PORTAL_MODE_PROMPT = 1;
+
+        /**
+         * When detecting a captive portal, immediately disconnect from the
+         * network and do not reconnect to that network in the future.
+         *
+         * @hide
+         */
+        public static final int CAPTIVE_PORTAL_MODE_AVOID = 2;
+
+        /**
+         * What to do when connecting a network that presents a captive portal.
+         * Must be one of the CAPTIVE_PORTAL_MODE_* constants above.
+         *
+         * The default for this setting is CAPTIVE_PORTAL_MODE_PROMPT.
+         * @hide
+         */
+        public static final String CAPTIVE_PORTAL_MODE = "captive_portal_mode";
+
+        /**
+         * Setting to turn off captive portal detection. Feature is enabled by
+         * default and the setting needs to be set to 0 to disable it.
+         *
+         * @deprecated use CAPTIVE_PORTAL_MODE_IGNORE to disable captive portal detection
+         * @hide
+         */
+        @Deprecated
         public static final String
                 CAPTIVE_PORTAL_DETECTION_ENABLED = "captive_portal_detection_enabled";
 
@@ -11468,6 +12214,19 @@ public static final String PHONE_BLACKLIST_REGEX_ENABLED = "phone_blacklist_rege
         public static final String DATABASE_DOWNGRADE_REASON = "database_downgrade_reason";
 
         /**
+         * Audio focus mode for ringtones when a wired headset is connected
+         * @hide
+         */
+        public static final String WIRED_RINGTONE_FOCUS_MODE = "wired_ringtone_focus_mode";
+
+       /**
+        * Whether to ignore the representation of outgoing calls set by the network.
+         *
+         * @hide
+         */
+         public static final String CONNECTED_LINE_IDENTIFICATION = "connected_line_identification";
+
+        /**
          * Settings to backup. This is here so that it's in the same place as the settings
          * keys and easy to update.
          *
@@ -11924,6 +12683,24 @@ public static final String PHONE_BLACKLIST_REGEX_ENABLED = "phone_blacklist_rege
          * @hide
          */
         public static final String CELL_ON = "cell_on";
+
+        /**
+         * Whether to show the high temperature warning notification.
+         * @hide
+         */
+        public static final String SHOW_TEMPERATURE_WARNING = "show_temperature_warning";
+
+        /**
+         * Temperature at which the high temperature warning notification should be shown.
+         * @hide
+         */
+        public static final String WARNING_TEMPERATURE = "warning_temperature";
+
+        /**
+         * Whether the diskstats logging task is enabled/disabled.
+         * @hide
+         */
+        public static final String ENABLE_DISKSTATS_LOGGING = "enable_diskstats_logging";
     }
 
     /**

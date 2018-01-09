@@ -587,14 +587,11 @@ public class LockPatternUtils {
             // well, we tried...
         }
 
-        if (userHandle == UserHandle.USER_SYSTEM && !isSeparateEncryptionPasswordEnabled()) {
+        if (userHandle == UserHandle.USER_SYSTEM) {
             // Set the encryption password to default.
             updateEncryptionPassword(StorageManager.CRYPT_TYPE_DEFAULT, null);
             setCredentialRequiredToDecrypt(false);
         }
-
-        getDevicePolicyManager().setActivePasswordState(
-                DevicePolicyManager.PASSWORD_QUALITY_UNSPECIFIED, 0, 0, 0, 0, 0, 0, 0, userHandle);
 
         onAfterChangingPassword(userHandle);
     }
@@ -642,13 +639,13 @@ public class LockPatternUtils {
                         + MIN_LOCK_PATTERN_SIZE + " dots long.");
             }
 
+            setLong(PASSWORD_TYPE_KEY, DevicePolicyManager.PASSWORD_QUALITY_SOMETHING, userId);
             getLockSettings().setLockPattern(patternToString(pattern, userId), savedPattern, userId);
             DevicePolicyManager dpm = getDevicePolicyManager();
 
             // Update the device encryption password.
             if (userId == UserHandle.USER_SYSTEM
-                    && LockPatternUtils.isDeviceEncryptionEnabled()
-                    && !isSeparateEncryptionPasswordEnabled()) {
+                    && LockPatternUtils.isDeviceEncryptionEnabled()) {
                 if (!shouldEncryptWithCredentials(true)) {
                     clearEncryptionPassword();
                 } else {
@@ -659,9 +656,6 @@ public class LockPatternUtils {
 
             setBoolean(PATTERN_EVER_CHOSEN_KEY, true, userId);
 
-            setLong(PASSWORD_TYPE_KEY, DevicePolicyManager.PASSWORD_QUALITY_SOMETHING, userId);
-            dpm.setActivePasswordState(DevicePolicyManager.PASSWORD_QUALITY_SOMETHING,
-                    pattern.size(), 0, 0, 0, 0, 0, 0, userId);
             onAfterChangingPassword(userId);
         } catch (RemoteException re) {
             Log.e(TAG, "Couldn't save lock pattern " + re);
@@ -875,14 +869,13 @@ public class LockPatternUtils {
                         + "of length " + MIN_LOCK_PASSWORD_SIZE);
             }
 
+            final int computedQuality = computePasswordQuality(password);
+            setLong(PASSWORD_TYPE_KEY, Math.max(quality, computedQuality), userHandle);
             getLockSettings().setLockPassword(password, savedPassword, userHandle);
-            getLockSettings().setSeparateProfileChallengeEnabled(userHandle, true, null);
-            int computedQuality = computePasswordQuality(password);
 
             // Update the device encryption password.
             if (userHandle == UserHandle.USER_SYSTEM
-                    && LockPatternUtils.isDeviceEncryptionEnabled()
-                    && !isSeparateEncryptionPasswordEnabled()) {
+                    && LockPatternUtils.isDeviceEncryptionEnabled()) {
                 if (!shouldEncryptWithCredentials(true)) {
                     clearEncryptionPassword();
                 } else {
@@ -894,40 +887,6 @@ public class LockPatternUtils {
                             : StorageManager.CRYPT_TYPE_PASSWORD;
                     updateEncryptionPassword(type, password);
                 }
-            }
-
-            setLong(PASSWORD_TYPE_KEY, Math.max(quality, computedQuality), userHandle);
-            if (computedQuality != DevicePolicyManager.PASSWORD_QUALITY_UNSPECIFIED) {
-                int letters = 0;
-                int uppercase = 0;
-                int lowercase = 0;
-                int numbers = 0;
-                int symbols = 0;
-                int nonletter = 0;
-                for (int i = 0; i < password.length(); i++) {
-                    char c = password.charAt(i);
-                    if (c >= 'A' && c <= 'Z') {
-                        letters++;
-                        uppercase++;
-                    } else if (c >= 'a' && c <= 'z') {
-                        letters++;
-                        lowercase++;
-                    } else if (c >= '0' && c <= '9') {
-                        numbers++;
-                        nonletter++;
-                    } else {
-                        symbols++;
-                        nonletter++;
-                    }
-                }
-                dpm.setActivePasswordState(Math.max(quality, computedQuality),
-                        password.length(), letters, uppercase, lowercase,
-                        numbers, symbols, nonletter, userHandle);
-            } else {
-                // The password is not anything.
-                dpm.setActivePasswordState(
-                        DevicePolicyManager.PASSWORD_QUALITY_UNSPECIFIED,
-                        0, 0, 0, 0, 0, 0, 0, userHandle);
             }
 
             // Add the password to the password history. We assume all
@@ -1286,72 +1245,6 @@ public class LockPatternUtils {
         } catch (RemoteException e) {
             Log.e(TAG, "Error changing password visible state", e);
         }
-    }
-
-    private void updateEncryptionPasswordFromPassword(String password) {
-        if (!TextUtils.isEmpty(password)) {
-            int computedQuality = computePasswordQuality(password);
-            boolean numeric = computedQuality
-                == DevicePolicyManager.PASSWORD_QUALITY_NUMERIC;
-            boolean numericComplex = computedQuality
-                == DevicePolicyManager.PASSWORD_QUALITY_NUMERIC_COMPLEX;
-            int type = numeric || numericComplex ? StorageManager.CRYPT_TYPE_PIN
-                : StorageManager.CRYPT_TYPE_PASSWORD;
-            updateEncryptionPassword(type, password);
-        } else {
-            clearEncryptionPassword();
-        }
-    }
-
-    /**
-     * Set the encryption password separately from the lockscreen password.
-     *
-     * @param password The password to save
-     */
-    public void setSeparateEncryptionPassword(String password) {
-        updateEncryptionPasswordFromPassword(password);
-        setSeparateEncryptionPasswordEnabled(true);
-    }
-
-    /**
-     * Replace the separate encryption password by tying it to the lockscreen
-     * password. No change will occur if the provided lockscreen password is
-     * incorrect.
-     *
-     * @param password The current lockscreen password
-     * @return Whether the lockscreen password was correct.
-     */
-    public void replaceSeparateEncryptionPassword(String password) {
-        updateEncryptionPasswordFromPassword(password);
-        setSeparateEncryptionPasswordEnabled(false);
-    }
-
-    /**
-     * Replace the separate encryption password by tying it to the lockscreen
-     * pattern. No change will occur if the provided lockscreen password is
-     * incorrect.
-     *
-     * @param pattern The current lockscreen pattern
-     * @return Whether the lockscreen pattern was correct.
-     */
-    public void replaceSeparateEncryptionPasswordWithPattern(List<LockPatternView.Cell> pattern,
-            byte gridSize) {
-        String stringPattern = patternToString(pattern, gridSize);
-        updateEncryptionPassword(StorageManager.CRYPT_TYPE_PATTERN, stringPattern);
-        setSeparateEncryptionPasswordEnabled(false);
-    }
-
-    /**
-     * @return Whether the encryption password is separate from the lockscreen password.
-     */
-    public boolean isSeparateEncryptionPasswordEnabled() {
-        return getBoolean(Settings.Secure.LOCK_SEPARATE_ENCRYPTION_PASSWORD,
-                false, UserHandle.USER_SYSTEM);
-    }
-
-    private void setSeparateEncryptionPasswordEnabled(boolean enabled) {
-        setBoolean(Settings.Secure.LOCK_SEPARATE_ENCRYPTION_PASSWORD,
-                enabled, UserHandle.USER_SYSTEM);
     }
 
     /**

@@ -34,6 +34,7 @@
 #include <hardware/power.h>
 #include <hardware_legacy/power.h>
 #include <suspend/autosuspend.h>
+#include <android/keycodes.h>
 
 #include "com_android_server_power_PowerManagerService.h"
 
@@ -67,11 +68,11 @@ static bool checkAndClearExceptionFromCallback(JNIEnv* env, const char* methodNa
     return false;
 }
 
-void android_server_PowerManagerService_userActivity(nsecs_t eventTime, int32_t eventType) {
+void android_server_PowerManagerService_userActivity(nsecs_t eventTime, int32_t eventType,
+        int32_t keyCode) {
     // Tell the power HAL when user activity occurs.
     if (gPowerModule && gPowerModule->powerHint) {
-        int data_param = 0;
-        gPowerModule->powerHint(gPowerModule, POWER_HINT_INTERACTION, &data_param);
+        gPowerModule->powerHint(gPowerModule, POWER_HINT_INTERACTION, NULL);
     }
 
     if (gPowerManagerServiceObj) {
@@ -92,9 +93,14 @@ void android_server_PowerManagerService_userActivity(nsecs_t eventTime, int32_t 
 
         JNIEnv* env = AndroidRuntime::getJNIEnv();
 
+        int flags = 0;
+        if (keyCode == AKEYCODE_VOLUME_UP || keyCode == AKEYCODE_VOLUME_DOWN) {
+            flags |= USER_ACTIVITY_FLAG_NO_BUTTON_LIGHTS;
+        }
+
         env->CallVoidMethod(gPowerManagerServiceObj,
                 gPowerManagerServiceClassInfo.userActivityFromNative,
-                nanoseconds_to_milliseconds(eventTime), eventType, 0);
+                nanoseconds_to_milliseconds(eventTime), eventType, flags);
         checkAndClearExceptionFromCallback(env, "userActivityFromNative");
     }
 }
@@ -145,11 +151,25 @@ static void nativeSetAutoSuspend(JNIEnv* /* env */, jclass /* clazz */, jboolean
     }
 }
 
+static bool isCustomHint(jint hintId) {
+    switch (hintId) {
+        case POWER_HINT_CPU_BOOST:
+        case POWER_HINT_SET_PROFILE:
+            return true;
+        default:
+            return false;
+    }
+}
+
 static void nativeSendPowerHint(JNIEnv *env, jclass clazz, jint hintId, jint data) {
     int data_param = data;
 
     if (gPowerModule && gPowerModule->powerHint) {
-        gPowerModule->powerHint(gPowerModule, (power_hint_t)hintId, &data_param);
+        if (data || isCustomHint(hintId)) {
+            gPowerModule->powerHint(gPowerModule, (power_hint_t)hintId, &data_param);
+        } else {
+            gPowerModule->powerHint(gPowerModule, (power_hint_t)hintId, NULL);
+        }
     }
 }
 

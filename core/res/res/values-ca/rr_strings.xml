@@ -18,7 +18,7 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
   <string name="default_string">Per defecte</string>
   <!-- Vendor mismatched fingerprint warning [CHAR LIMIT=NONE] -->
-  <string name="system_error_vendorprint">La seva imatge de proveidor no coincideix amb la del sistema. Per favor flashee <xliff:g id="string">%s</xliff:g> del seu dispositiu</string>
+  <string name="system_error_vendorprint">La seva imatge de proveidor no coincideix amb la del sistema. Per favor flasheixi <xliff:g id="string">%s</xliff:g> del seu dispositiu</string>
   <string name="global_action_screenrecord">Gravació de pantalla</string>
   <!-- AOKP custom system animations -->
   <string name="animation_fade">Esfumar-se</string>
@@ -44,6 +44,17 @@
   <!-- ADB enabled, but not connected notification title -->
   <string name="adb_not_connected_notification_title">ADB inactiu</string>
   <string name="adb_active_custom_tile_not_connected">inactiu</string>
-  <string name="singlehandmode_click_hint_message">Tocar fora de la pantalla per sortir de la vista de pantalla mini</string>
   <string name="singlehandmode_slide_hint_message">Lliscar el seu dit a través de la barra de navegació per canviar entre les vistes de pantalla estàndard i mini</string>
+  <!-- [CHAR LIMIT=NONE] Title of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
+  <string name="permlab_resetBatteryStats">reseteja estadístiques de batería</string>
+  <!-- [CHAR LIMIT=NONE] Description of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
+  <string name="permdesc_resetBatteryStats">Permet a una aplicació reiniciar les dades de baix nivell d\'us actual de la bateria.</string>
+  <!-- Title of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
+  <string name="permlab_restartUI">reiniciar les barres del sistema</string>
+  <!-- Description of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
+  <string name="permdesc_restartUI">Reiniciar SystemUIService per que les barres del sistema puguin carregar els recursos temàtics</string>
+  <!-- Pocket Lock -->
+  <string name="pocket_lock_message_long_press">Manté el botó d\'engegada per interactuar</string>
+  <!-- Defines the sysfs attribute path used by pocket bridge
+        to communicate pocket state to the pocket judge kernel driver. -->
 </resources>

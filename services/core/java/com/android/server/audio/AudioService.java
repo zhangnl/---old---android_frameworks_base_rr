@@ -644,6 +644,8 @@ public class AudioService extends IAudioService.Stub {
         }
     }
 
+    private int mLaunchPlayer;
+
     // only these packages are allowed to override Pulse visualizer lock
     private static final String[] VISUALIZER_WHITELIST = new String[] {
             "android",
@@ -673,6 +675,9 @@ public class AudioService extends IAudioService.Stub {
 
         Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
         mHasVibrator = vibrator == null ? false : vibrator.hasVibrator();
+
+        mLaunchPlayer = Settings.System.getIntForUser(mContext.getContentResolver(),
+                Settings.System.HEADSET_CONNECT_PLAYER, 0, UserHandle.USER_CURRENT);
 
         // Initialize volume
         int maxVolume = SystemProperties.getInt("ro.config.vc_call_vol_steps",
@@ -2993,8 +2998,10 @@ public class AudioService extends IAudioService.Stub {
     public void setBluetoothScoOnInt(boolean on) {
         if (on) {
             mForcedUseForComm = AudioSystem.FORCE_BT_SCO;
+            AudioSystem.setParameters("BT_SCO=on");
         } else if (mForcedUseForComm == AudioSystem.FORCE_BT_SCO) {
             mForcedUseForComm = AudioSystem.FORCE_NONE;
+            AudioSystem.setParameters("BT_SCO=off");
         }
 
         sendMsg(mAudioHandler, MSG_SET_FORCE_USE, SENDMSG_QUEUE,
@@ -3418,6 +3425,24 @@ public class AudioService extends IAudioService.Stub {
             synchronized (mScoClients) {
                 if (connected) {
                     mBluetoothHeadsetDevice = btDevice;
+                    switch (mLaunchPlayer) {
+                        case 0:
+                        case 1:
+                            //do nothing
+                            break;
+                        case 2:
+                        case 4:
+                            //launch the player if bt headset is not a carkit
+                            if (outDevice != AudioSystem.DEVICE_OUT_BLUETOOTH_SCO_CARKIT) {
+                                launchMusicPlayer();
+                            }
+                            break;
+                        case 3:
+                        case 5:
+                            //launch the player for all bt headsets
+                            launchMusicPlayer();
+                            break;
+                    }
                 } else {
                     mBluetoothHeadsetDevice = null;
                     resetBluetoothSco();
@@ -4425,21 +4450,23 @@ public class AudioService extends IAudioService.Stub {
                 mIndexMap.put(device, index);
 
                 changed = oldIndex != index;
-                if (changed) {
-                    // Apply change to all streams using this one as alias
-                    // if changing volume of current device, also change volume of current
-                    // device on aliased stream
-                    boolean currentDevice = (device == getDeviceForStream(mStreamType));
-                    int numStreamTypes = AudioSystem.getNumStreamTypes();
-                    for (int streamType = numStreamTypes - 1; streamType >= 0; streamType--) {
-                        if (streamType != mStreamType &&
-                                mStreamVolumeAlias[streamType] == mStreamType) {
-                            int scaledIndex = rescaleIndex(index, mStreamType, streamType);
-                            mStreamStates[streamType].setIndex(scaledIndex, device, caller);
-                            if (currentDevice) {
-                                mStreamStates[streamType].setIndex(scaledIndex,
-                                        getDeviceForStream(streamType), caller);
-                            }
+                // Apply change to all streams using this one as alias if:
+                // - the index actually changed OR
+                // - there is no volume index stored for this device on alias stream.
+                // If changing volume of current device, also change volume of current
+                // device on aliased stream
+                final boolean currentDevice = (device == getDeviceForStream(mStreamType));
+                final int numStreamTypes = AudioSystem.getNumStreamTypes();
+                for (int streamType = numStreamTypes - 1; streamType >= 0; streamType--) {
+                    final VolumeStreamState aliasStreamState = mStreamStates[streamType];
+                    if (streamType != mStreamType &&
+                            mStreamVolumeAlias[streamType] == mStreamType &&
+                            (changed || !aliasStreamState.hasIndexForDevice(device))) {
+                        final int scaledIndex = rescaleIndex(index, mStreamType, streamType);
+                        aliasStreamState.setIndex(scaledIndex, device, caller);
+                        if (currentDevice) {
+                            aliasStreamState.setIndex(scaledIndex,
+                                    getDeviceForStream(streamType), caller);
                         }
                     }
                 }
@@ -4473,6 +4500,12 @@ public class AudioService extends IAudioService.Stub {
                     index = mIndexMap.get(AudioSystem.DEVICE_OUT_DEFAULT);
                 }
                 return index;
+            }
+        }
+
+        public boolean hasIndexForDevice(int device) {
+            synchronized (VolumeStreamState.class) {
+                return (mIndexMap.get(device, -1) != -1);
             }
         }
 
@@ -5139,6 +5172,9 @@ public class AudioService extends IAudioService.Stub {
                 Settings.Secure.VOLUME_LINK_NOTIFICATION), false, this);
             mContentResolver.registerContentObserver(CMSettings.System.getUriFor(
                 CMSettings.System.VOLUME_KEYS_CONTROL_RING_STREAM), false, this);
+
+            mContentResolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.HEADSET_CONNECT_PLAYER), false, this);
         }
 
         @Override
@@ -5171,6 +5207,8 @@ public class AudioService extends IAudioService.Stub {
                         CMSettings.System.VOLUME_KEYS_CONTROL_RING_STREAM, 1,
                         UserHandle.USER_CURRENT) == 1;
             }
+            mLaunchPlayer = Settings.System.getIntForUser(mContext.getContentResolver(),
+                Settings.System.HEADSET_CONNECT_PLAYER, 0, UserHandle.USER_CURRENT);
         }
 
         private void updateEncodedSurroundOutput() {
@@ -5466,7 +5504,7 @@ public class AudioService extends IAudioService.Stub {
                         0,
                         null,
                         0);
-                delay = 700;
+                delay = SystemProperties.getInt("audio.noisy.broadcast.delay", 700);
             }
         }
 
@@ -5504,7 +5542,8 @@ public class AudioService extends IAudioService.Stub {
             connType = AudioRoutesInfo.MAIN_HEADSET;
             intent.setAction(Intent.ACTION_HEADSET_PLUG);
             intent.putExtra("microphone", 1);
-            if (state == 1) {
+            if ((mLaunchPlayer == 1 || mLaunchPlayer == 4 || mLaunchPlayer == 5)
+                    && state ==1) {
                 launchMusicPlayer();
             }
         } else if (device == AudioSystem.DEVICE_OUT_WIRED_HEADPHONE ||
@@ -5513,7 +5552,8 @@ public class AudioService extends IAudioService.Stub {
             connType = AudioRoutesInfo.MAIN_HEADPHONES;
             intent.setAction(Intent.ACTION_HEADSET_PLUG);
             intent.putExtra("microphone", 0);
-            if (state == 1) {
+            if ((mLaunchPlayer == 1 || mLaunchPlayer == 4 || mLaunchPlayer == 5)
+                    && state ==1) {
                 launchMusicPlayer();
             }
         } else if (device == AudioSystem.DEVICE_OUT_HDMI ||
@@ -5549,25 +5589,16 @@ public class AudioService extends IAudioService.Stub {
     }
 
     private void launchMusicPlayer() {
-        boolean shouldLaunch = CMSettings.System.getIntForUser(mContext.getContentResolver(),
-                CMSettings.System.HEADSET_CONNECT_PLAYER, 0, UserHandle.USER_CURRENT) == 1;
-        if (!shouldLaunch) {
-            return;
-        }
-
         TelecomManager tm = (TelecomManager) mContext.getSystemService(Context.TELECOM_SERVICE);
-        if (tm.isInCall()) {
-            return;
-        }
-
-        Intent intent = new Intent(Intent.ACTION_MAIN);
-        intent.addCategory(Intent.CATEGORY_APP_MUSIC);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
-        try {
-            mContext.startActivity(intent);
-        } catch (ActivityNotFoundException e) {
-            Log.w(TAG, "No music player Activity was found");
+        if (!tm.isInCall()) {
+            try {
+                Intent playerIntent = new Intent(Intent.ACTION_MAIN);
+                playerIntent.addCategory(Intent.CATEGORY_APP_MUSIC);
+                playerIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                mContext.startActivity(playerIntent);
+            } catch (ActivityNotFoundException | IllegalArgumentException e) {
+                Log.w(TAG, "No music player Activity could be found");
+            }
         }
     }
 

@@ -135,7 +135,6 @@
     <string name="accessibility_quick_settings_pulse_changed_off">Pulse turned off</string>
     <string name="accessibility_quick_settings_pulse_changed_on">Pulse turned on</string>
     <string name="quick_settings_pulse_label">Navigation bar visualizer</string>
-    <string name="quick_settings_pie">Pie</string>
     <string name="quick_settings_ambient_display_label">Ambient display</string>
     <string name="accessibility_quick_settings_ambient_display_off">Ambient display off.</string>
     <string name="accessibility_quick_settings_ambient_display_on">Ambient display on</string>
@@ -158,16 +157,58 @@
     <string name="quick_settings_location_gps_only_label">Device only</string>
     <string name="quick_settings_location_high_accuracy_label">High accuracy</string>
     <string name="quick_settings_location_off_label">Location off</string>
+    <string name="quick_settings_location_off_custom_label">Location</string>
     <!-- Language\Locale Tile -->
     <string name="quick_settings_locale_label">Language</string>
     <string name="quick_settings_locale_more_locales_toast">Please configure multiple languages to enable toggle functionality</string>
+    <!-- Suspend Actions Tile -->
+    <string name="accessibility_quick_settings_suspend_actions_on">Suspend actions enabled</string>
+    <string name="accessibility_quick_settings_suspend_actions_off">Suspend actions disabled</string>
+    <string name="quick_settings_suspend_actions_label">Suspend actions</string>
+    <!-- Perf Profile Tile -->
+    <string name="qs_tile_performance">Battery mode</string>
+    <!-- Content description of the battery mode tile in quick settings when on, power save mode (not shown on the screen). [CHAR LIMIT=NONE] -->
+    <string name="accessibility_quick_settings_perf_profile_pwrsv">Battery mode: power save mode.</string>
+    <!-- Content description of the battery mode tile in quick settings when on, balanced mode (not shown on the screen). [CHAR LIMIT=NONE] -->
+    <string name="accessibility_quick_settings_perf_profile_bal">Battery mode: balanced mode.</string>
+    <!-- Content description of the battery mode tile in quick settings when on, performance mode (not shown on the screen). [CHAR LIMIT=NONE] -->
+    <string name="accessibility_quick_settings_perf_profile_perf">Battery mode: performance mode.</string>
+    <!-- Content description of the battery mode tile in quick settings when on, efficiency mode (not shown on the screen). [CHAR LIMIT=NONE] -->
+    <string name="accessibility_quick_settings_perf_profile_bias_power">Battery mode: efficiency mode.</string>
+    <!-- Content description of the battery mode tile in quick settings when on, quick mode (not shown on the screen). [CHAR LIMIT=NONE] -->
+    <string name="accessibility_quick_settings_perf_profile_bias_perf">Battery mode: quick mode.</string>
+    <!-- Announcement made when the battery mode tile changes to power save (not shown on the screen). [CHAR LIMIT=NONE] -->
+    <string name="accessibility_quick_settings_perf_profile_changed_pwrsv">Battery mode changed to power save mode.</string>
+    <!-- Announcement made when the battery mode tile changes to balanced (not shown on the screen). [CHAR LIMIT=NONE] -->
+    <string name="accessibility_quick_settings_perf_profile_changed_bal">Battery mode changed to balanced mode.</string>
+    <!-- Announcement made when the battery mode tile changes to performance (not shown on the screen). [CHAR LIMIT=NONE] -->
+    <string name="accessibility_quick_settings_perf_profile_changed_perf">Battery mode changed to performance mode.</string>
+    <!-- Announcement made when the battery mode tile changes to efficiency (not shown on the screen). [CHAR LIMIT=NONE] -->
+    <string name="accessibility_quick_settings_perf_profile_changed_bias_power">Battery mode changed to efficiency mode.</string>
+    <!-- Announcement made when the battery mode tile changes to quick (not shown on the screen). [CHAR LIMIT=NONE] -->
+    <string name="accessibility_quick_settings_perf_profile_changed_bias_perf">Battery mode changed to quick mode.</string>
+    <string name="quick_settings_performance_profile_detail_title">Battery mode</string>
 
-    <!-- PA Pie controls -->
-    <string name="pie_date_format" translatable="false">ccc, dd MMM yyyy</string>
-    <string name="pie_hour_format_12" translatable="false">hh:mm</string>
-    <string name="pie_hour_format_24" translatable="false">HH:mm</string>
-    <string name="pie_am_pm" translatable="false">a</string>
-
+    <!-- Compass QS Tile -->
+    <string name="quick_settings_compass_label">Compass</string>
+    <string name="quick_settings_compass_value"><xliff:g id="degrees">%1$.0f</xliff:g>\u00b0 <xliff:g id="direction">%2$s</xliff:g></string>
+    <string name="quick_settings_compass_init">Initializing\u2026</string>
+    <string name="accessibility_quick_settings_compass_off">Compass off.</string>
+    <string name="accessibility_quick_settings_compass_on">Compass on.</string>
+    <string name="accessibility_quick_settings_compass_changed_off">Compass turned off.</string>
+    <string name="accessibility_quick_settings_compass_changed_on">Compass turned on.</string>
+    <string name="quick_settings_compass_N">N</string>
+    <string name="quick_settings_compass_NE">NE</string>
+    <string name="quick_settings_compass_E">E</string>
+    <string name="quick_settings_compass_SE">SE</string>
+    <string name="quick_settings_compass_S">S</string>
+    <string name="quick_settings_compass_SW">SW</string>
+    <string name="quick_settings_compass_W">W</string>
+    <string name="quick_settings_compass_NW">NW</string>
+    <!-- HW Keys Tile -->
+    <string name="accessibility_quick_settings_hwkeys_on">HW keys on</string>
+    <string name="accessibility_quick_settings_hwkeys_off">HW keys off</string>
+    <string name="quick_settings_hwkeys_label">HW keys</string>
     <!-- Kill app toast -->
     <string name="app_killed_message">App Killed</string>
 
@@ -213,4 +254,63 @@
     <string name="message_keep_one_launcher">Should keep at least one home activity!</string>
     <string name="tm_clear_task">CLEAR</string>
 
+    <!-- Slim Recents -->
+    <string name="recents_multiwin_warning">A multiwindow session is already active.\nJust tap an app if you want to dock it now.</string>
+    <string name="recents_multiwin_nolastapp">You removed all recents, please choose an app from launcher or drawer.</string>
+    <string name="slim_recent_keyguard">Unlock your device to view recents</string>
+    <string name="slim_recent_pinned">Unpin the screen to view recents</string>
+
+    <!-- Slim recents app sidebar queue app toast -->
+    <string name="toast_recents_queue_app">Launch %s after closing recents</string>
+    <string name="toast_recents_cancel_queued_app">Cancelled app launch</string>
+
+    <!-- Kill button in notification guts -->
+    <string name="force_stop_dlg_title">Force stop?</string>
+    <string name="force_stop_dlg_text">If you force stop an app, it may misbehave.</string>
+    <string name="dlg_ok">OK</string>
+    <string name="dlg_cancel">Cancel</string>
+    <string name="kill">Kill App</string>
+
+    <!-- OmniJAWS -->
+    <string name="omnijaws_service_error">Error</string>
+    <string name="omnijaws_service_unkown">No weather data</string>
+    <string name="omnijaws_detail_header">Weather</string>
+    <string name="omnijaws_label_default">Weather</string>
+    <string name="omnijaws_current_text">Now</string>
+    <string name="omnijaws_package_not_available">OmniJaws not available</string>
+    <string name="omnijaws_service_error_long">Error loading weather data</string>
+    <string name="omnijaws_service_disabled">Service disabled</string>
+    <string name="omnijaws_service_error_marker" translatable="false">*</string>
+
+    <!-- Weather string format in expanded statusbar header -->
+    <string name="status_bar_weather_format"><xliff:g id="temp">%1$s</xliff:g></string>
+
+    <!-- volte icon switch -->
+    <string name="status_bar_volte">VOLTE</string>
+
+    <!-- Indication on the keyguard that is shown when the device is charging with a dash charger. Should match keyguard_plugged_in_dash_charging [CHAR LIMIT=40]-->
+    <string name="keyguard_indication_dash_charging_time">Dash Charging (<xliff:g id="charging_time_left" example="4 hours and 2 minutes">%s</xliff:g> until full)</string>
+    <string name="keyguard_plugged_in_dash_charging">Dash Charging</string>
+
+    <!-- vpn icon switch -->
+    <string name="status_bar_vpn">VPN</string>
+    <!-- data saver icon switch -->
+    <string name="status_bar_datasaver">Data saver</string>
+
+    <!-- No navigation warning notification -->
+    <string name="no_navigation_warning_title">All navigation methods disabled</string>
+    <string name="no_navigation_warning_text">Tap to enable</string>
+
+    <!-- Pie controls -->
+    <string name="pie_date_format">EEEE, dd MMMM yyyy</string>
+    <string name="pie_hour_format_12">hh:mm</string>
+    <string name="pie_hour_format_24">HH:mm</string>
+    <string name="pie_am_pm">a</string>
+    <string name="pie_state_name">Pie controls</string>
+    <string name="pie_state_summary">Use pie controls while in immersive mode</string>
+    <string name="pie_battery_level">"BATTERY LEVEL "</string>
+    <string name="quick_settings_pie">Pie</string>
+
+    <string name="accessibility_data_sim">Current Data Sim</string>
+    <string name="data_switch_started">Switching data SIM, this may take up to a minute...</string>
 </resources>

@@ -69,7 +69,6 @@ public class NavigationBarView extends LinearLayout {
     boolean mVertical;
     boolean mScreenOn;
     boolean mLeftInLandscape;
-
     private int mCurrentRotation = -1;
 
     boolean mShowMenu;
@@ -107,6 +106,13 @@ public class NavigationBarView extends LinearLayout {
     private Configuration mConfiguration;
 
     private NavigationBarInflaterView mNavigationInflaterView;
+
+    private int mBasePaddingBottom;
+    private int mBasePaddingLeft;
+    private int mBasePaddingRight;
+    private int mBasePaddingTop;
+
+    private ViewGroup mNavigationBarContents;
 
     private class NavTransitionListener implements TransitionListener {
         private boolean mBackTransitioning;
@@ -363,7 +369,7 @@ public class NavigationBarView extends LinearLayout {
         }
 
         final boolean showImeButton = ((hints & StatusBarManager.NAVIGATION_HINT_IME_SHOWN) != 0);
-        getImeSwitchButton().setVisibility(showImeButton ? View.VISIBLE : View.INVISIBLE);
+        getImeSwitchButton().setVisibility(showImeButton ? View.INVISIBLE : View.INVISIBLE);
         getImeSwitchButton().setImageDrawable(mImeIcon);
 
         // Update menu button in case the IME state has changed.
@@ -425,7 +431,7 @@ public class NavigationBarView extends LinearLayout {
     }
 
     public void setWakeAndUnlocking(boolean wakeAndUnlocking) {
-        setUseFadingAnimations(wakeAndUnlocking);
+        setUseFadingAnimations(!wakeAndUnlocking);
         mWakeAndUnlocking = wakeAndUnlocking;
         updateLayoutTransitionsEnabled();
     }
@@ -481,6 +487,18 @@ public class NavigationBarView extends LinearLayout {
         getMenuButton().setVisibility(shouldShow ? View.VISIBLE : View.INVISIBLE);
     }
 
+    public void shiftNavigationBarItems(int horizontalShift, int verticalShift) {
+        if (mNavigationBarContents == null) {
+            return;
+        }
+
+        mNavigationBarContents.setPaddingRelative(mBasePaddingLeft + horizontalShift,
+                mBasePaddingTop + verticalShift,
+                mBasePaddingRight + horizontalShift,
+                mBasePaddingBottom - verticalShift);
+        invalidate();
+    }
+
     @Override
     public void onFinishInflate() {
         mNavigationInflaterView = (NavigationBarInflaterView) findViewById(
@@ -489,6 +507,13 @@ public class NavigationBarView extends LinearLayout {
         mNavigationInflaterView.setButtonDispatchers(mButtonDisatchers);
 
         getImeSwitchButton().setOnClickListener(mImeSwitcherClickListener);
+
+        mNavigationBarContents = (ViewGroup) getCurrentView().findViewById(R.id.nav_buttons);
+
+        mBasePaddingLeft = mNavigationBarContents.getPaddingStart();
+        mBasePaddingTop = mNavigationBarContents.getPaddingTop();
+        mBasePaddingRight = mNavigationBarContents.getPaddingEnd();
+        mBasePaddingBottom = mNavigationBarContents.getPaddingBottom();
 
         try {
             WindowManagerGlobal.getWindowManagerService().registerDockedStackListener(new Stub() {
@@ -586,6 +611,8 @@ public class NavigationBarView extends LinearLayout {
 
         updateTaskSwitchHelper();
         setNavigationIconHints(mNavigationIconHints, true);
+
+        getHomeButton().setVertical(mVertical);
     }
 
     private void updateTaskSwitchHelper() {

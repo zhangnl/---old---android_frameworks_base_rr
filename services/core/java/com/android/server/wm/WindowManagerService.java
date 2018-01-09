@@ -202,8 +202,10 @@ import static android.view.WindowManager.LayoutParams.TYPE_DREAM;
 import static android.view.WindowManager.LayoutParams.TYPE_INPUT_METHOD;
 import static android.view.WindowManager.LayoutParams.TYPE_INPUT_METHOD_DIALOG;
 import static android.view.WindowManager.LayoutParams.TYPE_NAVIGATION_BAR;
+import static android.view.WindowManager.LayoutParams.TYPE_PHONE;
 import static android.view.WindowManager.LayoutParams.TYPE_PRIVATE_PRESENTATION;
 import static android.view.WindowManager.LayoutParams.TYPE_QS_DIALOG;
+import static android.view.WindowManager.LayoutParams.TYPE_SLIM_RECENTS;
 import static android.view.WindowManager.LayoutParams.TYPE_STATUS_BAR;
 import static android.view.WindowManager.LayoutParams.TYPE_TOAST;
 import static android.view.WindowManager.LayoutParams.TYPE_VOICE_INTERACTION;
@@ -494,6 +496,9 @@ public class WindowManagerService extends IWindowManager.Stub
      */
     final ArrayList<WindowState> mForceRemoves = new ArrayList<>();
 
+    /** List of window currently causing non-system overlay windows to be hidden. */
+    private ArrayList<WindowState> mHidingNonSystemOverlayWindows = new ArrayList<WindowState>();
+
     /**
      * Windows that clients are waiting to have drawn.
      */
@@ -536,6 +541,7 @@ public class WindowManagerService extends IWindowManager.Stub
 
     boolean mDisplayReady;
     boolean mSafeMode;
+    boolean mDisableOverlays;
     boolean mDisplayEnabled = false;
     boolean mSystemBooted = false;
     boolean mForceDisplayEnabled = false;
@@ -1887,6 +1893,8 @@ public class WindowManagerService extends IWindowManager.Stub
             case TYPE_STATUS_BAR:
             case TYPE_NAVIGATION_BAR:
             case TYPE_INPUT_METHOD_DIALOG:
+            case TYPE_SLIM_RECENTS:
+            case TYPE_PHONE:
                 return true;
         }
         return false;
@@ -2155,6 +2163,9 @@ public class WindowManagerService extends IWindowManager.Stub
                     win.setAppOpVisibilityLw(false);
                 }
             }
+
+            final boolean hideSystemAlertWindows = !mHidingNonSystemOverlayWindows.isEmpty();
+            win.setForceHideNonSystemOverlayWindowIfNeeded(hideSystemAlertWindows);
 
             if (type == TYPE_APPLICATION_STARTING && token.appWindowToken != null) {
                 token.appWindowToken.startingWindow = win;
@@ -2603,6 +2614,7 @@ public class WindowManagerService extends IWindowManager.Stub
 
         mPendingRemove.remove(win);
         mResizingWindows.remove(win);
+        updateNonSystemOverlayWindowsVisibilityIfNeeded(win, false /* surfaceShown */);
         mWindowsChanged = true;
         if (DEBUG_WINDOW_MOVEMENT) Slog.v(TAG_WM, "Final remove of window: " + win);
 
@@ -8225,6 +8237,36 @@ public class WindowManagerService extends IWindowManager.Stub
         return mSafeMode;
     }
 
+    public boolean ShouldDisableAllOverlays() {
+      return Settings.Secure.getInt(mContext.getContentResolver(),
+            Settings.Secure.VOL_UP_DISABLE_OVERLAYS, 0) == 1;
+    }
+
+    public boolean detectDisableOverlays() {
+        if (!mInputMonitor.waitForInputDevicesReady(
+                INPUT_DEVICES_READY_FOR_SAFE_MODE_DETECTION_TIMEOUT_MILLIS)) {
+            Slog.w(TAG_WM, "Devices still not ready after waiting "
+                   + INPUT_DEVICES_READY_FOR_SAFE_MODE_DETECTION_TIMEOUT_MILLIS
+                   + " milliseconds before attempting to detect safe mode.");
+        }
+
+        int volumeUpState = mInputManager.getKeyCodeState(-1, InputDevice.SOURCE_ANY,
+                KeyEvent.KEYCODE_VOLUME_UP);
+        if (ShouldDisableAllOverlays()) {
+            mDisableOverlays = volumeUpState > 0;
+        } else {
+            mDisableOverlays = false;
+        }
+
+        if (mDisableOverlays) {
+            Log.i(TAG_WM, "All enabled theme overlays will now be disabled.");
+        } else {
+            Log.i(TAG_WM, "System will boot with enabled overlays intact.");
+        }
+
+        return mDisableOverlays;
+    }
+
     public void displayReady() {
         for (Display display : mDisplays) {
             displayReady(display.getDisplayId());
@@ -10497,6 +10539,11 @@ public class WindowManagerService extends IWindowManager.Stub
     }
 
     @Override
+    public void sendCustomAction(Intent intent) {
+        mPolicy.sendCustomAction(intent);
+    }
+
+    @Override
     public void lockNow(Bundle options) {
         mPolicy.lockNow(options);
     }
@@ -11844,6 +11891,36 @@ public class WindowManagerService extends IWindowManager.Stub
         public boolean isDockedDividerResizing() {
             synchronized (mWindowMap) {
                 return getDefaultDisplayContentLocked().getDockedDividerController().isResizing();
+            }
+        }
+    }
+
+    void updateNonSystemOverlayWindowsVisibilityIfNeeded(WindowState win, boolean surfaceShown) {
+        if (!win.hideNonSystemOverlayWindowsWhenVisible()) {
+            return;
+        }
+        final boolean systemAlertWindowsHidden = !mHidingNonSystemOverlayWindows.isEmpty();
+        if (surfaceShown) {
+            if (!mHidingNonSystemOverlayWindows.contains(win)) {
+                mHidingNonSystemOverlayWindows.add(win);
+            }
+        } else {
+            mHidingNonSystemOverlayWindows.remove(win);
+        }
+
+        final boolean hideSystemAlertWindows = !mHidingNonSystemOverlayWindows.isEmpty();
+
+        if (systemAlertWindowsHidden == hideSystemAlertWindows) {
+            return;
+        }
+
+        final int numDisplays = mDisplayContents.size();
+        for (int displayNdx = 0; displayNdx < numDisplays; ++displayNdx) {
+            final WindowList windows = mDisplayContents.valueAt(displayNdx).getWindowList();
+            final int numWindows = windows.size();
+            for (int winNdx = 0; winNdx < numWindows; ++winNdx) {
+                final WindowState w = windows.get(winNdx);
+                w.setForceHideNonSystemOverlayWindowIfNeeded(hideSystemAlertWindows);
             }
         }
     }

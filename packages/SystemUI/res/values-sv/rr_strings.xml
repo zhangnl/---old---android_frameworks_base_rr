@@ -92,15 +92,20 @@
   <string name="quick_settings_caffeine_label">Koffein</string>
   <string name="accessibility_quick_settings_caffeine_off">Koffein av</string>
   <string name="accessibility_quick_settings_caffeine_on">Koffein på</string>
+  <string name="qs_app_picker_title">Appväljare</string>
   <string name="quick_settings_lte_label">LTE</string>
   <string name="lte_on">LTE På </string>
   <string name="lte_off">LTE Av</string>
   <string name="quick_settings_nfc">NFC</string>
   <string name="quick_settings_nfc_label">NFC</string>
   <string name="quick_settings_nfc_off">NFC Av</string>
-  <string name="quick_settings_screenrecord">SKärminspelning</string>
+  <string name="quick_settings_screenrecord">Skärminspelning</string>
   <string name="quick_settings_screenrecord_on">Spelar in...</string>
   <string name="quick_settings_navigation_bar">Navigeringsfält</string>
+  <string name="quick_settings_smartbar">Smart stapel</string>
+  <string name="quick_settings_smartbar_off">Smart stapel av</string>
+  <string name="quick_settings_fling">Svepning</string>
+  <string name="quick_settings_fling_off">Svepning av</string>
   <string name="quick_settings_appcirclebar_title">Stapel för appsnurra</string>
   <string name="quick_settings_appcirclebar_on">Stapel för appsnurra - På</string>
   <string name="quick_settings_appcirclebar_off">Stapel för appsnurra - Av</string>
@@ -118,23 +123,85 @@
   <string name="accessibility_quick_settings_pulse_on">Pulsering på</string>
   <string name="accessibility_quick_settings_pulse_changed_off">Pulsering avstängd</string>
   <string name="accessibility_quick_settings_pulse_changed_on">Pulsering aktiverad</string>
-  <string name="quick_settings_pie">Paj</string>
+  <string name="quick_settings_pulse_label">Navigationsfältet Visualizer</string>
+  <string name="quick_settings_ambient_display_label">Omgivande Display</string>
+  <string name="accessibility_quick_settings_ambient_display_off">Omgivande skärm av.</string>
+  <string name="accessibility_quick_settings_ambient_display_on">Omgivande Display på</string>
+  <string name="accessibility_quick_settings_ambient_display_changed_off">Omgivande skärm avstängd</string>
+  <string name="accessibility_quick_settings_ambient_display_changed_on">Omgivande Display påslagen</string>
   <string name="quick_settings_heads_up_label">Heads up</string>
   <string name="accessibility_quick_settings_heads_up_off">Heads up - av</string>
   <string name="accessibility_quick_settings_heads_up_on">Heads up - på</string>
   <string name="accessibility_quick_settings_heads_up_changed_off">Heads-up avstängd</string>
   <string name="accessibility_quick_settings_heads_up_changed_on">Heads-up aktiverad</string>
   <!-- Location Tile -->
+  <string name="accessibility_quick_settings_location_battery_saving">Platsrapportering: batterisparläge.</string>
+  <string name="accessibility_quick_settings_location_gps_only">Platsrapportering: endast sensorer</string>
+  <string name="accessibility_quick_settings_location_high_accuracy">Platsrapportering: hög precision.</string>
+  <string name="accessibility_quick_settings_location_changed_battery_saving">Platsrapportering ändras till batterisparläge.</string>
+  <string name="accessibility_quick_settings_location_changed_gps_only">Platsrapportering ändras till endast sensorer.</string>
+  <string name="accessibility_quick_settings_location_changed_high_accuracy">Platsrapportering ändrats till hög noggrannhet.</string>
   <string name="quick_settings_location_detail_title">Platsläge</string>
   <string name="quick_settings_location_battery_saving_label">Batterisparläge</string>
+  <string name="quick_settings_location_gps_only_label">Endast enhet</string>
   <string name="quick_settings_location_high_accuracy_label">Hög noggrannhet</string>
   <string name="quick_settings_location_off_label">Plats av</string>
+  <string name="quick_settings_location_off_custom_label">Plats</string>
   <!-- Language\Locale Tile -->
   <string name="quick_settings_locale_label">Språk</string>
-  <!-- PA Pie controls -->
+  <string name="quick_settings_locale_more_locales_toast">Konfigurera flera språk om du vill växla mellan funktioner</string>
+  <!-- Suspend Actions Tile -->
+  <string name="accessibility_quick_settings_suspend_actions_on">Avbryt åtgärder aktiverat</string>
+  <string name="accessibility_quick_settings_suspend_actions_off">Avbryt åtgärder inaktiverat</string>
+  <string name="quick_settings_suspend_actions_label">Avbryt åtgärder</string>
+  <!-- Perf Profile Tile -->
+  <string name="qs_tile_performance">Batteritid</string>
+  <!-- Content description of the battery mode tile in quick settings when on, power save mode (not shown on the screen). [CHAR LIMIT=NONE] -->
+  <string name="accessibility_quick_settings_perf_profile_pwrsv">Batteriläge: strömsparläge.</string>
+  <!-- Content description of the battery mode tile in quick settings when on, balanced mode (not shown on the screen). [CHAR LIMIT=NONE] -->
+  <string name="accessibility_quick_settings_perf_profile_bal">Batteriläge: balanserat läge.</string>
+  <!-- Content description of the battery mode tile in quick settings when on, performance mode (not shown on the screen). [CHAR LIMIT=NONE] -->
+  <string name="accessibility_quick_settings_perf_profile_perf">Batteriläge: prestandaläge.</string>
+  <!-- Content description of the battery mode tile in quick settings when on, efficiency mode (not shown on the screen). [CHAR LIMIT=NONE] -->
+  <string name="accessibility_quick_settings_perf_profile_bias_power">Batteriläge: effektivt läge.</string>
+  <!-- Content description of the battery mode tile in quick settings when on, quick mode (not shown on the screen). [CHAR LIMIT=NONE] -->
+  <string name="accessibility_quick_settings_perf_profile_bias_perf">Batteriläge: snabbt läge.</string>
+  <!-- Announcement made when the battery mode tile changes to power save (not shown on the screen). [CHAR LIMIT=NONE] -->
+  <string name="accessibility_quick_settings_perf_profile_changed_pwrsv">Batteriläge ändrat till strömsparläge.</string>
+  <!-- Announcement made when the battery mode tile changes to balanced (not shown on the screen). [CHAR LIMIT=NONE] -->
+  <string name="accessibility_quick_settings_perf_profile_changed_bal">Batteriläge ändrat till balanserat läge.</string>
+  <!-- Announcement made when the battery mode tile changes to performance (not shown on the screen). [CHAR LIMIT=NONE] -->
+  <string name="accessibility_quick_settings_perf_profile_changed_perf">Batteriläge ändrat till prestandaläge.</string>
+  <!-- Announcement made when the battery mode tile changes to efficiency (not shown on the screen). [CHAR LIMIT=NONE] -->
+  <string name="accessibility_quick_settings_perf_profile_changed_bias_power">Batteriläge ändrat till effektivt läge.</string>
+  <!-- Announcement made when the battery mode tile changes to quick (not shown on the screen). [CHAR LIMIT=NONE] -->
+  <string name="accessibility_quick_settings_perf_profile_changed_bias_perf">Batteriläge ändrat till snabbt läge.</string>
+  <string name="quick_settings_performance_profile_detail_title">Batteritid</string>
+  <!-- Compass QS Tile -->
+  <string name="quick_settings_compass_label">Kompass</string>
+  <string name="quick_settings_compass_value"><xliff:g id="degrees">%1$.0f</xliff:g>\u00b0 <xliff:g id="direction">%2$s</xliff:g></string>
+  <string name="quick_settings_compass_init">Initierar\u2026</string>
+  <string name="accessibility_quick_settings_compass_off">Kompass av.</string>
+  <string name="accessibility_quick_settings_compass_on">Kompass på.</string>
+  <string name="accessibility_quick_settings_compass_changed_off">Kompass av.</string>
+  <string name="accessibility_quick_settings_compass_changed_on">Kompass på.</string>
+  <string name="quick_settings_compass_N">N</string>
+  <string name="quick_settings_compass_NE">NÖ</string>
+  <string name="quick_settings_compass_E">Ö</string>
+  <string name="quick_settings_compass_SE">SO</string>
+  <string name="quick_settings_compass_S">S</string>
+  <string name="quick_settings_compass_SW">SV</string>
+  <string name="quick_settings_compass_W">V</string>
+  <string name="quick_settings_compass_NW">NV</string>
+  <!-- HW Keys Tile -->
+  <string name="accessibility_quick_settings_hwkeys_on">Hårdvaruknappar på</string>
+  <string name="accessibility_quick_settings_hwkeys_off">Hårdvaruknappar av</string>
+  <string name="quick_settings_hwkeys_label">Hårdvaruknappar</string>
   <!-- Kill app toast -->
   <string name="app_killed_message">App tvångsavslutad</string>
   <!-- Heads up snooze toast -->
+  <string name="heads_up_snooze_message_one_minute"><xliff:g id="string">%s</xliff:g> • Pikande avisering snoozar i 1 minut.</string>
+  <string name="heads_up_snooze_message"><xliff:g id="string">%s</xliff:g> • Pikande avisering snoozar i <xliff:g id="number">%d</xliff:g> minuter.</string>
   <!-- Screenshot action -->
   <string name="screenshot_abort_title">Ingen skärmdump tagen</string>
   <string name="screenshot_abort_text">Åtgärden avbröts</string>
@@ -165,4 +232,51 @@
   <string name="tasklist_memory_usage">"Ledigt/Totalt Minne: <xliff:g id="number">%s </xliff:g> / <xliff:g id="name"> %s </xliff:g>"</string>
   <string name="message_keep_one_launcher">Bör behålla minst en hem aktivitet!</string>
   <string name="tm_clear_task">RENSA</string>
+  <!-- Slim Recents -->
+  <string name="recents_multiwin_warning">En flerfönstersession är redan aktiv. \nTryck bara på en app om du vill docka den nu.</string>
+  <string name="recents_multiwin_nolastapp">Du rensade alla senaste appar, välj en app från applådan.</string>
+  <string name="slim_recent_keyguard">Lås upp enheten för att visa senaste appar</string>
+  <string name="slim_recent_pinned">Lossa på skärmen för att visa senaste appar</string>
+  <!-- Slim recents app sidebar queue app toast -->
+  <string name="toast_recents_queue_app">Starta %s efter stängning av tidigare appar</string>
+  <string name="toast_recents_cancel_queued_app">Avbröt appstart</string>
+  <!-- Kill button in notification guts -->
+  <string name="force_stop_dlg_title">Tvinga avslut?</string>
+  <string name="force_stop_dlg_text">Om du tvingar appen att avslutas kanske den inte fungerar som den ska.</string>
+  <string name="dlg_ok">OK</string>
+  <string name="dlg_cancel">Avbryt</string>
+  <string name="kill">Döda app</string>
+  <!-- OmniJAWS -->
+  <string name="omnijaws_service_error">Error</string>
+  <string name="omnijaws_service_unkown">Ingen väderinfo</string>
+  <string name="omnijaws_detail_header">Väder</string>
+  <string name="omnijaws_label_default">Väder</string>
+  <string name="omnijaws_current_text">Nu</string>
+  <string name="omnijaws_package_not_available">OmniJaws är inte tillgänglig.</string>
+  <string name="omnijaws_service_error_long">Fel vid inläsning av väderdata.</string>
+  <string name="omnijaws_service_disabled">Tjänsten har inaktiverats</string>
+  <!-- Weather string format in expanded statusbar header -->
+  <string name="status_bar_weather_format"><xliff:g id="temp">%1$s</xliff:g> - <xliff:g id="condition">%2$s</xliff:g></string>
+  <!-- volte icon switch -->
+  <string name="status_bar_volte">VOLTE</string>
+  <!-- Indication on the keyguard that is shown when the device is charging with a dash charger. Should match keyguard_plugged_in_dash_charging [CHAR LIMIT=40]-->
+  <string name="keyguard_indication_dash_charging_time">Dash laddning (<xliff:g id="laddtid_kvar" exempel="4 timmar och 2 minuter">%s</xliff:g> till full)</string>
+  <string name="keyguard_plugged_in_dash_charging">Dash laddning</string>
+  <!-- vpn icon switch -->
+  <string name="status_bar_vpn">VPN</string>
+  <!-- data saver icon switch -->
+  <string name="status_bar_datasaver">Databesparing</string>
+  <!-- No navigation warning notification -->
+  <string name="no_navigation_warning_title">Alla navigeringsmetoder inaktiverade</string>
+  <string name="no_navigation_warning_text">Knacka lätt för att aktivera</string>
+  <!-- Pie controls -->
+  <string name="pie_date_format">EEEE, dd MMMM yyyy</string>
+  <string name="pie_hour_format_12">hh:mm</string>
+  <string name="pie_hour_format_24">HH:mm</string>
+  <string name="pie_state_name">Pie-kontroller</string>
+  <string name="pie_state_summary">Använd pie-kontroller i integrerat läge</string>
+  <string name="pie_battery_level">"BATTERINIVÅ "</string>
+  <string name="quick_settings_pie">Paj</string>
+  <string name="accessibility_data_sim">Nuvarande data-Sim</string>
+  <string name="data_switch_started">Byter data-SIM, detta kan ta upp till en minut...</string>
 </resources>

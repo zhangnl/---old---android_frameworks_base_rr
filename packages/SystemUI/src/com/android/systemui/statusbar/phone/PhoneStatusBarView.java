@@ -43,6 +43,13 @@ public class PhoneStatusBarView extends PanelBar {
 
     PhoneStatusBar mBar;
 
+    private int mBasePaddingBottom;
+    private int mBasePaddingLeft;
+    private int mBasePaddingRight;
+    private int mBasePaddingTop;
+
+    private ViewGroup mStatusBarContents;
+
     boolean mIsFullyOpenedPanel = false;
     private final PhoneStatusBarTransitions mBarTransitions;
     private ScrimController mScrimController;
@@ -115,10 +122,22 @@ public class PhoneStatusBarView extends PanelBar {
 
     private void showStatusBarCarrier() {
         mShowCarrierLabel = Settings.System.getIntForUser(getContext().getContentResolver(),
-                Settings.System.STATUS_BAR_SHOW_CARRIER, 1, UserHandle.USER_CURRENT);
+                Settings.System.STATUS_BAR_SHOW_CARRIER, 0, UserHandle.USER_CURRENT);
         mCarrierLabelFontStyle = Settings.System.getIntForUser(getContext().getContentResolver(),
                 Settings.System.STATUS_BAR_CARRIER_FONT_STYLE, FONT_NORMAL,
                 UserHandle.USER_CURRENT);
+    }
+
+    public void shiftStatusBarItems(int horizontalShift, int verticalShift) {
+        if (mStatusBarContents == null) {
+            return;
+        }
+
+        mStatusBarContents.setPaddingRelative(mBasePaddingLeft + horizontalShift,
+                mBasePaddingTop + verticalShift,
+                mBasePaddingRight + horizontalShift,
+                mBasePaddingBottom - verticalShift);
+        invalidate();
     }
 
     @Override
@@ -126,6 +145,13 @@ public class PhoneStatusBarView extends PanelBar {
         mCarrierLabel = (TextView) findViewById(R.id.statusbar_carrier_text);
         updateVisibilities();
         mBarTransitions.init();
+
+        mStatusBarContents = (ViewGroup) findViewById(R.id.status_bar_contents);
+
+        mBasePaddingLeft = mStatusBarContents.getPaddingStart();
+        mBasePaddingTop = mStatusBarContents.getPaddingTop();
+        mBasePaddingRight = mStatusBarContents.getPaddingEnd();
+        mBasePaddingBottom = mStatusBarContents.getPaddingBottom();
     }
 
     private void updateVisibilities() {

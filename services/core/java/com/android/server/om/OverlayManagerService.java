@@ -56,6 +56,7 @@ import com.android.server.FgThread;
 import com.android.server.IoThread;
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
+import com.android.server.ThemeService;
 import com.android.server.pm.Installer;
 import com.android.server.pm.UserManagerService;
 
@@ -194,6 +195,8 @@ public final class OverlayManagerService extends SystemService {
 
     static final String TAG = "OverlayManager";
 
+    static final String PERMISSION_MODIFY_OVERLAYS = "oms.permission.MODIFY_OVERLAYS";
+
     static final boolean DEBUG = false;
 
     private final Object mLock = new Object();
@@ -210,9 +213,12 @@ public final class OverlayManagerService extends SystemService {
 
     private final AtomicBoolean mPersistSettingsScheduled = new AtomicBoolean(false);
 
+    private Context mContext;
+
     public OverlayManagerService(@NonNull final Context context,
             @NonNull final Installer installer) {
         super(context);
+        mContext = context;
         mSettingsFile =
             new AtomicFile(new File(Environment.getDataSystemDirectory(), "overlays.xml"));
         mPackageManager = new PackageManagerHelper();
@@ -460,6 +466,8 @@ public final class OverlayManagerService extends SystemService {
                 return false;
             }
 
+            ThemeService.returnToDefaultTheme(mContext);
+
             final long ident = Binder.clearCallingIdentity();
             try {
                 synchronized (mLock) {
@@ -528,14 +536,6 @@ public final class OverlayManagerService extends SystemService {
         }
 
         @Override
-        public void onShellCommand(@NonNull final FileDescriptor in,
-                @NonNull final FileDescriptor out, @NonNull final FileDescriptor err,
-                @NonNull final String[] args, @NonNull final ResultReceiver resultReceiver) {
-            (new OverlayManagerShellCommand(this)).exec(
-                    this, in, out, err, args, resultReceiver);
-        }
-
-        @Override
         protected void dump(@NonNull final FileDescriptor fd, @NonNull final PrintWriter pw,
                 @NonNull final String[] argv) {
             enforceDumpPermission("dump");
@@ -559,7 +559,7 @@ public final class OverlayManagerService extends SystemService {
          */
         private int handleIncomingUser(final int userId, @NonNull final String message) {
             if (getContext().checkCallingOrSelfPermission(
-                    android.Manifest.permission.MODIFY_OVERLAYS) == PackageManager.PERMISSION_GRANTED) {
+                    PERMISSION_MODIFY_OVERLAYS) == PackageManager.PERMISSION_GRANTED) {
                 return userId;
             } else {
                 return ActivityManager.handleIncomingUser(Binder.getCallingPid(),
@@ -578,7 +578,7 @@ public final class OverlayManagerService extends SystemService {
             final int callingUid = Binder.getCallingUid();
 
             if (getContext().checkCallingOrSelfPermission(
-                    android.Manifest.permission.MODIFY_OVERLAYS) != PackageManager.PERMISSION_GRANTED) {
+                    PERMISSION_MODIFY_OVERLAYS) != PackageManager.PERMISSION_GRANTED) {
                 if (callingUid != Process.SYSTEM_UID && callingUid != 0) {
                     getContext().enforceCallingOrSelfPermission(
                             android.Manifest.permission.CHANGE_CONFIGURATION, message);

@@ -22,6 +22,7 @@
         android:sharedUserId="android.uid.systemui"
         coreApp="true">
 
+    <uses-permission android:name="android.permission.CHANGE_CONFIGURATION" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -45,7 +46,8 @@
     <uses-permission android:name="android.permission.CONFIGURE_WIFI_DISPLAY" />
     <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
     <uses-permission android:name="android.permission.GET_APP_OPS_STATS" />
-
+    <uses-permission android:name="android.permission.WRITE_APN_SETTINGS"/>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <!-- Screen recording -->
     <uses-permission android:name="android.permission.ACCESS_SURFACE_FLINGER" />
 
@@ -173,6 +175,9 @@
     <uses-permission android:name="cyanogenmod.permission.WRITE_SETTINGS" />
     <uses-permission android:name="cyanogenmod.permission.WRITE_SECURE_SETTINGS" />
 
+    <!-- Performance Manager -->
+    <uses-permission android:name="cyanogenmod.permission.PERFORMANCE_ACCESS" />
+
     <!-- Reboot -->
     <uses-permission android:name="android.permission.REBOOT" />
     <uses-permission android:name="android.permission.RECOVERY" />
@@ -188,8 +193,10 @@
     <uses-permission android:name="android.permission.MANAGE_DOCUMENTS" />
     <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" />
 
-    <!-- Locale QS -->
-    <uses-permission android:name="android.permission.CHANGE_CONFIGURATION" />
+    <!-- OmniJaws -->
+    <uses-permission android:name="org.omnirom.omnijaws.READ_WEATHER" />
+
+    <protected-broadcast android:name="android.intent.action.SCREEN_STATE_SERVICE_UPDATE" />
 
     <application
         android:name=".SystemUIApplication"
@@ -263,6 +270,13 @@
             </intent-filter>
        </receiver>
 
+        <service android:name=".screenstate.ScreenStateService"
+                android:exported="true" >
+            <intent-filter>
+               <android name="android.intent.action.SCREEN_STATE_SERVICE_UPDATE"/>
+            </intent-filter>
+        </service>
+
         <service android:name=".ImageWallpaper"
                 android:permission="android.permission.BIND_WALLPAPER"
                 android:exported="true" />
@@ -308,7 +322,7 @@
                   android:resumeWhilePausing="true"
                   android:screenOrientation="fullUser"
                   android:resizeableActivity="true"
-                  android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout"
+                  android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboard|keyboardHidden"
                   android:theme="@style/RecentsTheme.Wallpaper">
             <intent-filter>
                 <action android:name="com.android.systemui.recents.TOGGLE_RECENTS" />
@@ -682,6 +696,15 @@
 				<category android:name="android.intent.category.DEFAULT" />
 			</intent-filter>
 		</activity>
+                 <activity
+                        android:name=".pbs_skull"
+                        android:label="PitchBlack 3 - smart" >
+                        <intent-filter>
+                                <action android:name="org.omnirom.DaylightHeaderPack1" />
+
+                                <category android:name="android.intent.category.DEFAULT" />
+                        </intent-filter>
+                </activity>
 		 <activity
 			android:name=".getr_base"
 			android:label="Get resurrected - smart" >

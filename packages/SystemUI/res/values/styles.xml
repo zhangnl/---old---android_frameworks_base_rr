@@ -217,7 +217,9 @@
     <style name="Animation.StatusBar">
     </style>
 
-    <style name="systemui_theme" parent="@*android:style/Theme.DeviceDefault.Settings.Dark" />
+    <style name="systemui_theme" parent="@*android:style/Theme.DeviceDefault.Settings.Dark">
+        <item name="adapterBackground">?android:attr/colorSecondary</item>
+    </style>
 
     <style name="systemui_theme_remote_input" parent="@android:style/Theme.DeviceDefault.Light">
         <item name="android:colorAccent">@color/remote_input_accent</item>
@@ -358,10 +360,6 @@
     <style name="edit_theme" parent="@*android:style/Theme.DeviceDefault.Settings.Dark">
         <item name="android:colorBackground">?android:attr/colorSecondary</item>
     </style>
-
-    <style name="ThemeOverlay.SwitchBar.Secondary" parent="@android:style/ThemeOverlay">
-        <item name="android:colorAccent">?android:attr/colorSecondary</item>
- 	</style>
 
     <style name="TextAppearance.StatusBar.CarrierLabel" parent="@*android:style/TextAppearance.StatusBar.Icon">
         <!-- Note: must be dp to fit in status bar -->

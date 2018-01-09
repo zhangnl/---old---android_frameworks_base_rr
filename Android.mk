@@ -86,6 +86,8 @@ LOCAL_SRC_FILES += \
 	core/java/android/app/job/IJobCallback.aidl \
 	core/java/android/app/job/IJobScheduler.aidl \
 	core/java/android/app/job/IJobService.aidl \
+	core/java/android/app/IThemeCallback.aidl \
+	core/java/android/app/IThemeService.aidl \
 	core/java/android/app/ITransientNotification.aidl \
 	core/java/android/app/IUidObserver.aidl \
 	core/java/android/app/IUiAutomationConnection.aidl \
@@ -204,6 +206,7 @@ LOCAL_SRC_FILES += \
 	core/java/android/net/IIpConnectivityMetrics.aidl \
 	core/java/android/net/IEthernetManager.aidl \
 	core/java/android/net/IEthernetServiceListener.aidl \
+	core/java/android/net/INetdEventCallback.aidl \
 	core/java/android/net/INetworkManagementEventObserver.aidl \
 	core/java/android/net/INetworkPolicyListener.aidl \
 	core/java/android/net/INetworkPolicyManager.aidl \
@@ -240,6 +243,8 @@ LOCAL_SRC_FILES += \
 	core/java/android/os/IUpdateLock.aidl \
 	core/java/android/os/IUserManager.aidl \
 	core/java/android/os/IVibratorService.aidl \
+	core/java/android/pocket/IPocketService.aidl \
+	core/java/android/pocket/IPocketCallback.aidl \
 	core/java/android/security/IKeystoreService.aidl \
 	core/java/android/service/carrier/ICarrierService.aidl \
 	core/java/android/service/carrier/ICarrierMessagingCallback.aidl \
@@ -471,6 +476,8 @@ LOCAL_SRC_FILES += \
 	packages/services/Proxy/com/android/net/IProxyPortListener.aidl \
 	core/java/android/service/quicksettings/IQSService.aidl \
 	core/java/android/service/quicksettings/IQSTileService.aidl \
+	telephony/java/com/android/internal/telephony/ISmsSecurityService.aidl \
+	telephony/java/com/android/internal/telephony/ISmsSecurityAgent.aidl \
 
 # The following are native binders that need to go with the native component
 # at system/update_engine/binder_bindings/. Use relative path to refer to them.
@@ -581,6 +588,9 @@ aidl_files := \
 	frameworks/base/graphics/java/android/graphics/drawable/Icon.aidl \
 	frameworks/base/core/java/android/accounts/AuthenticatorDescription.aidl \
 	frameworks/base/core/java/android/accounts/Account.aidl \
+	frameworks/base/core/java/android/app/admin/ConnectEvent.aidl \
+	frameworks/base/core/java/android/app/admin/DnsEvent.aidl \
+	frameworks/base/core/java/android/app/admin/NetworkEvent.aidl \
 	frameworks/base/core/java/android/app/admin/SystemUpdatePolicy.aidl \
 	frameworks/base/core/java/android/print/PrintDocumentInfo.aidl \
 	frameworks/base/core/java/android/print/PageRange.aidl \
